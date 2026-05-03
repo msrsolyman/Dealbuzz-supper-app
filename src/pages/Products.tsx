@@ -2,18 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { fetchWithAuth } from '../lib/api';
 import { toast } from 'sonner';
 import { Plus, Edit2, Trash2, X, Tags, Image as ImageIcon, FileText, Truck, Search, Shield, Settings2, Box } from 'lucide-react';
-
-const TABS = [
-  { id: 'basic', label: 'Basic Info', icon: FileText },
-  { id: 'pricing', label: 'Pricing & Stock', icon: Tags },
-  { id: 'media', label: 'Images & Media', icon: ImageIcon },
-  { id: 'details', label: 'Detailed Description', icon: Box },
-  { id: 'shipping', label: 'Shipping & Delivery', icon: Truck },
-  { id: 'seo', label: 'SEO & Display', icon: Search },
-  { id: 'advanced', label: 'Advanced Info', icon: Shield },
-];
+import { useTranslation } from 'react-i18next';
+import { useSettings } from '../context/SettingsContext';
 
 export default function Products() {
+  const { t } = useTranslation();
+  const { formatAmount, currency } = useSettings();
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -134,13 +128,13 @@ export default function Products() {
           <div className="w-10 h-10 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 shadow-sm">
             <Box className="w-5 h-5" />
           </div>
-          <h2 className="text-2xl font-display font-bold tracking-tight">Product Inventory</h2>
+          <h2 className="text-2xl font-display font-bold tracking-tight">{t('product_inventory')}</h2>
         </div>
         <button 
           onClick={handleOpenModal}
           className="text-sm font-bold text-white uppercase bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded-xl flex items-center gap-2 shadow-sm shadow-indigo-500/20 transition-all active:scale-95"
         >
-          <Plus className="w-4 h-4" /> <span className="hidden sm:inline">Add Product</span>
+          <Plus className="w-4 h-4" /> <span className="hidden sm:inline">{t('add_product')}</span>
         </button>
       </div>
 
@@ -148,12 +142,12 @@ export default function Products() {
         <table className="w-full text-sm text-left">
           <thead className="bg-slate-50 text-slate-500 uppercase text-[10px] tracking-widest border-b border-slate-100 sticky top-0 z-10">
             <tr>
-              <th className="px-6 py-4 font-bold">Main Image</th>
-              <th className="px-6 py-4 font-bold">Name & Category</th>
+              <th className="px-6 py-4 font-bold">{t('main_image')}</th>
+              <th className="px-6 py-4 font-bold">{t('name_category')}</th>
               <th className="px-6 py-4 font-bold">SKU</th>
-              <th className="px-6 py-4 font-bold text-right">Price (Disc %)</th>
-              <th className="px-6 py-4 font-bold text-right">Stock</th>
-              <th className="px-6 py-4 font-bold text-right">Actions</th>
+              <th className="px-6 py-4 font-bold text-right">{t('rate')} (Disc %)</th>
+              <th className="px-6 py-4 font-bold text-right">{t('stock')}</th>
+              <th className="px-6 py-4 font-bold text-right">{t('actions')}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
@@ -174,12 +168,12 @@ export default function Products() {
                 </td>
                 <td className="px-6 py-4 font-mono text-xs text-slate-600 tracking-tight bg-slate-50/50 rounded-lg">{p.sku}</td>
                 <td className="px-6 py-4 text-right">
-                  <div className="font-bold text-slate-900 text-base">${p.price.toFixed(2)}</div>
+                  <div className="font-bold text-slate-900 text-base">{formatAmount(p.price)}</div>
                   {p.discount > 0 && <div className="text-xs text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded-md inline-block mt-1">-{p.discount}%</div>}
                 </td>
                 <td className="px-6 py-4 text-right">
                   <span className={`px-3 py-1 rounded-full text-xs font-bold tracking-wider uppercase border ${p.stockCount < 5 ? 'bg-rose-50 text-rose-700 border-rose-100' : p.stockCount < 20 ? 'bg-amber-50 text-amber-700 border-amber-100' : 'bg-emerald-50 text-emerald-700 border-emerald-100'}`}>
-                    {p.stockCount} in stock
+                    {p.stockCount} {t('in_stock')}
                   </span>
                 </td>
                 <td className="px-6 py-4 text-right">
@@ -197,7 +191,7 @@ export default function Products() {
             {products.length === 0 && !loading && (
               <tr><td colSpan={6} className="px-6 py-12 text-center text-slate-500 font-medium">No products found. Add your first product!</td></tr>
             )}
-            {loading && <tr><td colSpan={6} className="px-6 py-12 text-center text-slate-400">Loading products...</td></tr>}
+            {loading && <tr><td colSpan={6} className="px-6 py-12 text-center text-slate-400">{t('loading_details')}</td></tr>}
           </tbody>
         </table>
       </div>
@@ -207,7 +201,7 @@ export default function Products() {
           <div className="bg-white rounded-lg w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
             <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
               <h2 className="text-sm font-bold uppercase tracking-wider text-slate-900 flex items-center gap-2">
-                <Box className="w-4 h-4 text-indigo-500" /> Setup New Product
+                <Box className="w-4 h-4 text-indigo-500" /> {t('setup_new_product')}
               </h2>
               <button type="button" onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-700 p-1">
                 <X className="w-4 h-4" />
@@ -217,7 +211,15 @@ export default function Products() {
             <div className="flex flex-1 overflow-hidden">
               {/* Sidebar Tabs */}
               <div className="w-48 bg-slate-50 border-r border-slate-200 overflow-y-auto shrink-0 p-2 space-y-1">
-                {TABS.map((tab) => {
+                {[
+                  { id: 'basic', label: t('basic_info'), icon: FileText },
+                  { id: 'pricing', label: t('pricing_stock'), icon: Tags },
+                  { id: 'media', label: t('images_media'), icon: ImageIcon },
+                  { id: 'details', label: t('detailed_description'), icon: Box },
+                  { id: 'shipping', label: t('shipping_delivery'), icon: Truck },
+                  { id: 'seo', label: t('seo_display'), icon: Search },
+                  { id: 'advanced', label: t('advanced_info'), icon: Shield },
+                ].map((tab) => {
                   const Icon = tab.icon;
                   return (
                     <button
@@ -265,14 +267,14 @@ export default function Products() {
                         <div>
                           <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Selling Price <span className="text-rose-500">*</span></label>
                           <div className="relative">
-                            <span className="absolute left-3 top-2 text-slate-400 font-bold">$</span>
+                            <span className="absolute left-3 top-2 text-slate-400 font-bold">{currency.symbol}</span>
                             <input required type="number" min="0" step="0.01" name="price" value={formData.price} onChange={handleChange} className="w-full border border-slate-200 rounded pl-7 pr-3 py-2 text-sm outline-none focus:border-indigo-500 font-mono" />
                           </div>
                         </div>
                         <div>
                           <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Regular Price (MRP)</label>
                           <div className="relative">
-                            <span className="absolute left-3 top-2 text-slate-400 font-bold">$</span>
+                            <span className="absolute left-3 top-2 text-slate-400 font-bold">{currency.symbol}</span>
                             <input type="number" min="0" step="0.01" name="regularPrice" value={formData.regularPrice} onChange={handleChange} className="w-full border border-slate-200 rounded pl-7 pr-3 py-2 text-sm outline-none focus:border-indigo-500 font-mono" />
                           </div>
                         </div>
@@ -356,7 +358,7 @@ export default function Products() {
                         <div>
                           <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Delivery Charge</label>
                           <div className="relative">
-                            <span className="absolute left-3 top-2 text-slate-400 font-bold">$</span>
+                            <span className="absolute left-3 top-2 text-slate-400 font-bold">{currency.symbol}</span>
                             <input type="number" min="0" step="0.01" name="deliveryCharge" value={formData.deliveryCharge} onChange={handleChange} className="w-full border border-slate-200 rounded pl-7 pr-3 py-2 text-sm outline-none focus:border-indigo-500 font-mono" />
                           </div>
                         </div>
@@ -423,8 +425,8 @@ export default function Products() {
             </div>
 
             <div className="p-4 border-t border-slate-100 flex justify-end gap-2 bg-slate-50 shrink-0">
-              <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-xs font-bold text-slate-600 uppercase border border-transparent hover:bg-slate-200 rounded">Cancel</button>
-              <button type="submit" form="productForm" className="px-6 py-2 text-xs font-bold text-white uppercase bg-indigo-600 rounded hover:bg-indigo-700 shadow-md">Submit Product</button>
+              <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-xs font-bold text-slate-600 uppercase border border-transparent hover:bg-slate-200 rounded">{t('cancel')}</button>
+              <button type="submit" form="productForm" className="px-6 py-2 text-xs font-bold text-white uppercase bg-indigo-600 rounded hover:bg-indigo-700 shadow-md">{t('submit_product')}</button>
             </div>
           </div>
         </div>

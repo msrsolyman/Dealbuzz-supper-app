@@ -1,42 +1,46 @@
 import { Link, useLocation } from 'react-router';
-import { LayoutDashboard, Package, Users, FileText, Settings, LogOut, ArrowLeftRight, Archive, Shield, X, Store, ShoppingCart } from 'lucide-react';
+import { LayoutDashboard, Package, Users, FileText, Settings, LogOut, ArrowLeftRight, Archive, Shield, X, Store, ShoppingCart, Globe, Coins } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useTranslation } from 'react-i18next';
+import { useSettings } from '../context/SettingsContext';
 
 export default function Sidebar({ isOpen, setIsOpen }: { isOpen: boolean, setIsOpen: (open: boolean) => void }) {
   const { pathname } = useLocation();
   const { logout, user, setRole } = useAuth();
+  const { t } = useTranslation();
+  const { currency, setCurrency, availableCurrencies, language, setLanguage } = useSettings();
 
   let navItems = [
-    { name: 'Dashboard', path: '/', icon: LayoutDashboard },
+    { name: t('dashboard'), path: '/', icon: LayoutDashboard },
   ];
 
   if (user?.role === 'customer') {
-    navItems.push({ name: 'Products', path: '/products', icon: Package });
-    navItems.push({ name: 'Services', path: '/services', icon: Settings });
-    navItems.push({ name: 'Sellers Directory', path: '/sellers', icon: Store });
+    navItems.push({ name: t('products'), path: '/products', icon: Package });
+    navItems.push({ name: t('services'), path: '/services', icon: Settings });
+    navItems.push({ name: t('sellers_directory'), path: '/sellers', icon: Store });
   } else {
     // product_seller, service_seller, reseller, super_admin, admin
     if (['super_admin', 'admin', 'product_seller', 'reseller'].includes(user?.role || '')) {
-      navItems.push({ name: 'Products', path: '/products', icon: Package });
-      navItems.push({ name: 'Inventory', path: '/inventory', icon: Archive });
+      navItems.push({ name: t('products'), path: '/products', icon: Package });
+      navItems.push({ name: t('inventory'), path: '/inventory', icon: Archive });
     }
     if (['super_admin', 'admin', 'service_seller', 'reseller'].includes(user?.role || '')) {
-      navItems.push({ name: 'Services', path: '/services', icon: Settings });
+      navItems.push({ name: t('services'), path: '/services', icon: Settings });
     }
-    navItems.push({ name: 'POS Desk', path: '/pos', icon: ShoppingCart });
-    navItems.push({ name: 'Customers', path: '/customers', icon: Users });
-    navItems.push({ name: 'Invoices', path: '/invoices', icon: FileText });
-    navItems.push({ name: 'Accounts', path: '/accounts', icon: ArrowLeftRight });
+    navItems.push({ name: t('pos'), path: '/pos', icon: ShoppingCart });
+    navItems.push({ name: t('customers'), path: '/customers', icon: Users });
+    navItems.push({ name: t('invoices'), path: '/invoices', icon: FileText });
+    navItems.push({ name: t('accounts'), path: '/accounts', icon: ArrowLeftRight });
     
     if (['super_admin', 'admin', 'product_seller', 'reseller'].includes(user?.role || '')) {
-      navItems.push({ name: 'Warehouses', path: '/warehouses', icon: Archive });
+      navItems.push({ name: t('warehouses'), path: '/warehouses', icon: Archive });
     }
     
-    navItems.push({ name: 'Profile / Store', path: '/storefront', icon: Store });
+    navItems.push({ name: t('profile_store'), path: '/storefront', icon: Store });
     
     if (['super_admin', 'admin'].includes(user?.role || '')) {
-      navItems.push({ name: 'Users', path: '/users', icon: Shield });
-      navItems.push({ name: 'Audit Logs', path: '/audit-logs', icon: Shield });
+      navItems.push({ name: t('users'), path: '/users', icon: Shield });
+      navItems.push({ name: t('audit_logs'), path: '/audit-logs', icon: Shield });
     }
   }
 
@@ -107,8 +111,34 @@ export default function Sidebar({ isOpen, setIsOpen }: { isOpen: boolean, setIsO
           className="flex items-center gap-3 px-3 py-2.5 text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 rounded-xl text-sm font-medium transition-colors"
         >
           <LogOut className="w-4 h-4 shrink-0" />
-          <span>Sign out</span>
+          <span>{t('logout')}</span>
         </button>
+
+        <div className="grid grid-cols-2 gap-2 mt-2">
+          <div className="relative group">
+            <Globe className="w-3 h-3 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500" />
+            <select 
+              value={language}
+              onChange={(e) => setLanguage(e.target.value)}
+              className="w-full bg-slate-800/40 border border-slate-700/50 text-slate-300 text-[10px] rounded-lg pl-7 pr-2 py-2 outline-none focus:border-indigo-500 transition-colors cursor-pointer appearance-none"
+            >
+              <option value="en">English</option>
+              <option value="bn">বাংলা</option>
+            </select>
+          </div>
+          <div className="relative group">
+            <Coins className="w-3 h-3 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500" />
+            <select 
+              value={currency.code}
+              onChange={(e) => setCurrency(e.target.value)}
+              className="w-full bg-slate-800/40 border border-slate-700/50 text-slate-300 text-[10px] rounded-lg pl-7 pr-2 py-2 outline-none focus:border-indigo-500 transition-colors cursor-pointer appearance-none"
+            >
+              {availableCurrencies.map(c => (
+                <option key={c.code} value={c.code}>{c.code}</option>
+              ))}
+            </select>
+          </div>
+        </div>
       </div>
       
       <div className="px-5 py-4 bg-[#060a13] flex items-center justify-between border-t border-[#1e293b]">

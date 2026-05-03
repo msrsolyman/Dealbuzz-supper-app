@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useTranslation } from 'react-i18next';
+import { useSettings } from '../context/SettingsContext';
 import { fetchWithAuth } from '../lib/api';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Package, Users, FileText, ArrowRight, Search, ShoppingCart, Zap, Sparkles, Shield, Settings, LayoutGrid, Check, X, PlusCircle, Tag, Activity } from 'lucide-react';
@@ -8,6 +10,8 @@ import { Link } from 'react-router';
 
 export default function Dashboard() {
   const { user } = useAuth();
+  const { t } = useTranslation();
+  const { formatAmount } = useSettings();
   const [stats, setStats] = useState({
     products: 0,
     invoices: 0,
@@ -156,8 +160,8 @@ export default function Dashboard() {
                       </p>
                       <div className="flex items-center justify-between mt-auto">
                         <div className="flex flex-col">
-                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Price</span>
-                          <span className="text-2xl font-display font-bold text-slate-900">${product.price.toFixed(2)}</span>
+                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">{t('rate')}</span>
+                          <span className="text-2xl font-display font-bold text-slate-900">{formatAmount(product.price)}</span>
                         </div>
                         <button className="w-12 h-12 rounded-2xl bg-slate-900 text-white flex items-center justify-center hover:bg-indigo-600 transition-colors shadow-lg group-hover:shadow-indigo-500/25 shrink-0">
                           <ShoppingCart className="w-5 h-5" />
@@ -208,8 +212,8 @@ export default function Dashboard() {
                         <span className="text-sm font-semibold text-slate-700 capitalize">{service.priceType?.replace('_', ' ') || 'Fixed'}</span>
                       </div>
                       <div className="text-right">
-                        <span className="block text-[10px] uppercase font-bold text-slate-400 tracking-widest mb-1">Rate</span>
-                        <span className="text-lg font-display font-bold text-slate-900">${(service.rate || 0).toFixed(2)}</span>
+                        <span className="block text-[10px] uppercase font-bold text-slate-400 tracking-widest mb-1">{t('rate')}</span>
+                        <span className="text-lg font-display font-bold text-slate-900">{formatAmount(service.rate || 0)}</span>
                       </div>
                     </div>
                     <button className="w-full py-3.5 rounded-xl bg-white border-2 border-slate-900 text-slate-900 font-bold text-sm hover:bg-slate-900 hover:text-white transition-colors uppercase tracking-widest relative z-10">
@@ -230,8 +234,8 @@ export default function Dashboard() {
     <div className="space-y-6 overflow-hidden font-sans">
       <div className="flex justify-between items-center bg-white p-4 rounded-2xl border border-slate-200/60 shadow-sm relative z-20">
         <div>
-          <h1 className="text-2xl font-display font-bold text-slate-900" style={{ letterSpacing: '-0.02em' }}>Dashboard</h1>
-          <p className="text-sm text-slate-500 font-medium">Welcome back, {user?.name}</p>
+          <h1 className="text-2xl font-display font-bold text-slate-900" style={{ letterSpacing: '-0.02em' }}>{t('dashboard')}</h1>
+          <p className="text-sm text-slate-500 font-medium">{t('welcome_back')}, {user?.name}</p>
         </div>
         <div className="relative">
           <button 
@@ -277,7 +281,7 @@ export default function Dashboard() {
             <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
                <Package className="w-16 h-16 text-indigo-500 transform rotate-12" />
             </div>
-            <div className="text-[10px] text-slate-500 uppercase font-bold tracking-widest mb-2 relative z-10">Total Products</div>
+            <div className="text-[10px] text-slate-500 uppercase font-bold tracking-widest mb-2 relative z-10">{t('total_products')}</div>
             <div className="text-4xl font-display font-bold text-slate-900 mb-1 relative z-10">{stats.products}</div>
             <div className="text-xs text-emerald-600 font-semibold relative z-10">+15 new this month</div>
           </div>
@@ -286,7 +290,7 @@ export default function Dashboard() {
             <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
                <FileText className="w-16 h-16 text-fuchsia-500 transform -rotate-12" />
             </div>
-            <div className="text-[10px] text-slate-500 uppercase font-bold tracking-widest mb-2 relative z-10">Total Invoices</div>
+            <div className="text-[10px] text-slate-500 uppercase font-bold tracking-widest mb-2 relative z-10">{t('total_invoices')}</div>
             <div className="text-4xl font-display font-bold text-slate-900 mb-1 relative z-10">{stats.invoices}</div>
             <div className="text-xs text-indigo-600 font-semibold relative z-10">Pending payments</div>
           </div>
@@ -295,7 +299,7 @@ export default function Dashboard() {
              <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
                <Zap className="w-16 h-16 text-amber-500 transform rotate-6" />
             </div>
-            <div className="text-[10px] text-slate-500 uppercase font-bold tracking-widest mb-2 relative z-10">Inventory (FIFO)</div>
+            <div className="text-[10px] text-slate-500 uppercase font-bold tracking-widest mb-2 relative z-10">{t('inventory')} (FIFO)</div>
             <div className="text-4xl font-display font-bold text-slate-900 mb-1 relative z-10">12,890</div>
             <div className="text-xs text-amber-600 font-semibold relative z-10">8 items low stock</div>
           </div>
@@ -304,7 +308,7 @@ export default function Dashboard() {
             <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
                <Users className="w-16 h-16 text-sky-500 transform -rotate-6" />
             </div>
-            <div className="text-[10px] text-slate-500 uppercase font-bold tracking-widest mb-2 relative z-10">Active Users</div>
+            <div className="text-[10px] text-slate-500 uppercase font-bold tracking-widest mb-2 relative z-10">{t('active_users')}</div>
             <div className="text-4xl font-display font-bold text-slate-900 mb-1 relative z-10">1</div>
             <div className="text-xs text-slate-400 font-semibold relative z-10">System normal</div>
           </div>
@@ -315,24 +319,24 @@ export default function Dashboard() {
         <div className="bg-white border border-slate-200/60 rounded-2xl p-5 shadow-sm">
           <h3 className="font-display font-bold text-slate-800 mb-4 flex items-center gap-2">
             <Zap className="w-5 h-5 text-amber-500" />
-            Quick Access
+            {t('quick_access')}
           </h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <Link to="/invoices" className="flex flex-col items-center justify-center p-4 rounded-xl border border-slate-100 bg-slate-50 hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-700 transition-colors group">
               <PlusCircle className="w-6 h-6 text-slate-400 group-hover:text-indigo-500 mb-2" />
-              <span className="text-sm font-semibold">New Invoice</span>
+              <span className="text-sm font-semibold">{t('new_invoice')}</span>
             </Link>
             <Link to="/products" className="flex flex-col items-center justify-center p-4 rounded-xl border border-slate-100 bg-slate-50 hover:bg-fuchsia-50 hover:border-fuchsia-200 hover:text-fuchsia-700 transition-colors group">
               <Package className="w-6 h-6 text-slate-400 group-hover:text-fuchsia-500 mb-2" />
-              <span className="text-sm font-semibold">Add Product</span>
+              <span className="text-sm font-semibold">{t('add_product')}</span>
             </Link>
             <Link to="/pos" className="flex flex-col items-center justify-center p-4 rounded-xl border border-slate-100 bg-slate-50 hover:bg-emerald-50 hover:border-emerald-200 hover:text-emerald-700 transition-colors group">
               <ShoppingCart className="w-6 h-6 text-slate-400 group-hover:text-emerald-500 mb-2" />
-              <span className="text-sm font-semibold">Launch POS</span>
+              <span className="text-sm font-semibold">{t('launch_pos')}</span>
             </Link>
             <Link to="/services" className="flex flex-col items-center justify-center p-4 rounded-xl border border-slate-100 bg-slate-50 hover:bg-amber-50 hover:border-amber-200 hover:text-amber-700 transition-colors group">
               <Tag className="w-6 h-6 text-slate-400 group-hover:text-amber-500 mb-2" />
-              <span className="text-sm font-semibold">Manage Services</span>
+              <span className="text-sm font-semibold">{t('manage_services')}</span>
             </Link>
           </div>
         </div>
@@ -342,7 +346,7 @@ export default function Dashboard() {
         {widgets.revenueChart && (
           <div className={`${widgets.recentActivities ? 'lg:col-span-2' : 'lg:col-span-3'} bg-white border border-slate-200/60 rounded-2xl flex flex-col shadow-sm`}>
             <div className="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50 rounded-t-2xl">
-              <h3 className="font-display font-bold text-slate-800">Revenue Overview</h3>
+              <h3 className="font-display font-bold text-slate-800">{t('revenue_overview')}</h3>
               <button className="text-[10px] font-bold text-indigo-600 uppercase border border-indigo-200 hover:bg-indigo-50 px-3 py-1.5 rounded-lg transition-colors">Export PDF</button>
             </div>
             <div className="flex-1 p-6">
@@ -364,7 +368,7 @@ export default function Dashboard() {
             <div className="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50 rounded-t-2xl">
               <h3 className="font-display font-bold text-slate-800 flex items-center gap-2">
                 <Activity className="w-5 h-5 text-indigo-500" />
-                Recent Activities
+                {t('recent_activities')}
               </h3>
               <Link to="/audit-logs" className="text-[10px] font-bold text-slate-500 uppercase hover:text-slate-800 transition-colors">View All</Link>
             </div>

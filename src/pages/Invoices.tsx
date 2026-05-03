@@ -5,8 +5,12 @@ import { FileText, Download, Plus, Trash2, Search, X } from 'lucide-react';
 import { format } from 'date-fns';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { useTranslation } from 'react-i18next';
+import { useSettings } from '../context/SettingsContext';
 
 export default function Invoices() {
+  const { t } = useTranslation();
+  const { formatAmount } = useSettings();
   const [invoices, setInvoices] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -107,13 +111,13 @@ export default function Invoices() {
            <div className="w-10 h-10 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 shadow-sm">
              <FileText className="w-5 h-5" />
            </div>
-           <h2 className="text-2xl font-display font-bold tracking-tight">Invoices</h2>
+           <h2 className="text-2xl font-display font-bold tracking-tight">{t('invoices')}</h2>
         </div>
         <button 
           onClick={() => setIsModalOpen(true)}
           className="text-sm font-bold text-white uppercase bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded-xl flex items-center gap-2 shadow-sm shadow-indigo-500/20 transition-all active:scale-95"
         >
-          Create Invoice
+          {t('create_invoice')}
         </button>
       </div>
 
@@ -121,12 +125,12 @@ export default function Invoices() {
         <table className="w-full text-sm text-left">
           <thead className="bg-slate-50 text-slate-500 uppercase text-[10px] tracking-widest border-b border-slate-100 sticky top-0 z-10">
             <tr>
-              <th className="px-6 py-4 font-bold">Invoice #</th>
-              <th className="px-6 py-4 font-bold">Customer</th>
-              <th className="px-6 py-4 font-bold text-right">Total</th>
-              <th className="px-6 py-4 font-bold text-center">Status</th>
-              <th className="px-6 py-4 font-bold">Due Date</th>
-              <th className="px-6 py-4 font-bold text-right">Actions</th>
+              <th className="px-6 py-4 font-bold">{t('invoice_number')}</th>
+              <th className="px-6 py-4 font-bold">{t('customer')}</th>
+              <th className="px-6 py-4 font-bold text-right">{t('total')}</th>
+              <th className="px-6 py-4 font-bold text-center">{t('status')}</th>
+              <th className="px-6 py-4 font-bold">{t('due_date')}</th>
+              <th className="px-6 py-4 font-bold text-right">{t('actions')}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
@@ -137,7 +141,7 @@ export default function Invoices() {
                   {inv.invoiceNumber}
                 </td>
                 <td className="px-6 py-4 text-slate-600 font-medium">{inv.customerId?.name || 'Unknown'}</td>
-                <td className="px-6 py-4 text-right font-bold text-slate-900 text-base">${inv.total.toFixed(2)}</td>
+                <td className="px-6 py-4 text-right font-bold text-slate-900 text-base">{formatAmount(inv.total)}</td>
                 <td className="px-6 py-4 text-center">
                   <span className={`inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-bold tracking-wider uppercase border ${inv.status?.toUpperCase() === 'PAID' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-amber-50 text-amber-700 border-amber-100'}`}>{inv.status?.toUpperCase()}</span>
                 </td>
@@ -156,9 +160,9 @@ export default function Invoices() {
               </tr>
             ))}
             {invoices.length === 0 && !loading && (
-              <tr><td colSpan={6} className="px-6 py-12 text-center text-slate-500 font-medium">No invoices found.</td></tr>
+              <tr><td colSpan={6} className="px-6 py-12 text-center text-slate-500 font-medium">{t('no_invoices_found')}</td></tr>
             )}
-            {loading && <tr><td colSpan={6} className="px-6 py-12 text-center text-slate-400">Loading invoices...</td></tr>}
+            {loading && <tr><td colSpan={6} className="px-6 py-12 text-center text-slate-400">{t('loading_invoices')}</td></tr>}
           </tbody>
         </table>
       </div>
@@ -166,11 +170,11 @@ export default function Invoices() {
       {isModalOpen && (
         <div className="fixed inset-0 bg-slate-900/50 flex items-center justify-center z-50">
           <div className="bg-white rounded w-full max-w-lg p-5 border border-slate-200 shadow-xl overflow-y-auto max-h-[90vh]">
-            <h2 className="text-sm font-bold mb-4 uppercase tracking-wider text-slate-900">Create Invoice</h2>
+            <h2 className="text-sm font-bold mb-4 uppercase tracking-wider text-slate-900">{t('create_invoice')}</h2>
             <form onSubmit={handleCreate} className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
                 <div className="relative">
-                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Customer</label>
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">{t('customer')}</label>
                   <div className="relative">
                     {formData.customerId ? (
                       <div className="flex flex-col border border-slate-200 rounded p-2 bg-slate-50 gap-1">
@@ -225,20 +229,20 @@ export default function Invoices() {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Due Date</label>
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">{t('due_date')}</label>
                   <input required type="date" value={formData.dueDate} onChange={e => setFormData({...formData, dueDate: e.target.value})} className="w-full border border-slate-200 rounded px-2 py-1.5 text-xs outline-none focus:border-indigo-500" />
                 </div>
               </div>
               
               <div className="border border-slate-200 rounded p-4 bg-slate-50">
                 <div className="flex justify-between items-center mb-3">
-                  <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Item Details</h4>
+                  <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{t('item_details')}</h4>
                   <button 
                     type="button" 
                     onClick={() => setFormData({...formData, items: [...formData.items, { name: '', itemType: 'Product', quantity: 1, rate: 0, total: 0 }]})}
                     className="text-xs flex items-center gap-1 font-bold text-indigo-600 hover:text-indigo-700 transition-colors"
                   >
-                    <Plus className="w-3 h-3" /> Add Item
+                    <Plus className="w-3 h-3" /> {t('add_item')}
                   </button>
                 </div>
                 
@@ -303,30 +307,30 @@ export default function Invoices() {
                 <div className="mt-4 pt-3 border-t border-slate-200">
                   <div className="flex flex-col items-end text-sm space-y-1">
                     <div className="flex justify-between w-full sm:w-64 text-slate-500">
-                      <span>Subtotal:</span>
-                      <span className="font-mono">${calculateTotals().subtotal.toFixed(2)}</span>
+                      <span>{t('subtotal')}:</span>
+                      <span className="font-mono">{formatAmount(calculateTotals().subtotal)}</span>
                     </div>
                     <div className="flex justify-between w-full sm:w-64 text-slate-500 items-center">
                       <span className="flex items-center gap-2">
-                        Tax: 
+                        {t('tax_rate')}: 
                         <div className="relative">
                           <input type="number" min="0" max="100" value={formData.taxRate} onChange={e => setFormData({...formData, taxRate: Number(e.target.value)})} className="w-16 border border-slate-200 rounded px-2 py-0.5 text-xs text-right outline-none focus:border-indigo-500 pr-5" />
                           <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px]">%</span>
                         </div>
                       </span>
-                      <span className="font-mono">${calculateTotals().tax.toFixed(2)}</span>
+                      <span className="font-mono">{formatAmount(calculateTotals().tax)}</span>
                     </div>
                     <div className="flex justify-between w-full sm:w-64 text-slate-800 font-bold pt-1 border-t border-slate-200 mt-1">
-                      <span>Total:</span>
-                      <span className="font-mono text-base">${calculateTotals().total.toFixed(2)}</span>
+                      <span>{t('total')}:</span>
+                      <span className="font-mono text-base">{formatAmount(calculateTotals().total)}</span>
                     </div>
                   </div>
                 </div>
               </div>
 
               <div className="flex justify-end pt-3 gap-2">
-                <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-xs font-bold text-slate-600 uppercase hover:bg-slate-100 rounded-xl transition-colors">Cancel</button>
-                <button type="submit" className="px-6 py-2 text-xs font-bold text-white uppercase bg-indigo-600 rounded-xl hover:bg-indigo-700 shadow-sm transition-colors">Create Invoice</button>
+                <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-xs font-bold text-slate-600 uppercase hover:bg-slate-100 rounded-xl transition-colors">{t('cancel')}</button>
+                <button type="submit" className="px-6 py-2 text-xs font-bold text-white uppercase bg-indigo-600 rounded-xl hover:bg-indigo-700 shadow-sm transition-colors">{t('create_invoice')}</button>
               </div>
             </form>
           </div>
