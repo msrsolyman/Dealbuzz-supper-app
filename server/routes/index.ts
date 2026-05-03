@@ -14,10 +14,25 @@ import InventoryTransaction from '../models/InventoryTransaction.js';
 import Account from '../models/Account.js';
 import AccountingTransaction from '../models/AccountingTransaction.js';
 import AuditLog from '../models/AuditLog.js';
+import Warehouse from '../models/Warehouse.js';
+import Customer from '../models/Customer.js';
+import Review from '../models/Review.js';
 
 const router = express.Router();
 
-// --- Auth Routes ---
+// --- Custom auth-related routes ---
+// Move sellers under authenticate
+router.get('/sellers', authenticate, async (req: any, res: any) => {
+  try {
+    const sellers = await (User as any).find({ 
+      tenantId: req.tenantId, 
+      role: { $in: ['product_seller', 'service_seller', 'reseller'] },
+      isDeleted: false 
+    }).select('-password');
+    res.json({ data: sellers });
+  } catch (e: any) { res.status(500).json({ error: e.message }); }
+});
+
 router.post('/auth/register', register);
 router.post('/auth/login', auditLog('Users'), login);
 router.get('/auth/me', authenticate, getMe);
@@ -32,12 +47,19 @@ const generateCrud = (model: any, collectionName: string) => {
   
   r.get('/', async (req: any, res: any) => {
     try {
-      const { page = 1, limit = 10, search } = req.query;
-      const query: any = { tenantId: req.tenantId };
+      const { page = 1, limit = 10, search, ...filters } = req.query;
+      const query: any = { tenantId: req.tenantId, ...filters };
       if (model.schema.paths.isDeleted) query.isDeleted = false;
       if (search && model.schema.paths.name) query.name = { $regex: search, $options: 'i' };
       
-      const items = await (model as any).find(query)
+      let queryBuilder = (model as any).find(query);
+      
+      // Auto-populate some useful fields if they exist on the model
+      if (model.schema.paths.customerId && model.modelName === 'Review') {
+        queryBuilder = queryBuilder.populate('customerId', 'name email');
+      }
+
+      const items = await queryBuilder
         .limit(Number(limit))
         .skip((Number(page) - 1) * Number(limit))
         .sort({ createdAt: -1 });
@@ -80,7 +102,6 @@ const generateCrud = (model: any, collectionName: string) => {
 };
 
 // --- Standard Modules ---
-router.use('/products', auditLog('Product'), getProducts as any); // using the specific one or replacing
 router.get('/products', getProducts as any);
 router.post('/products', auditLog('Product'), createProduct as any);
 router.put('/products/:id', auditLog('Product'), updateProduct as any);
@@ -89,6 +110,9 @@ router.delete('/products/:id', auditLog('Product'), deleteProduct as any);
 router.use('/services', generateCrud(Service, 'Service'));
 router.use('/accounts', generateCrud(Account, 'Account'));
 router.use('/accounting-transactions', generateCrud(AccountingTransaction, 'AccountingTransaction'));
+router.use('/warehouses', generateCrud(Warehouse, 'Warehouse'));
+router.use('/customers', generateCrud(Customer, 'Customer'));
+router.use('/reviews', generateCrud(Review, 'Review'));
 
 // --- Invoice with special logic ---
 const invoiceRouter = express.Router();
@@ -97,11 +121,53 @@ invoiceRouter.get('/', async (req: any, res: any) => {
   try {
     const invoices = await (Invoice as any).find({ tenantId: req.tenantId, isDeleted: false }).populate('customerId');
     res.json({ data: invoices });
-  } catch (e: any) { res.status(500).json({ error: e.message }); }
+  } catch (e: any) { 
+    console.error("INV ERROR:", e);
+    res.status(500).json({ error: e.message }); 
+  }
 });
 invoiceRouter.post('/', async (req: any, res: any) => {
   try {
-    const doc = await Invoice.create({ ...req.body, tenantId: req.tenantId });
+    const mongoose = (await import('mongoose')).default;
+    const items = req.body.items?.map((item: any) => ({
+      ...item,
+      itemId: item.itemId || new mongoose.Types.ObjectId()
+    })) || [];
+    
+    const doc = await Invoice.create({ ...req.body, items, tenantId: req.tenantId });
+    
+    // Deduct stock for products
+    for (const item of items) {
+      if (item.itemType === 'Product') {
+        const product = await (Product as any).findOne({ _id: item.itemId, tenantId: req.tenantId });
+        if (product) {
+          product.stockCount -= item.quantity;
+          
+          // Optionally from a default warehouse if req.body.warehouseId is sent
+          if (req.body.warehouseId && product.warehouseStock) {
+            const whStock = product.warehouseStock.find((w: any) => w.warehouseId.toString() === req.body.warehouseId);
+            if (whStock) {
+              whStock.stockCount -= item.quantity;
+            }
+          }
+          await product.save();
+          
+          // Add inventory transaction record
+          await (InventoryTransaction as any).create({
+            tenantId: req.tenantId,
+            productId: item.itemId,
+            warehouseId: req.body.warehouseId || undefined,
+            type: 'OUT',
+            quantity: item.quantity,
+            unitCost: item.rate,
+            totalCost: item.quantity * item.rate,
+            costingMethod: 'FIFO',
+            referenceId: doc._id.toString()
+          });
+        }
+      }
+    }
+    
     res.status(201).json(doc);
   } catch (e: any) { res.status(400).json({ error: e.message }); }
 });
@@ -120,7 +186,10 @@ inventoryRouter.get('/', async (req: any, res: any) => {
   try {
     const tx = await (InventoryTransaction as any).find({ tenantId: req.tenantId }).populate('productId');
     res.json({ data: tx });
-  } catch (e: any) { res.status(500).json({ error: e.message }); }
+  } catch (e: any) { 
+    console.error("INV_TX ERROR:", e);
+    res.status(500).json({ error: e.message }); 
+  }
 });
 inventoryRouter.post('/', async (req: any, res: any) => {
   try {
@@ -134,8 +203,27 @@ inventoryRouter.post('/', async (req: any, res: any) => {
     // Update Product Stock Count
     const product = await (Product as any).findOne({ _id: productId, tenantId: req.tenantId });
     if (product) {
-      if (type === 'IN') product.stockCount += quantity;
-      else if (type === 'OUT') product.stockCount -= quantity;
+      if (type === 'IN') {
+        product.stockCount += quantity;
+      } else if (type === 'OUT') {
+        product.stockCount -= quantity;
+      }
+      
+      // Update specific warehouse stock if provided
+      if (req.body.warehouseId) {
+        if (!product.warehouseStock) product.warehouseStock = [];
+        const whStock = product.warehouseStock.find((w: any) => w.warehouseId.toString() === req.body.warehouseId);
+        if (whStock) {
+          if (type === 'IN') whStock.stockCount += quantity;
+          else if (type === 'OUT') whStock.stockCount -= quantity;
+        } else {
+          product.warehouseStock.push({
+            warehouseId: req.body.warehouseId,
+            stockCount: type === 'IN' ? quantity : -quantity
+          });
+        }
+      }
+
       await product.save();
     }
 

@@ -30,6 +30,9 @@ export const register = async (req: Request, res: Response) => {
 
     res.status(201).json({ message: 'Tenant and Admin created successfully' });
   } catch (error: any) {
+    if (error.name === 'MongooseError' || error.message.includes('buffering') || error.message.toLowerCase().includes('mongo')) {
+      return res.status(500).json({ error: 'Database connection failed. Please ensure your MONGODB_URI is correct and you replaced <password> with your actual database password.', details: error.message });
+    }
     res.status(500).json({ error: error.message });
   }
 };
@@ -53,6 +56,9 @@ export const login = async (req: Request, res: Response) => {
 
     res.json({ token, user: { id: user._id, name: user.name, email: user.email, role: user.role, tenantId: user.tenantId } });
   } catch (error: any) {
+    if (error.name === 'MongooseError' || error.message.includes('buffering') || error.message.toLowerCase().includes('mongo')) {
+      return res.status(500).json({ error: 'Database connection failed. Please ensure your MONGODB_URI is correct and you replaced <password> with your actual database password.', details: error.message });
+    }
     res.status(500).json({ error: error.message });
   }
 };

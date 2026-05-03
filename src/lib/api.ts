@@ -14,6 +14,13 @@ export const fetchWithAuth = async (endpoint: string, options: RequestInit = {})
   });
 
   if (!response.ok) {
+    if (response.status === 401) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      window.dispatchEvent(new Event('auth:unauthorized'));
+      await new Promise(() => {}); // prevent throwing error to avoid toasts before redirect
+    }
+
     let errorMsg = 'An error occurred';
     try {
       const errData = await response.json();

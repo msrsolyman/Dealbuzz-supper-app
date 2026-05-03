@@ -1,6 +1,6 @@
-import { Request, Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
-import User from '../models/User.js';
+import { Request, Response, NextFunction } from "express";
+import jwt from "jsonwebtoken";
+import User from "../models/User.js";
 
 export interface AuthRequest extends Request {
   user?: any;
@@ -8,19 +8,36 @@ export interface AuthRequest extends Request {
   auditInfo?: any;
 }
 
-export const authenticate = async (req: AuthRequest, res: Response, next: NextFunction) => {
+export const authenticate = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
     const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({ error: 'Unauthorized: Missing or invalid token' });
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res
+        .status(401)
+        .json({ error: "Unauthorized: Missing or invalid token" });
     }
 
-    const token = authHeader.split(' ')[1];
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret') as any;
+    const token = authHeader.split(" ")[1];
+    let decoded;
+    try {
+      decoded = jwt.verify(
+        token,
+        process.env.JWT_SECRET || "supers3cr3tdealbuzzkey99",
+      ) as any;
+    } catch (err) {
+      // try fallback if token was signed before .env was created
+      decoded = jwt.verify(token, "fallback_secret") as any;
+    }
 
     const user = await (User as any).findById(decoded.id);
-    if (!user || user.status === 'inactive') {
-      return res.status(401).json({ error: 'Unauthorized: User not found or inactive' });
+    if (!user || user.status === "inactive") {
+      return res
+        .status(401)
+        .json({ error: "Unauthorized: User not found or inactive" });
     }
 
     req.user = user;
@@ -28,7 +45,26 @@ export const authenticate = async (req: AuthRequest, res: Response, next: NextFu
       req.tenantId = user.tenantId.toString();
     }
     next();
-  } catch (error) {
-    return res.status(401).json({ error: 'Unauthorized: Token expired or invalid' });
+  } catch (error: any) {
+    if (
+      error.name === "TokenExpiredError" ||
+      error.name === "JsonWebTokenError"
+    ) {
+      return res
+        .status(401)
+        .json({
+          error: "Unauthorized: Token expired or invalid",
+          details: error.message,
+        });
+    }
+
+    console.error("Authentication error:", error);
+    return res
+      .status(500)
+      .json({
+        error:
+          "Database connection failed. Please check MONGODB_URI in settings, ensure you replaced <password> with your actual database password.",
+        details: error.message,
+      });
   }
 };

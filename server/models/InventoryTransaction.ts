@@ -2,8 +2,9 @@ import mongoose, { Document, Schema } from 'mongoose';
 
 export interface IInventoryTransaction extends Document {
   tenantId: mongoose.Types.ObjectId;
+  warehouseId?: mongoose.Types.ObjectId;
   productId: mongoose.Types.ObjectId;
-  type: 'IN' | 'OUT' | 'ADJUSTMENT';
+  type: 'IN' | 'OUT' | 'ADJUSTMENT' | 'TRANSFER';
   quantity: number;
   unitCost: number;
   totalCost: number;
@@ -15,8 +16,9 @@ export interface IInventoryTransaction extends Document {
 const InventoryTransactionSchema = new Schema<IInventoryTransaction>(
   {
     tenantId: { type: Schema.Types.ObjectId, ref: 'Tenant', required: true, index: true },
+    warehouseId: { type: Schema.Types.ObjectId, ref: 'Warehouse', index: true },
     productId: { type: Schema.Types.ObjectId, ref: 'Product', required: true, index: true },
-    type: { type: String, enum: ['IN', 'OUT', 'ADJUSTMENT'], required: true },
+    type: { type: String, enum: ['IN', 'OUT', 'ADJUSTMENT', 'TRANSFER'], required: true },
     quantity: { type: Number, required: true },
     unitCost: { type: Number, required: true, min: 0 },
     totalCost: { type: Number, required: true },

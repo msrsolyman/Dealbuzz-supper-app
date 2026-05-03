@@ -11,6 +11,12 @@ import Services from './pages/Services';
 import Inventory from './pages/Inventory';
 import Accounts from './pages/Accounts';
 import Users from './pages/Users';
+import StorefrontProfile from './pages/StorefrontProfile';
+import POS from './pages/POS';
+import Customers from './pages/Customers';
+import Warehouses from './pages/Warehouses';
+import SellersDirectory from './pages/SellersDirectory';
+import SellerProfile from './pages/SellerProfile';
 import { Toaster } from 'sonner';
 
 export default function App() {
@@ -29,6 +35,12 @@ export default function App() {
             <Route path="invoices" element={<Invoices />} />
             <Route path="accounts" element={<Accounts />} />
             <Route path="users" element={<Users />} />
+            <Route path="customers" element={<Customers />} />
+            <Route path="warehouses" element={<Warehouses />} />
+            <Route path="sellers" element={<SellersDirectory />} />
+            <Route path="sellers/:id" element={<SellerProfile />} />
+            <Route path="storefront" element={<StorefrontProfile />} />
+            <Route path="pos" element={<POS />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

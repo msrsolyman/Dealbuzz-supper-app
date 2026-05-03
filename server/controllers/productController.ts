@@ -25,7 +25,11 @@ export const getProducts = async (req: AuthRequest, res: Response) => {
 
 export const createProduct = async (req: AuthRequest, res: Response) => {
   try {
-    const product = await Product.create({ ...req.body, tenantId: req.tenantId });
+    let sku = req.body.sku;
+    if (!sku) {
+      sku = 'PRD-' + Date.now().toString().slice(-6) + Math.random().toString(36).substring(2, 5).toUpperCase();
+    }
+    const product = await Product.create({ ...req.body, sku, tenantId: req.tenantId });
     res.status(201).json(product);
   } catch (error: any) {
     res.status(400).json({ error: error.message });

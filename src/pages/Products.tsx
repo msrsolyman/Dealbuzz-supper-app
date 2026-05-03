@@ -1,18 +1,44 @@
 import React, { useState, useEffect } from 'react';
 import { fetchWithAuth } from '../lib/api';
 import { toast } from 'sonner';
-import { Plus, Edit2, Trash2 } from 'lucide-react';
+import { Plus, Edit2, Trash2, X, Tags, Image as ImageIcon, FileText, Truck, Search, Shield, Settings2, Box } from 'lucide-react';
+
+const TABS = [
+  { id: 'basic', label: 'Basic Info', icon: FileText },
+  { id: 'pricing', label: 'Pricing & Stock', icon: Tags },
+  { id: 'media', label: 'Images & Media', icon: ImageIcon },
+  { id: 'details', label: 'Detailed Description', icon: Box },
+  { id: 'shipping', label: 'Shipping & Delivery', icon: Truck },
+  { id: 'seo', label: 'SEO & Display', icon: Search },
+  { id: 'advanced', label: 'Advanced Info', icon: Shield },
+];
 
 export default function Products() {
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [formData, setFormData] = useState({ name: '', sku: '', category: '', price: 0, description: '' });
+  const [activeTab, setActiveTab] = useState('basic');
+
+  const generateSKU = () => {
+    return 'PRD-' + Date.now().toString().slice(-6) + Math.random().toString(36).substring(2, 5).toUpperCase();
+  };
+
+  const getInitialForm = () => ({
+    name: '', category: '', brand: '', shortDescription: '',
+    price: 0, regularPrice: 0, discount: 0, stockCount: 0, sku: generateSKU(),
+    mainImage: '', galleryImages: '', videoUrl: '',
+    description: '', features: '', benefits: '', usageInstructions: '',
+    deliveryCharge: 0, deliveryTime: '', locationAvailability: '',
+    tags: '', metaTitle: '', metaDescription: '', searchKeywords: '',
+    warrantyInfo: '', returnPolicy: '', supplierInfo: '', barcode: ''
+  });
+
+  const [formData, setFormData] = useState(getInitialForm());
 
   const loadProducts = async () => {
     try {
       const data = await fetchWithAuth('/products');
-      setProducts(data.data);
+      setProducts(data.data || []);
     } catch (e: any) {
       toast.error('Failed to load products');
     } finally {
@@ -24,16 +50,66 @@ export default function Products() {
     loadProducts();
   }, []);
 
+  const handleOpenModal = () => {
+    setFormData(getInitialForm());
+    setActiveTab('basic');
+    setIsModalOpen(true);
+  };
+
+  const handleChange = (e: any) => {
+    const { name, value, type } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: type === 'number' ? Number(value) : value
+    }));
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, field: string) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData(prev => ({ ...prev, [field]: reader.result as string }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleGalleryUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []) as File[];
+    Promise.all(files.map(file => {
+      return new Promise<string>((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.readAsDataURL(file);
+      });
+    })).then(results => {
+      setFormData(prev => {
+        const existing = prev.galleryImages ? prev.galleryImages.split(',').map((s:any)=>s.trim()).filter(Boolean) : [];
+        return { ...prev, galleryImages: [...existing, ...results].join(', ') };
+      });
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      // transform comma separated strings to arrays if needed
+      const payload = {
+        ...formData,
+        galleryImages: formData.galleryImages ? formData.galleryImages.split(',').map((s:any)=>s.trim()) : [],
+        features: formData.features ? formData.features.split('\n').map((s:any)=>s.trim()) : [],
+        benefits: formData.benefits ? formData.benefits.split('\n').map((s:any)=>s.trim()) : [],
+        tags: formData.tags ? formData.tags.split(',').map((s:any)=>s.trim()) : [],
+        searchKeywords: formData.searchKeywords ? formData.searchKeywords.split(',').map((s:any)=>s.trim()) : [],
+      };
+
       await fetchWithAuth('/products', {
         method: 'POST',
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       });
       toast.success('Product created');
       setIsModalOpen(false);
-      setFormData({ name: '', sku: '', category: '', price: 0, description: '' });
       loadProducts();
     } catch (e: any) {
       toast.error(e.message);
@@ -52,83 +128,304 @@ export default function Products() {
   };
 
   return (
-    <div className="bg-white border border-slate-200 rounded flex flex-col h-full overflow-hidden">
-      <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-white shrink-0">
-        <h3 className="text-sm font-bold text-slate-900">Product Inventory</h3>
+    <div className="bg-white border border-slate-200/60 rounded-3xl shadow-sm flex flex-col h-full overflow-hidden font-sans">
+      <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50 shrink-0">
+        <div className="flex items-center gap-3 text-slate-800 font-bold">
+          <div className="w-10 h-10 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 shadow-sm">
+            <Box className="w-5 h-5" />
+          </div>
+          <h2 className="text-2xl font-display font-bold tracking-tight">Product Inventory</h2>
+        </div>
         <button 
-          onClick={() => setIsModalOpen(true)}
-          className="text-[10px] font-bold text-indigo-600 uppercase border border-indigo-200 px-2 py-1 rounded bg-indigo-50 hover:bg-indigo-100 flex items-center"
+          onClick={handleOpenModal}
+          className="text-sm font-bold text-white uppercase bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded-xl flex items-center gap-2 shadow-sm shadow-indigo-500/20 transition-all active:scale-95"
         >
-          <Plus className="w-3 h-3 mr-1" /> Add Product
+          <Plus className="w-4 h-4" /> <span className="hidden sm:inline">Add Product</span>
         </button>
       </div>
 
-      <div className="flex-1 overflow-auto">
-        <table className="w-full text-xs text-left">
-          <thead className="bg-slate-50 text-slate-500 uppercase text-[10px] border-b border-slate-100 sticky top-0">
+      <div className="flex-1 overflow-auto custom-scrollbar">
+        <table className="w-full text-sm text-left">
+          <thead className="bg-slate-50 text-slate-500 uppercase text-[10px] tracking-widest border-b border-slate-100 sticky top-0 z-10">
             <tr>
-              <th className="px-4 py-2 font-bold tracking-wider">Name</th>
-              <th className="px-4 py-2 font-bold tracking-wider">SKU</th>
-              <th className="px-4 py-2 font-bold tracking-wider">Category</th>
-              <th className="px-4 py-2 font-bold tracking-wider text-right">Price</th>
-              <th className="px-4 py-2 font-bold tracking-wider text-right">Stock</th>
-              <th className="px-4 py-2 font-bold tracking-wider text-right">Actions</th>
+              <th className="px-6 py-4 font-bold">Main Image</th>
+              <th className="px-6 py-4 font-bold">Name & Category</th>
+              <th className="px-6 py-4 font-bold">SKU</th>
+              <th className="px-6 py-4 font-bold text-right">Price (Disc %)</th>
+              <th className="px-6 py-4 font-bold text-right">Stock</th>
+              <th className="px-6 py-4 font-bold text-right">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-50">
+          <tbody className="divide-y divide-slate-100">
             {products.map((p) => (
-              <tr key={p._id} className="hover:bg-slate-50">
-                <td className="px-4 py-3 font-medium text-slate-900">{p.name}</td>
-                <td className="px-4 py-3 font-mono text-slate-600">{p.sku}</td>
-                <td className="px-4 py-3 text-slate-600">{p.category}</td>
-                <td className="px-4 py-3 text-right font-medium text-slate-900">${p.price.toFixed(2)}</td>
-                <td className="px-4 py-3 text-right">
-                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${p.stockCount < 10 ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-700'}`}>
-                    {p.stockCount}
+              <tr key={p._id} className="hover:bg-slate-50/50 transition-colors group">
+                <td className="px-6 py-4">
+                  {p.mainImage ? (
+                    <img src={p.mainImage} alt={p.name} className="w-12 h-12 object-cover rounded-xl border border-slate-200 shadow-sm" />
+                  ) : (
+                    <div className="w-12 h-12 bg-slate-100 rounded-xl border border-slate-200 flex items-center justify-center text-slate-400 shadow-sm">
+                      <ImageIcon className="w-5 h-5" />
+                    </div>
+                  )}
+                </td>
+                <td className="px-6 py-4">
+                  <div className="font-bold text-slate-900 line-clamp-1">{p.name}</div>
+                  <div className="text-xs uppercase font-semibold text-slate-500 mt-1 tracking-wider">{p.category} {p.brand ? `• ${p.brand}` : ''}</div>
+                </td>
+                <td className="px-6 py-4 font-mono text-xs text-slate-600 tracking-tight bg-slate-50/50 rounded-lg">{p.sku}</td>
+                <td className="px-6 py-4 text-right">
+                  <div className="font-bold text-slate-900 text-base">${p.price.toFixed(2)}</div>
+                  {p.discount > 0 && <div className="text-xs text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded-md inline-block mt-1">-{p.discount}%</div>}
+                </td>
+                <td className="px-6 py-4 text-right">
+                  <span className={`px-3 py-1 rounded-full text-xs font-bold tracking-wider uppercase border ${p.stockCount < 5 ? 'bg-rose-50 text-rose-700 border-rose-100' : p.stockCount < 20 ? 'bg-amber-50 text-amber-700 border-amber-100' : 'bg-emerald-50 text-emerald-700 border-emerald-100'}`}>
+                    {p.stockCount} in stock
                   </span>
                 </td>
-                <td className="px-4 py-3 text-right">
-                  <button className="text-indigo-600 hover:text-indigo-800 mr-2"><Edit2 className="w-3 h-3 inline" /></button>
-                  <button onClick={() => handleDelete(p._id)} className="text-rose-600 hover:text-rose-800"><Trash2 className="w-3 h-3 inline" /></button>
+                <td className="px-6 py-4 text-right">
+                   <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button className="w-8 h-8 rounded-lg bg-white border border-slate-200 text-slate-400 hover:text-indigo-600 hover:border-indigo-200 flex items-center justify-center transition-all shadow-sm">
+                      <Edit2 className="w-4 h-4" />
+                    </button>
+                    <button onClick={() => handleDelete(p._id)} className="w-8 h-8 rounded-lg bg-white border border-slate-200 text-slate-400 hover:text-rose-600 hover:border-rose-200 flex items-center justify-center transition-all shadow-sm">
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
             {products.length === 0 && !loading && (
-              <tr><td colSpan={6} className="px-4 py-6 text-center text-slate-500">No products found.</td></tr>
+              <tr><td colSpan={6} className="px-6 py-12 text-center text-slate-500 font-medium">No products found. Add your first product!</td></tr>
             )}
-            {loading && <tr><td colSpan={6} className="px-4 py-6 text-center">Loading...</td></tr>}
+            {loading && <tr><td colSpan={6} className="px-6 py-12 text-center text-slate-400">Loading products...</td></tr>}
           </tbody>
         </table>
       </div>
 
       {isModalOpen && (
-        <div className="fixed inset-0 bg-slate-900/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded w-full max-w-sm p-5 border border-slate-200 shadow-xl">
-            <h2 className="text-sm font-bold mb-4 uppercase tracking-wider text-slate-900">Add Product</h2>
-            <form onSubmit={handleSubmit} className="space-y-3">
-              <div>
-                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Name</label>
-                <input required type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full border border-slate-200 rounded px-2 py-1.5 text-xs outline-none focus:border-indigo-500" />
+        <div className="fixed inset-0 bg-slate-900/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
+            <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+              <h2 className="text-sm font-bold uppercase tracking-wider text-slate-900 flex items-center gap-2">
+                <Box className="w-4 h-4 text-indigo-500" /> Setup New Product
+              </h2>
+              <button type="button" onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-700 p-1">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            
+            <div className="flex flex-1 overflow-hidden">
+              {/* Sidebar Tabs */}
+              <div className="w-48 bg-slate-50 border-r border-slate-200 overflow-y-auto shrink-0 p-2 space-y-1">
+                {TABS.map((tab) => {
+                  const Icon = tab.icon;
+                  return (
+                    <button
+                      key={tab.id}
+                      onClick={() => setActiveTab(tab.id)}
+                      className={`w-full flex items-center gap-2 px-3 py-2 text-xs font-bold rounded-md transition-colors ${activeTab === tab.id ? 'bg-indigo-100 text-indigo-700' : 'text-slate-600 hover:bg-slate-200/50 hover:text-slate-900'}`}
+                    >
+                      <Icon className="w-3.5 h-3.5" />
+                      {tab.label}
+                    </button>
+                  );
+                })}
               </div>
-              <div>
-                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">SKU</label>
-                <input required type="text" value={formData.sku} onChange={e => setFormData({...formData, sku: e.target.value})} className="w-full border border-slate-200 rounded px-2 py-1.5 text-xs outline-none focus:border-indigo-500 font-mono" />
+
+              {/* Form Content */}
+              <div className="flex-1 overflow-y-auto p-6">
+                <form id="productForm" onSubmit={handleSubmit} className="space-y-6">
+                  
+                  {activeTab === 'basic' && (
+                    <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Product Name <span className="text-rose-500">*</span></label>
+                        <input required type="text" name="name" value={formData.name} onChange={handleChange} className="w-full border border-slate-200 rounded px-3 py-2 text-sm outline-none focus:border-indigo-500" placeholder="e.g. Vintage Leather Jacket" />
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Category <span className="text-rose-500">*</span></label>
+                          <input required type="text" name="category" value={formData.category} onChange={handleChange} className="w-full border border-slate-200 rounded px-3 py-2 text-sm outline-none focus:border-indigo-500" placeholder="e.g. Clothing / Men" />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Brand Name</label>
+                          <input type="text" name="brand" value={formData.brand} onChange={handleChange} className="w-full border border-slate-200 rounded px-3 py-2 text-sm outline-none focus:border-indigo-500" placeholder="e.g. Acme" />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Short Description</label>
+                        <textarea rows={3} name="shortDescription" value={formData.shortDescription} onChange={handleChange} className="w-full border border-slate-200 rounded px-3 py-2 text-sm outline-none focus:border-indigo-500 resize-none" placeholder="A brief snappy intro..."></textarea>
+                      </div>
+                    </div>
+                  )}
+
+                  {activeTab === 'pricing' && (
+                    <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Selling Price <span className="text-rose-500">*</span></label>
+                          <div className="relative">
+                            <span className="absolute left-3 top-2 text-slate-400 font-bold">$</span>
+                            <input required type="number" min="0" step="0.01" name="price" value={formData.price} onChange={handleChange} className="w-full border border-slate-200 rounded pl-7 pr-3 py-2 text-sm outline-none focus:border-indigo-500 font-mono" />
+                          </div>
+                        </div>
+                        <div>
+                          <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Regular Price (MRP)</label>
+                          <div className="relative">
+                            <span className="absolute left-3 top-2 text-slate-400 font-bold">$</span>
+                            <input type="number" min="0" step="0.01" name="regularPrice" value={formData.regularPrice} onChange={handleChange} className="w-full border border-slate-200 rounded pl-7 pr-3 py-2 text-sm outline-none focus:border-indigo-500 font-mono" />
+                          </div>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-3 gap-4">
+                        <div>
+                          <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Discount (%)</label>
+                          <div className="relative">
+                            <input type="number" min="0" max="100" name="discount" value={formData.discount} onChange={handleChange} className="w-full border border-slate-200 rounded pl-3 pr-7 py-2 text-sm outline-none focus:border-indigo-500 font-mono" />
+                            <span className="absolute right-3 top-2 text-slate-400 font-bold">%</span>
+                          </div>
+                        </div>
+                        <div>
+                          <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Stock Quantity</label>
+                          <input type="number" min="0" name="stockCount" value={formData.stockCount} onChange={handleChange} className="w-full border border-slate-200 rounded px-3 py-2 text-sm outline-none focus:border-indigo-500 font-mono" />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">SKU / Code <span className="text-rose-500">*</span></label>
+                          <input required type="text" name="sku" value={formData.sku} onChange={handleChange} className="w-full border border-slate-200 rounded px-3 py-2 text-sm outline-none focus:border-indigo-500 font-mono" />
+                          <p className="text-[10px] text-slate-400 mt-1">Auto-generated if left blank</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {activeTab === 'media' && (
+                    <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Main Image URL</label>
+                        <div className="flex gap-2">
+                          <input type="url" name="mainImage" value={formData.mainImage} onChange={handleChange} className="flex-1 w-full border border-slate-200 rounded px-3 py-2 text-sm outline-none focus:border-indigo-500" placeholder="https://..." />
+                          <label className="cursor-pointer bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded text-xs font-bold flex items-center justify-center transition-colors">
+                            Upload File
+                            <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, 'mainImage')} className="hidden" />
+                          </label>
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Gallery Image URLs (Comma Separated)</label>
+                        <div className="flex flex-col gap-2">
+                          <textarea rows={3} name="galleryImages" value={formData.galleryImages} onChange={handleChange} className="w-full border border-slate-200 rounded px-3 py-2 text-sm outline-none focus:border-indigo-500 resize-none" placeholder="https://img1..., https://img2..."></textarea>
+                          <label className="cursor-pointer bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded text-xs font-bold self-start transition-colors">
+                            Upload Multiple Files
+                            <input type="file" accept="image/*" multiple onChange={handleGalleryUpload} className="hidden" />
+                          </label>
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Video Demo URL</label>
+                        <input type="url" name="videoUrl" value={formData.videoUrl} onChange={handleChange} className="w-full border border-slate-200 rounded px-3 py-2 text-sm outline-none focus:border-indigo-500" placeholder="https://youtube.com/..." />
+                      </div>
+                    </div>
+                  )}
+
+                  {activeTab === 'details' && (
+                    <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Product Details</label>
+                        <textarea rows={4} name="description" value={formData.description} onChange={handleChange} className="w-full border border-slate-200 rounded px-3 py-2 text-sm outline-none focus:border-indigo-500 resize-none" placeholder="Full comprehensive description..."></textarea>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Features (One per line)</label>
+                          <textarea rows={4} name="features" value={formData.features} onChange={handleChange} className="w-full border border-slate-200 rounded px-3 py-2 text-sm outline-none focus:border-indigo-500 resize-none" placeholder="✔ High Quality Material&#10;✔ Long Lasting"></textarea>
+                        </div>
+                        <div>
+                          <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Benefits (One per line)</label>
+                          <textarea rows={4} name="benefits" value={formData.benefits} onChange={handleChange} className="w-full border border-slate-200 rounded px-3 py-2 text-sm outline-none focus:border-indigo-500 resize-none" placeholder="Saves time&#10;Easy to use"></textarea>
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Usage Instructions</label>
+                        <textarea rows={3} name="usageInstructions" value={formData.usageInstructions} onChange={handleChange} className="w-full border border-slate-200 rounded px-3 py-2 text-sm outline-none focus:border-indigo-500 resize-none" placeholder="How to use the product..."></textarea>
+                      </div>
+                    </div>
+                  )}
+
+                  {activeTab === 'shipping' && (
+                    <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Delivery Charge</label>
+                          <div className="relative">
+                            <span className="absolute left-3 top-2 text-slate-400 font-bold">$</span>
+                            <input type="number" min="0" step="0.01" name="deliveryCharge" value={formData.deliveryCharge} onChange={handleChange} className="w-full border border-slate-200 rounded pl-7 pr-3 py-2 text-sm outline-none focus:border-indigo-500 font-mono" />
+                          </div>
+                        </div>
+                        <div>
+                          <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Delivery Time (Est.)</label>
+                          <input type="text" name="deliveryTime" value={formData.deliveryTime} onChange={handleChange} className="w-full border border-slate-200 rounded px-3 py-2 text-sm outline-none focus:border-indigo-500" placeholder="e.g. 2-3 Business Days" />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Location Availability</label>
+                        <input type="text" name="locationAvailability" value={formData.locationAvailability} onChange={handleChange} className="w-full border border-slate-200 rounded px-3 py-2 text-sm outline-none focus:border-indigo-500" placeholder="e.g. Nationwide delivery" />
+                      </div>
+                    </div>
+                  )}
+
+                  {activeTab === 'seo' && (
+                    <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Meta Title</label>
+                        <input type="text" name="metaTitle" value={formData.metaTitle} onChange={handleChange} className="w-full border border-slate-200 rounded px-3 py-2 text-sm outline-none focus:border-indigo-500" placeholder="e.g. Buy the Best Hair Trimmer Online" />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Meta Description</label>
+                        <textarea rows={3} name="metaDescription" value={formData.metaDescription} onChange={handleChange} className="w-full border border-slate-200 rounded px-3 py-2 text-sm outline-none focus:border-indigo-500 resize-none" placeholder="Get the premium hair trimmer with free shipping..."></textarea>
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Search Keywords (Comma Separated)</label>
+                        <input type="text" name="searchKeywords" value={formData.searchKeywords} onChange={handleChange} className="w-full border border-slate-200 rounded px-3 py-2 text-sm outline-none focus:border-indigo-500" placeholder="best trimmer, t9 trimmer, hair clipper" />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Tags (Comma Separated)</label>
+                        <input type="text" name="tags" value={formData.tags} onChange={handleChange} className="w-full border border-slate-200 rounded px-3 py-2 text-sm outline-none focus:border-indigo-500" placeholder="Electronics, Men's Grooming, Sale" />
+                      </div>
+                    </div>
+                  )}
+
+                  {activeTab === 'advanced' && (
+                    <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Barcode (UPC/EAN)</label>
+                          <input type="text" name="barcode" value={formData.barcode} onChange={handleChange} className="w-full border border-slate-200 rounded px-3 py-2 text-sm outline-none focus:border-indigo-500 font-mono" />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Supplier / Vendor Info</label>
+                          <input type="text" name="supplierInfo" value={formData.supplierInfo} onChange={handleChange} className="w-full border border-slate-200 rounded px-3 py-2 text-sm outline-none focus:border-indigo-500" placeholder="e.g. Vendor Name ID" />
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Warranty Info</label>
+                          <input type="text" name="warrantyInfo" value={formData.warrantyInfo} onChange={handleChange} className="w-full border border-slate-200 rounded px-3 py-2 text-sm outline-none focus:border-indigo-500" placeholder="e.g. 1 Year Official Warranty" />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Return Policy</label>
+                          <input type="text" name="returnPolicy" value={formData.returnPolicy} onChange={handleChange} className="w-full border border-slate-200 rounded px-3 py-2 text-sm outline-none focus:border-indigo-500" placeholder="e.g. 7 Days Free Return" />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                </form>
               </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Category</label>
-                  <input required type="text" value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})} className="w-full border border-slate-200 rounded px-2 py-1.5 text-xs outline-none focus:border-indigo-500" />
-                </div>
-                <div>
-                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Price</label>
-                  <input required type="number" min="0" step="0.01" value={formData.price} onChange={e => setFormData({...formData, price: Number(e.target.value)})} className="w-full border border-slate-200 rounded px-2 py-1.5 text-xs outline-none focus:border-indigo-500" />
-                </div>
-              </div>
-              <div className="flex justify-end pt-3 gap-2">
-                <button type="button" onClick={() => setIsModalOpen(false)} className="px-3 py-1.5 text-[10px] font-bold text-slate-600 uppercase border border-transparent hover:bg-slate-100 rounded">Cancel</button>
-                <button type="submit" className="px-3 py-1.5 text-[10px] font-bold text-white uppercase bg-indigo-600 rounded hover:bg-indigo-700">Save</button>
-              </div>
-            </form>
+            </div>
+
+            <div className="p-4 border-t border-slate-100 flex justify-end gap-2 bg-slate-50 shrink-0">
+              <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-xs font-bold text-slate-600 uppercase border border-transparent hover:bg-slate-200 rounded">Cancel</button>
+              <button type="submit" form="productForm" className="px-6 py-2 text-xs font-bold text-white uppercase bg-indigo-600 rounded hover:bg-indigo-700 shadow-md">Submit Product</button>
+            </div>
           </div>
         </div>
       )}
