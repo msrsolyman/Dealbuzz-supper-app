@@ -36,7 +36,7 @@ const InvoiceItemSchema = new Schema<IInvoiceItem>({
 const InvoiceSchema = new Schema<IInvoice>(
   {
     tenantId: { type: Schema.Types.ObjectId, ref: 'Tenant', required: true, index: true },
-    customerId: { type: Schema.Types.ObjectId, ref: 'User', index: true },
+    customerId: { type: Schema.Types.ObjectId, ref: 'Customer', index: true },
     invoiceNumber: { type: String, required: true },
     items: [InvoiceItemSchema],
     subtotal: { type: Number, required: true, min: 0 },

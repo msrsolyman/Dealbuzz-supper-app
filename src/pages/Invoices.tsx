@@ -15,7 +15,7 @@ export default function Invoices() {
     customerId: '', dueDate: '', 
     status: 'DRAFT', invoiceNumber: `INV-${Date.now().toString().slice(-6)}`,
     items: [{ name: '', itemType: 'Product', quantity: 1, rate: 0, total: 0 }],
-    subtotal: 0, tax: 0, total: 0
+    subtotal: 0, tax: 0, total: 0, taxRate: 5
   });
   const [customerSearch, setCustomerSearch] = useState('');
   const [showCustomerDropdown, setShowCustomerDropdown] = useState(false);
@@ -25,8 +25,8 @@ export default function Invoices() {
       const data = await fetchWithAuth('/invoices');
       setInvoices(data.data || []);
       
-      const resUsers = await fetchWithAuth('/users');
-      setCustomers(resUsers.data?.filter((u:any) => u.role === 'customer') || []);
+      const resCustomers = await fetchWithAuth('/customers');
+      setCustomers(resCustomers.data || []);
     } catch (e: any) {
       toast.error('Failed to load invoices');
     } finally {
@@ -38,9 +38,9 @@ export default function Invoices() {
     loadInvoices();
   }, []);
 
-  const calculateTotals = (items = formData.items) => {
+  const calculateTotals = (items = formData.items, taxRate = formData.taxRate) => {
     const subtotal = items.reduce((acc, curr) => acc + (curr.quantity * curr.rate), 0);
-    const tax = subtotal * 0.05;
+    const tax = subtotal * (taxRate / 100);
     const total = subtotal + tax;
     return { subtotal, tax, total };
   };
@@ -175,12 +175,16 @@ export default function Invoices() {
                     {formData.customerId ? (
                       <div className="flex flex-col border border-slate-200 rounded p-2 bg-slate-50 gap-1">
                         <div className="flex justify-between items-center">
-                          <span className="text-xs font-bold text-slate-800">{customers.find(c => c._id === formData.customerId)?.name}</span>
+                          <span className="text-xs font-bold text-slate-800">
+                            {customers.find(c => c._id === formData.customerId)?.name || 'Loading customer...'}
+                          </span>
                           <button type="button" onClick={() => setFormData({...formData, customerId: ''})} className="text-slate-400 hover:text-slate-600">
                             <X className="w-3 h-3" />
                           </button>
                         </div>
-                        <span className="text-[10px] text-slate-500">{customers.find(c => c._id === formData.customerId)?.email}</span>
+                        <span className="text-[10px] text-slate-500">
+                          {customers.find(c => c._id === formData.customerId)?.email || customers.find(c => c._id === formData.customerId)?.phone || ''}
+                        </span>
                       </div>
                     ) : (
                       <>
@@ -197,7 +201,11 @@ export default function Invoices() {
                         </div>
                         {showCustomerDropdown && (
                           <div className="absolute z-10 w-full mt-1 bg-white border border-slate-200 rounded shadow-lg max-h-40 overflow-y-auto">
-                            {customers.filter(c => c.name.toLowerCase().includes(customerSearch.toLowerCase()) || c.email.toLowerCase().includes(customerSearch.toLowerCase())).map(c => (
+                            {customers.filter(c => 
+                              (c.name?.toLowerCase() || '').includes(customerSearch.toLowerCase()) || 
+                              (c.email?.toLowerCase() || '').includes(customerSearch.toLowerCase()) ||
+                              (c.phone?.toLowerCase() || '').includes(customerSearch.toLowerCase())
+                            ).map(c => (
                               <div 
                                 key={c._id} 
                                 onClick={() => { setFormData({...formData, customerId: c._id}); setShowCustomerDropdown(false); setCustomerSearch(''); }}
@@ -294,15 +302,21 @@ export default function Invoices() {
 
                 <div className="mt-4 pt-3 border-t border-slate-200">
                   <div className="flex flex-col items-end text-sm space-y-1">
-                    <div className="flex justify-between w-48 text-slate-500">
+                    <div className="flex justify-between w-full sm:w-64 text-slate-500">
                       <span>Subtotal:</span>
                       <span className="font-mono">${calculateTotals().subtotal.toFixed(2)}</span>
                     </div>
-                    <div className="flex justify-between w-48 text-slate-500">
-                      <span>Tax (5%):</span>
+                    <div className="flex justify-between w-full sm:w-64 text-slate-500 items-center">
+                      <span className="flex items-center gap-2">
+                        Tax: 
+                        <div className="relative">
+                          <input type="number" min="0" max="100" value={formData.taxRate} onChange={e => setFormData({...formData, taxRate: Number(e.target.value)})} className="w-16 border border-slate-200 rounded px-2 py-0.5 text-xs text-right outline-none focus:border-indigo-500 pr-5" />
+                          <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px]">%</span>
+                        </div>
+                      </span>
                       <span className="font-mono">${calculateTotals().tax.toFixed(2)}</span>
                     </div>
-                    <div className="flex justify-between w-48 text-slate-800 font-bold pt-1 border-t border-slate-200 mt-1">
+                    <div className="flex justify-between w-full sm:w-64 text-slate-800 font-bold pt-1 border-t border-slate-200 mt-1">
                       <span>Total:</span>
                       <span className="font-mono text-base">${calculateTotals().total.toFixed(2)}</span>
                     </div>
