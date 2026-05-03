@@ -5,8 +5,12 @@ export interface IUser extends Document {
   name: string;
   email: string;
   password?: string;
-  role: 'super_admin' | 'admin' | 'staff' | 'customer' | 'dev';
+  role: 'super_admin' | 'admin' | 'staff' | 'customer' | 'dev' | 'product_seller' | 'service_seller' | 'reseller';
   status: 'active' | 'inactive';
+  profilePicture?: string;
+  coverPhoto?: string;
+  bio?: string;
+  isDeleted?: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -25,10 +29,14 @@ const UserSchema = new Schema<IUser>(
     password: { type: String, select: false },
     role: { 
       type: String, 
-      enum: ['super_admin', 'admin', 'staff', 'customer', 'dev'], 
+      enum: ['super_admin', 'admin', 'staff', 'customer', 'dev', 'product_seller', 'service_seller', 'reseller'], 
       required: true 
     },
-    status: { type: String, enum: ['active', 'inactive'], default: 'active' }
+    status: { type: String, enum: ['active', 'inactive'], default: 'active' },
+    profilePicture: { type: String },
+    coverPhoto: { type: String },
+    bio: { type: String },
+    isDeleted: { type: Boolean, default: false }
   },
   { timestamps: true }
 );

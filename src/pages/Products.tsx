@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { fetchWithAuth } from '../lib/api';
 import { toast } from 'sonner';
-import { Plus, Edit2, Trash2, X, Tags, Image as ImageIcon, FileText, Truck, Search, Shield, Settings2, Box } from 'lucide-react';
+import { Plus, Edit2, Trash2, X, Tags, Image as ImageIcon, FileText, Truck, Search, Shield, Settings2, Box, AlertTriangle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useSettings } from '../context/SettingsContext';
+import { motion, AnimatePresence } from 'motion/react';
 
 export default function Products() {
   const { t } = useTranslation();
@@ -11,6 +12,7 @@ export default function Products() {
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('basic');
 
   const generateSKU = () => {
@@ -19,7 +21,7 @@ export default function Products() {
 
   const getInitialForm = () => ({
     name: '', category: '', brand: '', shortDescription: '',
-    price: 0, regularPrice: 0, discount: 0, stockCount: 0, sku: generateSKU(),
+    price: 0, regularPrice: 0, discount: 0, stockCount: 0, lowStockThreshold: 5, sku: generateSKU(), barcode: '',
     mainImage: '', galleryImages: '', videoUrl: '',
     description: '', features: '', benefits: '', usageInstructions: '',
     deliveryCharge: 0, deliveryTime: '', locationAvailability: '',
@@ -46,6 +48,44 @@ export default function Products() {
 
   const handleOpenModal = () => {
     setFormData(getInitialForm());
+    setEditingId(null);
+    setActiveTab('basic');
+    setIsModalOpen(true);
+  };
+
+  const handleEdit = (product: any) => {
+    setFormData({
+      ...getInitialForm(),
+      name: product.name || '',
+      category: product.category || '',
+      brand: product.brand || '',
+      shortDescription: product.shortDescription || '',
+      price: product.price || 0,
+      regularPrice: product.regularPrice || 0,
+      discount: product.discount || 0,
+      stockCount: product.stockCount || 0,
+      lowStockThreshold: product.lowStockThreshold || 5,
+      sku: product.sku || '',
+      mainImage: product.mainImage || '',
+      galleryImages: Array.isArray(product.galleryImages) ? product.galleryImages.join(', ') : '',
+      videoUrl: product.videoUrl || '',
+      description: product.description || '',
+      features: Array.isArray(product.features) ? product.features.join('\n') : '',
+      benefits: Array.isArray(product.benefits) ? product.benefits.join('\n') : '',
+      usageInstructions: product.usageInstructions || '',
+      deliveryCharge: product.deliveryCharge || 0,
+      deliveryTime: product.deliveryTime || '',
+      locationAvailability: product.locationAvailability || '',
+      tags: Array.isArray(product.tags) ? product.tags.join(', ') : '',
+      metaTitle: product.metaTitle || '',
+      metaDescription: product.metaDescription || '',
+      searchKeywords: Array.isArray(product.searchKeywords) ? product.searchKeywords.join(', ') : '',
+      warrantyInfo: product.warrantyInfo || '',
+      returnPolicy: product.returnPolicy || '',
+      supplierInfo: product.supplierInfo || '',
+      barcode: product.barcode || '',
+    });
+    setEditingId(product._id);
     setActiveTab('basic');
     setIsModalOpen(true);
   };
@@ -98,11 +138,19 @@ export default function Products() {
         searchKeywords: formData.searchKeywords ? formData.searchKeywords.split(',').map((s:any)=>s.trim()) : [],
       };
 
-      await fetchWithAuth('/products', {
-        method: 'POST',
-        body: JSON.stringify(payload),
-      });
-      toast.success('Product created');
+      if (editingId) {
+        await fetchWithAuth(`/products/${editingId}`, {
+          method: 'PATCH',
+          body: JSON.stringify(payload),
+        });
+        toast.success('Product updated');
+      } else {
+        await fetchWithAuth('/products', {
+          method: 'POST',
+          body: JSON.stringify(payload),
+        });
+        toast.success('Product created');
+      }
       setIsModalOpen(false);
       loadProducts();
     } catch (e: any) {
@@ -151,43 +199,53 @@ export default function Products() {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
-            {products.map((p) => (
-              <tr key={p._id} className="hover:bg-slate-50/50 transition-colors group">
-                <td className="px-6 py-4">
-                  {p.mainImage ? (
-                    <img src={p.mainImage} alt={p.name} className="w-12 h-12 object-cover rounded-xl border border-slate-200 shadow-sm" />
-                  ) : (
-                    <div className="w-12 h-12 bg-slate-100 rounded-xl border border-slate-200 flex items-center justify-center text-slate-400 shadow-sm">
-                      <ImageIcon className="w-5 h-5" />
+            <AnimatePresence>
+              {products.map((p, idx) => (
+                <motion.tr 
+                  key={p._id} 
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, x: -10 }}
+                  transition={{ delay: idx % 10 * 0.05 }}
+                  className="hover:bg-slate-50/50 transition-colors group"
+                >
+                  <td className="px-6 py-4">
+                    {p.mainImage ? (
+                      <img src={p.mainImage} alt={p.name} className="w-12 h-12 object-cover rounded-xl border border-slate-200 shadow-sm" />
+                    ) : (
+                      <div className="w-12 h-12 bg-slate-100 rounded-xl border border-slate-200 flex items-center justify-center text-slate-400 shadow-sm">
+                        <ImageIcon className="w-5 h-5" />
+                      </div>
+                    )}
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="font-bold text-slate-900 line-clamp-1">{p.name}</div>
+                    <div className="text-xs uppercase font-semibold text-slate-500 mt-1 tracking-wider">{p.category} {p.brand ? `• ${p.brand}` : ''}</div>
+                  </td>
+                  <td className="px-6 py-4 font-mono text-xs text-slate-600 tracking-tight bg-slate-50/50 rounded-lg">{p.sku}</td>
+                  <td className="px-6 py-4 text-right">
+                    <div className="font-bold text-slate-900 text-base">{formatAmount(p.price)}</div>
+                    {p.discount > 0 && <div className="text-xs text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded-md inline-block mt-1">-{p.discount}%</div>}
+                  </td>
+                  <td className="px-6 py-4 text-right">
+                    <span className={`px-3 py-1 rounded-full text-xs font-bold tracking-wider uppercase border inline-flex items-center justify-center gap-1.5 ${p.stockCount <= (p.lowStockThreshold || 5) ? 'bg-rose-50 text-rose-700 border-rose-100 animate-pulse' : p.stockCount < 20 ? 'bg-amber-50 text-amber-700 border-amber-100' : 'bg-emerald-50 text-emerald-700 border-emerald-100'}`}>
+                      {p.stockCount <= (p.lowStockThreshold || 5) && <AlertTriangle className="w-3.5 h-3.5" />}
+                      {p.stockCount} {t('in_stock')}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 text-right">
+                     <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button onClick={() => handleEdit(p)} className="w-8 h-8 rounded-lg bg-white border border-slate-200 text-slate-400 hover:text-indigo-600 hover:border-indigo-200 flex items-center justify-center transition-all shadow-sm">
+                        <Edit2 className="w-4 h-4" />
+                      </button>
+                      <button onClick={() => handleDelete(p._id)} className="w-8 h-8 rounded-lg bg-white border border-slate-200 text-slate-400 hover:text-rose-600 hover:border-rose-200 flex items-center justify-center transition-all shadow-sm">
+                        <Trash2 className="w-4 h-4" />
+                      </button>
                     </div>
-                  )}
-                </td>
-                <td className="px-6 py-4">
-                  <div className="font-bold text-slate-900 line-clamp-1">{p.name}</div>
-                  <div className="text-xs uppercase font-semibold text-slate-500 mt-1 tracking-wider">{p.category} {p.brand ? `• ${p.brand}` : ''}</div>
-                </td>
-                <td className="px-6 py-4 font-mono text-xs text-slate-600 tracking-tight bg-slate-50/50 rounded-lg">{p.sku}</td>
-                <td className="px-6 py-4 text-right">
-                  <div className="font-bold text-slate-900 text-base">{formatAmount(p.price)}</div>
-                  {p.discount > 0 && <div className="text-xs text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded-md inline-block mt-1">-{p.discount}%</div>}
-                </td>
-                <td className="px-6 py-4 text-right">
-                  <span className={`px-3 py-1 rounded-full text-xs font-bold tracking-wider uppercase border ${p.stockCount < 5 ? 'bg-rose-50 text-rose-700 border-rose-100' : p.stockCount < 20 ? 'bg-amber-50 text-amber-700 border-amber-100' : 'bg-emerald-50 text-emerald-700 border-emerald-100'}`}>
-                    {p.stockCount} {t('in_stock')}
-                  </span>
-                </td>
-                <td className="px-6 py-4 text-right">
-                   <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button className="w-8 h-8 rounded-lg bg-white border border-slate-200 text-slate-400 hover:text-indigo-600 hover:border-indigo-200 flex items-center justify-center transition-all shadow-sm">
-                      <Edit2 className="w-4 h-4" />
-                    </button>
-                    <button onClick={() => handleDelete(p._id)} className="w-8 h-8 rounded-lg bg-white border border-slate-200 text-slate-400 hover:text-rose-600 hover:border-rose-200 flex items-center justify-center transition-all shadow-sm">
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
+                  </td>
+                </motion.tr>
+              ))}
+            </AnimatePresence>
             {products.length === 0 && !loading && (
               <tr><td colSpan={6} className="px-6 py-12 text-center text-slate-500 font-medium">No products found. Add your first product!</td></tr>
             )}
@@ -196,12 +254,18 @@ export default function Products() {
         </table>
       </div>
 
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-slate-900/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
+      <AnimatePresence>
+        {isModalOpen && (
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <motion.div 
+              initial={{ scale: 0.95, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 10 }}
+              className="bg-white rounded-3xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden border border-slate-200"
+            >
             <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
               <h2 className="text-sm font-bold uppercase tracking-wider text-slate-900 flex items-center gap-2">
-                <Box className="w-4 h-4 text-indigo-500" /> {t('setup_new_product')}
+                <Box className="w-4 h-4 text-indigo-500" /> {editingId ? t('edit_product') : t('setup_new_product')}
               </h2>
               <button type="button" onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-700 p-1">
                 <X className="w-4 h-4" />
@@ -247,11 +311,26 @@ export default function Products() {
                       <div className="grid grid-cols-2 gap-4">
                         <div>
                           <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Category <span className="text-rose-500">*</span></label>
-                          <input required type="text" name="category" value={formData.category} onChange={handleChange} className="w-full border border-slate-200 rounded px-3 py-2 text-sm outline-none focus:border-indigo-500" placeholder="e.g. Clothing / Men" />
+                          <select required name="category" value={formData.category} onChange={handleChange} className="w-full border border-slate-200 rounded px-3 py-2 text-sm outline-none focus:border-indigo-500">
+                            <option value="">Select Category</option>
+                            {Object.entries(t('categories', { returnObjects: true })).map(([key, value]: [string, any]) => (
+                              <option key={key} value={value}>{value}</option>
+                            ))}
+                          </select>
                         </div>
                         <div>
                           <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Brand Name</label>
                           <input type="text" name="brand" value={formData.brand} onChange={handleChange} className="w-full border border-slate-200 rounded px-3 py-2 text-sm outline-none focus:border-indigo-500" placeholder="e.g. Acme" />
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">SKU</label>
+                          <input type="text" name="sku" value={formData.sku} onChange={handleChange} className="w-full border border-slate-200 rounded px-3 py-2 text-sm outline-none focus:border-indigo-500 font-mono" />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Barcode</label>
+                          <input type="text" name="barcode" value={formData.barcode} onChange={handleChange} className="w-full border border-slate-200 rounded px-3 py-2 text-sm outline-none focus:border-indigo-500 font-mono" placeholder="Scan or type" />
                         </div>
                       </div>
                       <div>
@@ -290,6 +369,10 @@ export default function Products() {
                         <div>
                           <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Stock Quantity</label>
                           <input type="number" min="0" name="stockCount" value={formData.stockCount} onChange={handleChange} className="w-full border border-slate-200 rounded px-3 py-2 text-sm outline-none focus:border-indigo-500 font-mono" />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">{t('low_stock_threshold')}</label>
+                          <input type="number" min="0" name="lowStockThreshold" value={formData.lowStockThreshold} onChange={handleChange} className="w-full border border-slate-200 rounded px-3 py-2 text-sm outline-none focus:border-indigo-500 font-mono" />
                         </div>
                         <div>
                           <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">SKU / Code <span className="text-rose-500">*</span></label>
@@ -426,11 +509,14 @@ export default function Products() {
 
             <div className="p-4 border-t border-slate-100 flex justify-end gap-2 bg-slate-50 shrink-0">
               <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-xs font-bold text-slate-600 uppercase border border-transparent hover:bg-slate-200 rounded">{t('cancel')}</button>
-              <button type="submit" form="productForm" className="px-6 py-2 text-xs font-bold text-white uppercase bg-indigo-600 rounded hover:bg-indigo-700 shadow-md">{t('submit_product')}</button>
+              <button type="submit" form="productForm" className="px-6 py-2 text-xs font-bold text-white uppercase bg-indigo-600 rounded hover:bg-indigo-700 shadow-md">
+                {editingId ? t('save_changes') : t('submit_product')}
+              </button>
             </div>
-          </div>
+          </motion.div>
         </div>
       )}
+    </AnimatePresence>
     </div>
   );
 }

@@ -18,6 +18,16 @@ import Customers from './pages/Customers';
 import Warehouses from './pages/Warehouses';
 import SellersDirectory from './pages/SellersDirectory';
 import SellerProfile from './pages/SellerProfile';
+import Reports from './pages/Reports';
+import Vendors from './pages/Vendors';
+import HR from './pages/HR';
+import Expenses from './pages/Expenses';
+import Quotations from './pages/Quotations';
+import Manufacturing from './pages/Manufacturing';
+import Returns from './pages/Returns';
+import PurchaseOrders from './pages/PurchaseOrders';
+import Marketing from './pages/Marketing';
+import Delivery from './pages/Delivery';
 import { Toaster } from 'sonner';
 
 export default function App() {
@@ -35,9 +45,19 @@ export default function App() {
               <Route path="services" element={<Services />} />
               <Route path="inventory" element={<Inventory />} />
               <Route path="invoices" element={<Invoices />} />
+              <Route path="reports" element={<Reports />} />
               <Route path="accounts" element={<Accounts />} />
               <Route path="users" element={<Users />} />
               <Route path="customers" element={<Customers />} />
+              <Route path="vendors" element={<Vendors />} />
+              <Route path="hr" element={<HR />} />
+              <Route path="expenses" element={<Expenses />} />
+              <Route path="quotations" element={<Quotations />} />
+              <Route path="returns" element={<Returns />} />
+              <Route path="purchase-orders" element={<PurchaseOrders />} />
+              <Route path="marketing" element={<Marketing />} />
+              <Route path="delivery" element={<Delivery />} />
+              <Route path="manufacturing" element={<Manufacturing />} />
               <Route path="warehouses" element={<Warehouses />} />
               <Route path="sellers" element={<SellersDirectory />} />
               <Route path="sellers/:id" element={<SellerProfile />} />

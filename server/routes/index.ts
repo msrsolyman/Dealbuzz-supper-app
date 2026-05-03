@@ -17,6 +17,18 @@ import AuditLog from '../models/AuditLog.js';
 import Warehouse from '../models/Warehouse.js';
 import Customer from '../models/Customer.js';
 import Review from '../models/Review.js';
+import Vendor from '../models/Vendor.js';
+import PurchaseOrder from '../models/PurchaseOrder.js';
+import Attendance from '../models/Attendance.js';
+import Leave from '../models/Leave.js';
+import Payroll from '../models/Payroll.js';
+import Expense from '../models/Expense.js';
+import Quotation from '../models/Quotation.js';
+import Return from '../models/Return.js';
+import Coupon from '../models/Coupon.js';
+import ManufacturingOrder from '../models/ManufacturingOrder.js';
+import SalesTarget from '../models/SalesTarget.js';
+import Campaign from '../models/Campaign.js';
 
 const router = express.Router();
 
@@ -31,6 +43,15 @@ router.get('/sellers', authenticate, async (req: any, res: any) => {
     }).select('-password');
     res.json({ data: sellers });
   } catch (e: any) { res.status(500).json({ error: e.message }); }
+});
+
+router.put('/sellers/:id', authenticate, auditLog('User'), async (req: any, res: any) => {
+  try {
+    const q = { _id: req.params.id, tenantId: req.tenantId };
+    const doc = await (User as any).findOneAndUpdate(q, req.body, { new: true }).select('-password');
+    if (!doc) return res.status(404).json({ error: 'Not found' });
+    res.json(doc);
+  } catch (e: any) { res.status(400).json({ error: e.message }); }
 });
 
 router.post('/auth/register', register);
@@ -70,7 +91,11 @@ const generateCrud = (model: any, collectionName: string) => {
 
   r.post('/', async (req: any, res: any) => {
     try {
-      const doc = await model.create({ ...req.body, tenantId: req.tenantId });
+      const data = { ...req.body, tenantId: req.tenantId };
+      if (['product_seller', 'service_seller', 'reseller'].includes(req.user?.role) && !data.sellerId) {
+         data.sellerId = req.user._id;
+      }
+      const doc = await model.create(data);
       res.status(201).json(doc);
     } catch (e: any) { res.status(400).json({ error: e.message }); }
   });
@@ -113,13 +138,83 @@ router.use('/accounting-transactions', generateCrud(AccountingTransaction, 'Acco
 router.use('/warehouses', generateCrud(Warehouse, 'Warehouse'));
 router.use('/customers', generateCrud(Customer, 'Customer'));
 router.use('/reviews', generateCrud(Review, 'Review'));
+router.use('/vendors', generateCrud(Vendor, 'Vendor'));
+router.post('/purchase-orders/:id/receive', authenticate, auditLog('PurchaseOrder'), async (req: any, res: any) => {
+  try {
+    const po = await (PurchaseOrder as any).findOne({ _id: req.params.id, tenantId: req.tenantId });
+    if (!po) return res.status(404).json({ error: 'Not found' });
+    if (po.status === 'RECEIVED') return res.status(400).json({ error: 'Already received' });
+
+    for (const item of po.items) {
+      if (po.warehouseId) {
+        // Find product, add to warehouseStock
+        const prod = await (Product as any).findById(item.productId);
+        if (prod) {
+          const wStock = prod.warehouseStock.find((w: any) => w.warehouseId.toString() === po.warehouseId.toString());
+          if (wStock) wStock.stockCount += item.quantity;
+          else prod.warehouseStock.push({ warehouseId: po.warehouseId, stockCount: item.quantity });
+          prod.stockCount += item.quantity;
+          await prod.save();
+        }
+      } else {
+        await (Product as any).findByIdAndUpdate(item.productId, { $inc: { stockCount: item.quantity } });
+      }
+    }
+    po.status = 'RECEIVED';
+    await po.save();
+    res.json(po);
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+router.use('/purchase-orders', generateCrud(PurchaseOrder, 'PurchaseOrder'));
+router.use('/attendances', generateCrud(Attendance, 'Attendance'));
+router.use('/leaves', generateCrud(Leave, 'Leave'));
+router.use('/payrolls', generateCrud(Payroll, 'Payroll'));
+router.use('/expenses', generateCrud(Expense, 'Expense'));
+router.use('/quotations', generateCrud(Quotation, 'Quotation'));
+
+router.post('/returns/:id/complete', authenticate, auditLog('Return'), async (req: any, res: any) => {
+  try {
+     const returnDoc = await (Return as any).findOne({ _id: req.params.id, tenantId: req.tenantId });
+     if (!returnDoc) return res.status(404).json({error: 'Not found'});
+     if (returnDoc.status === 'COMPLETED') return res.status(400).json({error: 'Already completed'});
+     
+     // Stock adjustment
+     for (const item of returnDoc.items) {
+        if (item.condition === 'GOOD') {
+           await (Product as any).findByIdAndUpdate(item.productId, { $inc: { stockCount: item.quantity } });
+        } else {
+           await (Product as any).findByIdAndUpdate(item.productId, { $inc: { damagedStock: item.quantity } });
+        }
+     }
+     
+     returnDoc.status = 'COMPLETED';
+     await returnDoc.save();
+     res.json(returnDoc);
+  } catch (e: any) {
+     res.status(500).json({ error: e.message });
+  }
+});
+
+router.use('/returns', generateCrud(Return, 'Return'));
+router.use('/coupons', generateCrud(Coupon, 'Coupon'));
+router.use('/manufacturing-orders', generateCrud(ManufacturingOrder, 'ManufacturingOrder'));
+router.use('/campaigns', generateCrud(Campaign, 'Campaign'));
+
+router.use('/sales-targets', generateCrud(SalesTarget, 'SalesTarget'));
 
 // --- Invoice with special logic ---
 const invoiceRouter = express.Router();
 invoiceRouter.use(auditLog('Invoice'));
 invoiceRouter.get('/', async (req: any, res: any) => {
   try {
-    const invoices = await (Invoice as any).find({ tenantId: req.tenantId, isDeleted: false }).populate('customerId');
+    const query: any = { tenantId: req.tenantId, isDeleted: false };
+    if (req.user?.role === 'customer') {
+      query.customerId = req.user._id;
+    }
+    const invoices = await (Invoice as any).find(query).populate('customerId');
     res.json({ data: invoices });
   } catch (e: any) { 
     console.error("INV ERROR:", e);

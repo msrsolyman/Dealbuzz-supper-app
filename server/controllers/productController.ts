@@ -29,7 +29,14 @@ export const createProduct = async (req: AuthRequest, res: Response) => {
     if (!sku) {
       sku = 'PRD-' + Date.now().toString().slice(-6) + Math.random().toString(36).substring(2, 5).toUpperCase();
     }
-    const product = await Product.create({ ...req.body, sku, tenantId: req.tenantId });
+    const productData = { ...req.body, sku, tenantId: req.tenantId };
+    
+    // Automatically assign sellerId if created by a seller and not explicitly provided
+    if (!productData.sellerId && req.user && ['product_seller', 'service_seller', 'reseller'].includes(req.user.role)) {
+      productData.sellerId = req.user._id;
+    }
+
+    const product = await Product.create(productData);
     res.status(201).json(product);
   } catch (error: any) {
     res.status(400).json({ error: error.message });

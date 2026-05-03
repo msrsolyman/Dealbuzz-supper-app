@@ -2,6 +2,7 @@ import mongoose, { Document, Schema } from 'mongoose';
 
 export interface IProduct extends Document {
   tenantId: mongoose.Types.ObjectId;
+  sellerId?: mongoose.Types.ObjectId;
   name: string;
   category: string;
   brand?: string;
@@ -11,8 +12,11 @@ export interface IProduct extends Document {
   regularPrice?: number;
   discount?: number;
   stockCount: number;
+  damagedStock?: number;
+  lowStockThreshold: number;
   warehouseStock?: { warehouseId: mongoose.Types.ObjectId; stockCount: number }[];
   sku: string;
+  barcode?: string;
 
   mainImage?: string;
   galleryImages?: string[];
@@ -47,6 +51,7 @@ export interface IProduct extends Document {
 const ProductSchema = new Schema<IProduct>(
   {
     tenantId: { type: Schema.Types.ObjectId, ref: 'Tenant', required: true, index: true },
+    sellerId: { type: Schema.Types.ObjectId, ref: 'User', index: true },
     name: { type: String, required: [true, 'Product name is required'] },
     category: { type: String, required: true },
     brand: { type: String },
@@ -56,11 +61,14 @@ const ProductSchema = new Schema<IProduct>(
     regularPrice: { type: Number, min: 0 },
     discount: { type: Number, min: 0, max: 100 },
     stockCount: { type: Number, default: 0 },
+    damagedStock: { type: Number, default: 0 },
+    lowStockThreshold: { type: Number, default: 5 },
     warehouseStock: [{
       warehouseId: { type: Schema.Types.ObjectId, ref: 'Warehouse' },
       stockCount: { type: Number, default: 0 }
     }],
     sku: { type: String, required: true, unique: true },
+    barcode: { type: String, index: true },
 
     mainImage: { type: String },
     galleryImages: [{ type: String }],

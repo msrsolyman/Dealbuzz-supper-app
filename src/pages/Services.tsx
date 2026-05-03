@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { fetchWithAuth } from '../lib/api';
 import { toast } from 'sonner';
 import { Plus, Edit2, Trash2, X, Tags, Image as ImageIcon, FileText, Clock, Search, Shield, Settings2, Box, Zap, MapPin } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { useSettings } from '../context/SettingsContext';
 
 const TABS = [
   { id: 'basic', label: 'Basic Info', icon: FileText },
@@ -14,6 +16,8 @@ const TABS = [
 ];
 
 export default function Services() {
+  const { t } = useTranslation();
+  const { currency, formatAmount } = useSettings();
   const [services, setServices] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -170,7 +174,7 @@ export default function Services() {
                   <div className="text-xs uppercase font-semibold text-slate-500 mt-1 tracking-wider">{s.category} {s.providerName ? `• by ${s.providerName}` : ''}</div>
                 </td>
                 <td className="px-6 py-4 text-right">
-                  <div className="font-bold text-slate-900 text-base">${s.rate.toFixed(2)}</div>
+                  <div className="font-bold text-slate-900 text-base">{formatAmount(s.rate)}</div>
                   <div className="text-[10px] text-fuchsia-600 uppercase font-bold tracking-widest mt-0.5 bg-fuchsia-50 px-2 py-0.5 rounded-md inline-block">{s.priceType.replace('_', ' ')}</div>
                 </td>
                 <td className="px-6 py-4 text-center">
@@ -247,7 +251,12 @@ export default function Services() {
                       <div className="grid grid-cols-2 gap-4">
                         <div>
                           <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Category <span className="text-rose-500">*</span></label>
-                          <input required type="text" name="category" value={formData.category} onChange={handleChange} className="w-full border border-slate-200 rounded px-3 py-2 text-sm outline-none focus:border-fuchsia-500" placeholder="e.g. Appliance Repair" />
+                          <select required name="category" value={formData.category} onChange={handleChange} className="w-full border border-slate-200 rounded px-3 py-2 text-sm outline-none focus:border-fuchsia-500 bg-white">
+                            <option value="">Select Category</option>
+                            {Object.entries(t('categories', { returnObjects: true })).map(([key, value]: [string, any]) => (
+                               <option key={key} value={value}>{value}</option>
+                            ))}
+                          </select>
                         </div>
                         <div>
                           <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Provider Name</label>
@@ -275,7 +284,7 @@ export default function Services() {
                         <div>
                           <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Base Rate / Starting Price <span className="text-rose-500">*</span></label>
                           <div className="relative">
-                            <span className="absolute left-3 top-2 text-slate-400 font-bold">$</span>
+                            <span className="absolute left-3 top-2 text-slate-400 font-bold">{currency.symbol}</span>
                             <input required type="number" min="0" step="0.01" name="rate" value={formData.rate} onChange={handleChange} className="w-full border border-slate-200 rounded pl-7 pr-3 py-2 text-sm outline-none focus:border-fuchsia-500 font-mono" />
                           </div>
                         </div>

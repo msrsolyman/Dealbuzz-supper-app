@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { fetchWithAuth } from '../lib/api';
-import { Plus, Edit2, Trash2, ArrowRightLeft } from 'lucide-react';
+import { Plus, Edit2, Trash2, ArrowRightLeft, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 
 export default function Inventory() {
+  const { t } = useTranslation();
   const [inventory, setInventory] = useState<any[]>([]);
   const [warehouses, setWarehouses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -83,7 +85,8 @@ export default function Inventory() {
                 <td className="px-6 py-4 font-bold text-slate-900">{item.name}</td>
                 <td className="px-6 py-4 font-mono text-xs text-slate-600 bg-slate-50/50 rounded-lg">{item.sku}</td>
                 <td className="px-6 py-4 text-right">
-                  <span className={`px-3 py-1 rounded-full text-xs font-bold tracking-wider uppercase border ${item.stockCount < 10 ? 'bg-amber-50 text-amber-700 border-amber-100' : 'bg-slate-50 text-slate-700 border-slate-200'}`}>
+                  <span className={`px-3 py-1 rounded-full text-xs font-bold tracking-wider uppercase border ${item.stockCount <= (item.lowStockThreshold || 5) ? 'bg-rose-50 text-rose-700 border-rose-100 animate-pulse flex items-center justify-center gap-1 shadow-sm' : item.stockCount < 20 ? 'bg-amber-50 text-amber-700 border-amber-100' : 'bg-slate-50 text-slate-700 border-slate-200'}`}>
+                    {item.stockCount <= (item.lowStockThreshold || 5) && <AlertTriangle className="w-3 h-3" />}
                     {item.stockCount}
                   </span>
                 </td>

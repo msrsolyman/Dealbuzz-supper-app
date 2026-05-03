@@ -2,6 +2,7 @@ import mongoose, { Document, Schema } from 'mongoose';
 
 export interface IService extends Document {
   tenantId: mongoose.Types.ObjectId;
+  sellerId?: mongoose.Types.ObjectId;
   name: string; // Service Name
   category: string;
   providerName?: string;
@@ -57,6 +58,7 @@ export interface IService extends Document {
 const ServiceSchema = new Schema<IService>(
   {
     tenantId: { type: Schema.Types.ObjectId, ref: 'Tenant', required: true, index: true },
+    sellerId: { type: Schema.Types.ObjectId, ref: 'User', index: true },
     name: { type: String, required: [true, 'Service name is required'] },
     category: { type: String, required: true },
     providerName: { type: String },

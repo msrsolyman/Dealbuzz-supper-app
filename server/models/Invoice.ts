@@ -19,6 +19,14 @@ export interface IInvoice extends Document {
   total: number;
   status: 'DRAFT' | 'SENT' | 'PAID' | 'VOID';
   dueDate: Date;
+  
+  // New features
+  deliveryStatus?: 'PENDING' | 'PROCESSING' | 'SHIPPED' | 'DELIVERED';
+  trackingLink?: string;
+  paymentMethod?: string; // Stripe, bKash, SSLCommerz, Cash, etc.
+  isRecurring?: boolean;
+  recurringInterval?: 'MONTHLY' | 'YEARLY' | 'WEEKLY';
+  
   isDeleted: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -36,7 +44,7 @@ const InvoiceItemSchema = new Schema<IInvoiceItem>({
 const InvoiceSchema = new Schema<IInvoice>(
   {
     tenantId: { type: Schema.Types.ObjectId, ref: 'Tenant', required: true, index: true },
-    customerId: { type: Schema.Types.ObjectId, ref: 'Customer', index: true },
+    customerId: { type: Schema.Types.ObjectId, ref: 'User', index: true },
     invoiceNumber: { type: String, required: true },
     items: [InvoiceItemSchema],
     subtotal: { type: Number, required: true, min: 0 },
@@ -44,6 +52,13 @@ const InvoiceSchema = new Schema<IInvoice>(
     total: { type: Number, required: true, min: 0 },
     status: { type: String, enum: ['DRAFT', 'SENT', 'PAID', 'VOID'], default: 'DRAFT' },
     dueDate: { type: Date, required: true },
+    
+    deliveryStatus: { type: String, enum: ['PENDING', 'PROCESSING', 'SHIPPED', 'DELIVERED'], default: 'PENDING' },
+    trackingLink: { type: String },
+    paymentMethod: { type: String },
+    isRecurring: { type: Boolean, default: false },
+    recurringInterval: { type: String, enum: ['WEEKLY', 'MONTHLY', 'YEARLY'] },
+    
     isDeleted: { type: Boolean, default: false }
   },
   { timestamps: true }
