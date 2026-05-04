@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router';
-import { LayoutDashboard, Package, Users, FileText, Settings, LogOut, ArrowLeftRight, Archive, Shield, X, Store, ShoppingCart, Globe, Coins, BarChart3, Truck, Briefcase, RotateCcw, Megaphone, Truck as TruckDelivery } from 'lucide-react';
+import { LayoutDashboard, Package, Users, FileText, Settings, LogOut, ArrowLeftRight, Archive, Shield, X, Store, ShoppingCart, Globe, Coins, BarChart3, Truck, Briefcase, RotateCcw, Megaphone, Truck as TruckDelivery, MessageSquare, ListTodo } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTranslation } from 'react-i18next';
 import { useSettings } from '../context/SettingsContext';
@@ -15,10 +15,12 @@ export default function Sidebar({ isOpen, setIsOpen }: { isOpen: boolean, setIsO
   ];
 
   if (user?.role === 'customer') {
+    navItems.push({ name: 'Shop Online', path: '/storefront', icon: ShoppingCart });
     navItems.push({ name: t('products'), path: '/products', icon: Package });
     navItems.push({ name: t('services'), path: '/services', icon: Settings });
     navItems.push({ name: t('sellers_directory'), path: '/sellers', icon: Store });
     navItems.push({ name: 'My Invoices', path: '/invoices', icon: FileText });
+    navItems.push({ name: 'Support', path: '/support', icon: MessageSquare });
   } else {
     // product_seller, service_seller, reseller, super_admin, admin
     if (['super_admin', 'admin', 'product_seller', 'reseller'].includes(user?.role || '')) {
@@ -31,6 +33,8 @@ export default function Sidebar({ isOpen, setIsOpen }: { isOpen: boolean, setIsO
     navItems.push({ name: t('pos'), path: '/pos', icon: ShoppingCart });
     navItems.push({ name: t('customers'), path: '/customers', icon: Users });
     navItems.push({ name: 'Vendors', path: '/vendors', icon: Truck });
+    navItems.push({ name: 'Tasks', path: '/tasks', icon: ListTodo });
+    navItems.push({ name: 'Support', path: '/support', icon: MessageSquare });
     navItems.push({ name: 'Purchase Orders', path: '/purchase-orders', icon: FileText });
     navItems.push({ name: t('invoices'), path: '/invoices', icon: FileText });
     navItems.push({ name: 'Delivery', path: '/delivery', icon: TruckDelivery });
@@ -48,7 +52,7 @@ export default function Sidebar({ isOpen, setIsOpen }: { isOpen: boolean, setIsO
     }
 
     
-    navItems.push({ name: t('profile_store'), path: '/storefront', icon: Store });
+    navItems.push({ name: t('profile_store'), path: '/storefront-config', icon: Store });
     
     if (['super_admin', 'admin'].includes(user?.role || '')) {
       navItems.push({ name: t('users'), path: '/users', icon: Shield });

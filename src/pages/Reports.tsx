@@ -30,13 +30,15 @@ export default function Reports() {
     try {
       // In a real app we would have dedicated reporting endpoints.
       // Here we will fetch products and invoices and aggregate on client side.
-      const [productsRes, invoicesRes] = await Promise.all([
+      const [productsRes, invoicesRes, accountsRes] = await Promise.all([
         fetchWithAuth('/products?limit=1000'),
-        fetchWithAuth('/invoices?limit=1000')
+        fetchWithAuth('/invoices?limit=1000'),
+        fetchWithAuth('/accounts?')
       ]);
 
       const products = productsRes.data || [];
       const invoices = invoicesRes.data || [];
+      const accounts = accountsRes.data || [];
 
       // 1. Sales by category
       // Calculate from invoice items that match products
@@ -90,12 +92,29 @@ export default function Reports() {
         };
       });
 
+      // 5. Balance Sheet
+      const assets = accounts.filter((a: any) => a.type === 'ASSET');
+      const liabilities = accounts.filter((a: any) => a.type === 'LIABILITY');
+      const equity = accounts.filter((a: any) => a.type === 'EQUITY');
+
+      const totalAssets = assets.reduce((sum: number, a: any) => sum + a.balance, 0);
+      const totalLiabilities = liabilities.reduce((sum: number, a: any) => sum + a.balance, 0);
+      const totalEquity = equity.reduce((sum: number, a: any) => sum + a.balance, 0);
+
       setData({
         salesByCategory: Object.keys(categorySales).map(k => ({ name: k, value: categorySales[k] })),
         monthlyRevenue: Object.keys(monthlyData).map(k => ({ month: k, revenue: monthlyData[k] })),
         inventoryValuation: totalValuation,
         inventoryByCategory: Object.keys(invByCategory).map(k => ({ name: k, value: invByCategory[k] })),
-        profitAndLoss: pnl
+        profitAndLoss: pnl,
+        balanceSheet: {
+          assets,
+          liabilities,
+          equity,
+          totalAssets,
+          totalLiabilities,
+          totalEquity
+        }
       });
     } catch (e) {
       console.error(e);
@@ -140,6 +159,12 @@ export default function Reports() {
           className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${reportType === 'profit' ? 'bg-white text-indigo-600 shadow-sm border border-slate-200' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'}`}
         >
           <BarChart3 className="w-4 h-4" /> Profit & Loss
+        </button>
+        <button 
+          onClick={() => setReportType('balanceSheet')}
+          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${reportType === 'balanceSheet' ? 'bg-white text-indigo-600 shadow-sm border border-slate-200' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'}`}
+        >
+          <FileText className="w-4 h-4" /> Balance Sheet
         </button>
       </div>
 
@@ -307,6 +332,82 @@ export default function Reports() {
                  </div>
               </div>
             </>
+          )}
+
+          {reportType === 'balanceSheet' && data.balanceSheet && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Assets & Liabilities */}
+              <div className="space-y-6">
+                <div className="bg-white border border-slate-200/60 rounded-[2rem] overflow-hidden shadow-sm">
+                  <div className="p-6 border-b border-slate-100 bg-sky-50 flex justify-between items-center">
+                    <h3 className="font-display font-black text-sky-900 uppercase tracking-tight">Assets</h3>
+                    <div className="text-xl font-mono font-black text-sky-700">{formatAmount(data.balanceSheet.totalAssets)}</div>
+                  </div>
+                  <div className="p-6 space-y-4">
+                    {data.balanceSheet.assets.map((a: any) => (
+                      <div key={a._id} className="flex justify-between items-center">
+                        <span className="text-sm font-bold text-slate-700">{a.name}</span>
+                        <span className="text-sm font-mono font-bold text-slate-900">{formatAmount(a.balance)}</span>
+                      </div>
+                    ))}
+                    {data.balanceSheet.assets.length === 0 && <p className="text-xs text-slate-400">No asset accounts.</p>}
+                  </div>
+                </div>
+
+                <div className="bg-white border border-slate-200/60 rounded-[2rem] overflow-hidden shadow-sm">
+                  <div className="p-6 border-b border-slate-100 bg-rose-50 flex justify-between items-center">
+                    <h3 className="font-display font-black text-rose-900 uppercase tracking-tight">Liabilities</h3>
+                    <div className="text-xl font-mono font-black text-rose-700">{formatAmount(data.balanceSheet.totalLiabilities)}</div>
+                  </div>
+                  <div className="p-6 space-y-4">
+                    {data.balanceSheet.liabilities.map((a: any) => (
+                      <div key={a._id} className="flex justify-between items-center">
+                        <span className="text-sm font-bold text-slate-700">{a.name}</span>
+                        <span className="text-sm font-mono font-bold text-slate-900">{formatAmount(a.balance)}</span>
+                      </div>
+                    ))}
+                    {data.balanceSheet.liabilities.length === 0 && <p className="text-xs text-slate-400">No liability accounts.</p>}
+                  </div>
+                </div>
+              </div>
+
+              {/* Equity & Summary */}
+              <div className="space-y-6">
+                <div className="bg-white border border-slate-200/60 rounded-[2rem] overflow-hidden shadow-sm">
+                  <div className="p-6 border-b border-slate-100 bg-emerald-50 flex justify-between items-center">
+                    <h3 className="font-display font-black text-emerald-900 uppercase tracking-tight">Equity</h3>
+                    <div className="text-xl font-mono font-black text-emerald-700">{formatAmount(data.balanceSheet.totalEquity)}</div>
+                  </div>
+                  <div className="p-6 space-y-4">
+                    {data.balanceSheet.equity.map((a: any) => (
+                      <div key={a._id} className="flex justify-between items-center">
+                        <span className="text-sm font-bold text-slate-700">{a.name}</span>
+                        <span className="text-sm font-mono font-bold text-slate-900">{formatAmount(a.balance)}</span>
+                      </div>
+                    ))}
+                    {data.balanceSheet.equity.length === 0 && <p className="text-xs text-slate-400">No equity accounts.</p>}
+                  </div>
+                </div>
+
+                <div className="bg-slate-900 rounded-[2rem] p-8 text-white shadow-xl relative overflow-hidden flex flex-col justify-center min-h-[160px]">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-2xl pointer-events-none"></div>
+                  <div className="flex justify-between items-center mb-4">
+                     <span className="text-xs font-black uppercase tracking-widest text-slate-400">Total Assets</span>
+                     <span className="text-lg font-mono font-bold text-sky-400">{formatAmount(data.balanceSheet.totalAssets)}</span>
+                  </div>
+                  <div className="flex justify-between items-center mb-4">
+                     <span className="text-xs font-black uppercase tracking-widest text-slate-400">Total L + E</span>
+                     <span className="text-lg font-mono font-bold text-fuchsia-400">{formatAmount(data.balanceSheet.totalLiabilities + data.balanceSheet.totalEquity)}</span>
+                  </div>
+                  <div className="pt-4 border-t border-slate-800 flex justify-between items-center">
+                     <span className="text-sm font-black uppercase tracking-widest text-white">Equation Match</span>
+                     <span className={`text-sm font-black uppercase tracking-widest ${data.balanceSheet.totalAssets === (data.balanceSheet.totalLiabilities + data.balanceSheet.totalEquity) ? 'text-emerald-500' : 'text-rose-500'}`}>
+                        {data.balanceSheet.totalAssets === (data.balanceSheet.totalLiabilities + data.balanceSheet.totalEquity) ? 'BALANCED' : 'IMBALANCED'}
+                     </span>
+                  </div>
+                </div>
+              </div>
+            </div>
           )}
 
         </div>

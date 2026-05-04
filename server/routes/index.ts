@@ -30,6 +30,9 @@ import ManufacturingOrder from '../models/ManufacturingOrder.js';
 import SalesTarget from '../models/SalesTarget.js';
 import Campaign from '../models/Campaign.js';
 
+import Ticket from '../models/Ticket.js';
+import Task from '../models/Task.js';
+
 const router = express.Router();
 
 // --- Custom auth-related routes ---
@@ -204,6 +207,8 @@ router.use('/manufacturing-orders', generateCrud(ManufacturingOrder, 'Manufactur
 router.use('/campaigns', generateCrud(Campaign, 'Campaign'));
 
 router.use('/sales-targets', generateCrud(SalesTarget, 'SalesTarget'));
+router.use('/tickets', generateCrud(Ticket, 'Ticket'));
+router.use('/tasks', generateCrud(Task, 'Task'));
 
 // --- Invoice with special logic ---
 const invoiceRouter = express.Router();

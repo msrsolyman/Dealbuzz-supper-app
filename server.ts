@@ -5,6 +5,7 @@ import path from 'path';
 import cors from 'cors';
 import { connectDB } from './server/utils/db.js';
 import apiRoutes from './server/routes/index.js';
+import Invoice from './server/models/Invoice.js';
 
 async function startServer() {
   const app = express();
@@ -17,6 +18,31 @@ async function startServer() {
 
   // Connect to Database
   await connectDB();
+
+  // Simulated Auto-reminder Cron Job (runs every minute in dev)
+  setInterval(async () => {
+    try {
+       const today = new Date();
+       const pdInvoices = await Invoice.find({ 
+         status: { $ne: 'PAID' }, 
+         dueDate: { $lt: today }, 
+         isDeleted: false 
+       }).populate('customerId');
+       
+       if (pdInvoices.length > 0) {
+         console.log(`[Auto-Reminder] Found ${pdInvoices.length} due invoices. Sending SMS/Email to customers...`);
+         for(const inv of pdInvoices) {
+            const customer: any = inv.customerId;
+            if (customer) {
+               // Pseudo send-sms
+               console.log(` -> SMS Sent to ${customer.phone || customer.email} for Invoice ${inv.invoiceNumber} (Amount: ${inv.total})`);
+            }
+         }
+       }
+    } catch (e) {
+      //
+    }
+  }, 60 * 1000);
 
   // API Routes
   app.use('/api', apiRoutes);

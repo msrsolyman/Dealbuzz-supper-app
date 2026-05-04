@@ -13,6 +13,7 @@ import Inventory from './pages/Inventory';
 import Accounts from './pages/Accounts';
 import Users from './pages/Users';
 import StorefrontProfile from './pages/StorefrontProfile';
+import Storefront from './pages/Storefront';
 import POS from './pages/POS';
 import Customers from './pages/Customers';
 import Warehouses from './pages/Warehouses';
@@ -27,6 +28,8 @@ import Manufacturing from './pages/Manufacturing';
 import Returns from './pages/Returns';
 import PurchaseOrders from './pages/PurchaseOrders';
 import Marketing from './pages/Marketing';
+import Support from './pages/Support';
+import Tasks from './pages/Tasks';
 import Delivery from './pages/Delivery';
 import { Toaster } from 'sonner';
 
@@ -57,11 +60,14 @@ export default function App() {
               <Route path="purchase-orders" element={<PurchaseOrders />} />
               <Route path="marketing" element={<Marketing />} />
               <Route path="delivery" element={<Delivery />} />
+              <Route path="support" element={<Support />} />
+              <Route path="tasks" element={<Tasks />} />
               <Route path="manufacturing" element={<Manufacturing />} />
               <Route path="warehouses" element={<Warehouses />} />
               <Route path="sellers" element={<SellersDirectory />} />
               <Route path="sellers/:id" element={<SellerProfile />} />
-              <Route path="storefront" element={<StorefrontProfile />} />
+              <Route path="storefront-config" element={<StorefrontProfile />} />
+              <Route path="storefront" element={<Storefront />} />
               <Route path="pos" element={<POS />} />
             </Route>
             <Route path="*" element={<Navigate to="/" replace />} />
