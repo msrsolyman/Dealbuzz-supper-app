@@ -31,6 +31,7 @@ import Marketing from './pages/marketing/Marketing';
 import Support from './pages/crm/Support';
 import Tasks from './pages/hrm/Tasks';
 import Delivery from './pages/inventory/Delivery';
+import Settings from './pages/settings/Settings';
 import { Toaster } from 'sonner';
 
 export default function App() {
@@ -49,6 +50,7 @@ export default function App() {
               <Route path="inventory" element={<Inventory />} />
               <Route path="invoices" element={<Invoices />} />
               <Route path="reports" element={<Reports />} />
+              <Route path="settings" element={<Settings />} />
               <Route path="accounts" element={<Accounts />} />
               <Route path="users" element={<Users />} />
               <Route path="customers" element={<Customers />} />

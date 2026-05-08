@@ -1,5 +1,5 @@
 import express from 'express';
-import { register, login, getMe } from '../controllers/authController.js';
+import { register, login, getMe, updateMe, updatePassword } from '../controllers/authController.js';
 import { getProducts, createProduct, updateProduct, deleteProduct } from '../controllers/productController.js';
 import { authenticate } from '../middlewares/authMiddleware.js';
 import { authorize } from '../middlewares/roleMiddleware.js';
@@ -60,6 +60,8 @@ router.put('/sellers/:id', authenticate, auditLog('User'), async (req: any, res:
 router.post('/auth/register', register);
 router.post('/auth/login', auditLog('Users'), login);
 router.get('/auth/me', authenticate, getMe);
+router.put('/auth/me', authenticate, auditLog('User'), updateMe);
+router.put('/auth/password', authenticate, auditLog('User'), updatePassword);
 
 // Middleware to use for all protected routes
 router.use(authenticate);

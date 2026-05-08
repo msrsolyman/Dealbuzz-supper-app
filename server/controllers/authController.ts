@@ -70,3 +70,46 @@ export const getMe = async (req: AuthRequest, res: Response) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+export const updateMe = async (req: AuthRequest, res: Response) => {
+  try {
+    const { name, email, profilePicture, coverPhoto, bio } = req.body;
+    const user = await (User as any).findById(req.user?._id);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    if (name) user.name = name;
+    if (email) user.email = email;
+    if (profilePicture) user.profilePicture = profilePicture;
+    if (coverPhoto) user.coverPhoto = coverPhoto;
+    if (bio) user.bio = bio;
+
+    await user.save();
+    
+    res.json({ user: { id: user._id, name: user.name, email: user.email, role: user.role, tenantId: user.tenantId, profilePicture: user.profilePicture, bio: user.bio } });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const updatePassword = async (req: AuthRequest, res: Response) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ error: 'Current and new password are required' });
+    }
+
+    const user = await (User as any).findById(req.user?._id).select('+password');
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    const isMatch = await bcrypt.compare(currentPassword, user.password!);
+    if (!isMatch) return res.status(400).json({ error: 'Invalid current password' });
+
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(newPassword, salt);
+    await user.save();
+
+    res.json({ message: 'Password updated successfully' });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+};

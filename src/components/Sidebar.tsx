@@ -21,6 +21,7 @@ export default function Sidebar({ isOpen, setIsOpen }: { isOpen: boolean, setIsO
     navItems.push({ name: t('sellers_directory'), path: '/sellers', icon: Store });
     navItems.push({ name: 'My Invoices', path: '/invoices', icon: FileText });
     navItems.push({ name: 'Support', path: '/support', icon: MessageSquare });
+    navItems.push({ name: 'Settings', path: '/settings', icon: Settings });
   } else {
     // product_seller, service_seller, reseller, super_admin, admin
     if (['super_admin', 'admin', 'product_seller', 'reseller'].includes(user?.role || '')) {
@@ -58,6 +59,9 @@ export default function Sidebar({ isOpen, setIsOpen }: { isOpen: boolean, setIsO
       navItems.push({ name: t('users'), path: '/users', icon: Shield });
       navItems.push({ name: t('audit_logs'), path: '/audit-logs', icon: Shield });
     }
+    
+    // Always add settings to all users at the end
+    navItems.push({ name: 'Settings', path: '/settings', icon: Settings });
   }
 
   return (
