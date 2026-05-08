@@ -1,12 +1,18 @@
 import mongoose from 'mongoose';
+import { MongoMemoryServer } from 'mongodb-memory-server';
+
+let mongoServer: MongoMemoryServer | null = null;
 
 export const connectDB = async () => {
-  const MONGODB_URI = process.env.MONGODB_URI;
+  let MONGODB_URI = process.env.MONGODB_URI;
   
-  if (!MONGODB_URI) {
-    console.warn('⚠️ MONGODB_URI environment variable is missing.');
-    console.warn('⚠️ Database endpoints will fail. Please supply MONGODB_URI in secrets or .env file.');
-    return;
+  if (!MONGODB_URI || MONGODB_URI.includes('<password>')) {
+    console.warn('⚠️ Invalid or missing MONGODB_URI environment variable.');
+    console.warn('⚠️ Starting a local in-memory MongoDB server for testing...');
+    if (!mongoServer) {
+        mongoServer = await MongoMemoryServer.create();
+    }
+    MONGODB_URI = mongoServer.getUri();
   }
 
   // To prevent multiple connections or warning
