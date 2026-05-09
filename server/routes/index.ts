@@ -65,6 +65,56 @@ router.put('/auth/me', authenticate, auditLog('User'), updateMe);
 router.put('/auth/password', authenticate, auditLog('User'), updatePassword);
 
 import { GoogleGenAI } from '@google/genai';
+
+router.post('/ai/generate-description', async (req: any, res: any) => {
+  try {
+    const { name, category, brand, features } = req.body;
+    
+    if (!process.env.GEMINI_API_KEY) {
+      return res.status(500).json({ error: 'Gemini API Key is not configured on the server.' });
+    }
+
+    const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+    
+    const prompt = `You are an expert copywriter. Generate compelling marketing copy for a product based on the following attributes:
+Product Name: ${name || 'Unknown'}
+Category: ${category || 'General'}
+Brand: ${brand || 'White Label'}
+Features: ${features || 'N/A'}
+
+Please provide:
+1. A concise, catchy "Short Description" (2-3 sentences max)
+2. A comprehensive "Full Description" focusing on benefits and value
+3. A list of 3 "Top Benefits"
+4. SEO "Meta Title"
+5. SEO "Meta Description" (under 160 characters)
+
+Format the exact response in strict JSON:
+{
+  "shortDescription": "...",
+  "description": "...",
+  "benefits": ["benefit 1", "benefit 2", "benefit 3"],
+  "metaTitle": "...",
+  "metaDescription": "..."
+}
+
+Do not include any markdown formatting or ticks. Just output valid JSON.`;
+
+    const response = await ai.models.generateContent({
+      model: 'gemini-3-flash-preview',
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      config: {
+        responseMimeType: 'application/json'
+      }
+    });
+
+    res.json(JSON.parse(response.text || '{}'));
+  } catch (error: any) {
+    console.error('AI Gen Error:', error);
+    res.status(500).json({ error: 'Failed to generate content.' });
+  }
+});
+
 router.post('/ai/chat', async (req: any, res: any) => {
   try {
     const { messages, userMessage, catalogContext } = req.body;
@@ -96,10 +146,45 @@ ${catalogContext}`;
       }
     });
 
-    res.json({ text: response.text || 'Sorry, I couldn\'t find a good answer.' });
+    res.json({ text: response.text || "Sorry, I couldn't find a good answer." });
   } catch (error: any) {
     console.error('AI Chat Error:', error);
     res.status(500).json({ error: 'Apologies, I encountered an issue while trying to help you. Please try again later.' });
+  }
+});
+
+router.post('/ai/seller-chat', authenticate, async (req: any, res: any) => {
+  try {
+    const { messages, userMessage } = req.body;
+    
+    if (!process.env.GEMINI_API_KEY) {
+      return res.status(500).json({ error: 'Gemini API Key is not configured on the server.' });
+    }
+
+    const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+    
+    const systemInstruction = `You are an expert AI Business Advisor for Dealbuzz merchants.
+Your goal is to guide sellers and resellers on how to improve their business, increase sales, write better product descriptions, handle inventory, or resolve customer issues.
+Provide professional, accurate, and actionable advice tailored to e-commerce and retail success. Keep answers concise but highly valuable.`;
+
+    const chatContents = messages.map((m: any) => ({
+        role: m.role,
+        parts: [{ text: m.content }]
+    }));
+    chatContents.push({ role: 'user', parts: [{ text: userMessage }]});
+
+    const response = await ai.models.generateContent({
+      model: 'gemini-3-flash-preview',
+      contents: chatContents,
+      config: {
+        systemInstruction,
+      }
+    });
+
+    res.json({ text: response.text || "Sorry, I couldn't generate advice right now." });
+  } catch (error: any) {
+    console.error('AI Seller Chat Error:', error);
+    res.status(500).json({ error: 'Apologies, I encountered an issue while generating advice.' });
   }
 });
 

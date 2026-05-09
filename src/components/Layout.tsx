@@ -4,6 +4,7 @@ import Sidebar from './Sidebar';
 import { useAuth } from '../context/AuthContext';
 import { Toaster } from 'sonner';
 import { Menu } from 'lucide-react';
+import SellerAIAssistant from './SellerAIAssistant';
 
 export default function Layout() {
   const { user, loading } = useAuth();
@@ -73,6 +74,7 @@ export default function Layout() {
           <Outlet />
         </div>
       </main>
+      <SellerAIAssistant />
       <Toaster position="top-center" richColors />
     </div>
   );

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { fetchWithAuth } from '../lib/api';
 import { toast } from 'sonner';
-import { Plus, Edit2, Trash2, X, Tags, Image as ImageIcon, FileText, Truck, Search, Shield, Settings2, Box, AlertTriangle } from 'lucide-react';
+import { Plus, Edit2, Trash2, X, Tags, Image as ImageIcon, FileText, Truck, Search, Shield, Settings2, Box, AlertTriangle, Sparkles } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useSettings } from '../context/SettingsContext';
 import { motion, AnimatePresence } from 'motion/react';
@@ -30,6 +30,48 @@ export default function Products() {
   });
 
   const [formData, setFormData] = useState(getInitialForm());
+
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  const handleAIGenerate = async () => {
+    if (!formData.name) {
+      toast.error('Please enter at least a Product Name to generate copy.');
+      return;
+    }
+    setIsGenerating(true);
+    const loadingToast = toast.loading('Generating AI marketing copy...');
+    try {
+      const payload = {
+        name: formData.name,
+        category: formData.category,
+        brand: formData.brand,
+        features: formData.features
+      };
+      
+      const res = await fetchWithAuth('/ai/generate-description', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+      
+      const data = res;
+      setFormData(prev => ({
+        ...prev,
+        shortDescription: data.shortDescription || prev.shortDescription,
+        description: data.description || prev.description,
+        benefits: Array.isArray(data.benefits) ? data.benefits.join('\n') : (data.benefits || prev.benefits),
+        metaTitle: data.metaTitle || prev.metaTitle,
+        metaDescription: data.metaDescription || prev.metaDescription
+      }));
+      toast.success('Generated marketing copy successfully!', { id: loadingToast });
+    } catch (e: any) {
+      toast.error(e.message || 'AI Generation failed', { id: loadingToast });
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
   const loadProducts = async () => {
     try {
@@ -267,9 +309,21 @@ export default function Products() {
               <h2 className="text-sm font-bold uppercase tracking-wider text-slate-900 flex items-center gap-2">
                 <Box className="w-4 h-4 text-indigo-500" /> {editingId ? t('edit_product') : t('setup_new_product')}
               </h2>
-              <button type="button" onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-700 p-1">
-                <X className="w-4 h-4" />
-              </button>
+              <div className="flex items-center gap-4">
+                <button
+                  type="button"
+                  onClick={handleAIGenerate}
+                  disabled={isGenerating}
+                  className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-fuchsia-100 to-indigo-100 text-indigo-700 hover:from-fuchsia-200 hover:to-indigo-200 text-xs font-bold rounded-lg transition-all shadow-sm border border-indigo-200 disabled:opacity-50"
+                  title="Auto-generate description, features, meta tags based on name and category"
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                  {isGenerating ? 'Generating...' : 'AI Enhance'}
+                </button>
+                <button type="button" onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-700 p-1">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
             </div>
             
             <div className="flex flex-1 overflow-hidden">
