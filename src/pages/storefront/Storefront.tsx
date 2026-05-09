@@ -6,6 +6,7 @@ import { useAuth } from '../../context/AuthContext';
 import { toast } from 'sonner';
 import { ShoppingCart, Plus, Minus, Search, CreditCard, ShoppingBag, Briefcase, Star, Zap, Flame } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import StorefrontAIChat from './StorefrontAIChat';
 
 export default function Storefront() {
   const { formatAmount } = useSettings();
@@ -509,6 +510,8 @@ export default function Storefront() {
           </div>
         )}
       </AnimatePresence>
+
+      <StorefrontAIChat catalog={items} />
     </div>
   );
 }
