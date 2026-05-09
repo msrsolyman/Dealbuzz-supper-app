@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Bot, X, Send, Sparkles, User as UserIcon } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { GoogleGenAI, Type } from '@google/genai';
 
 interface Message {
   id: string;
@@ -37,37 +36,28 @@ export default function StorefrontAIChat({ catalog }: { catalog: any[] }) {
     setIsTyping(true);
 
     try {
-      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-      
       const catalogContext = catalog.map(c => 
         `- ${c.name} (${c.itemType}): ${c.shortDescription || c.description || ''} | Price: ${c.sellPrice} | Output Stock: ${c.stockCount}`
       ).join('\n');
 
-      const systemInstruction = `You are a helpful and expert AI assistant for Dealbuzz, a premium storefront.
-      Your goal is to understand the customer's problem or needs and recommend appropriate products or services from our catalog.
-      Be concise, friendly, and persuasive. If we don't have something that completely solves their problem, suggest the closest alternative.
-      
-      Here is our current catalog:
-      ${catalogContext}`;
-
-      const chatMessages = messages.map(m => m.content); // Simplified, just pass history mostly. Wait, GoogleGenAI requires an array of contents.
-      
-      // We will just use generateContent with the whole transcript as context, or use standard chat.
-      const chatContents = messages.map(m => ({
-          role: m.role,
-          parts: [{ text: m.content }]
-      }));
-      chatContents.push({ role: 'user', parts: [{ text: userMessage }]});
-
-      const response = await ai.models.generateContent({
-        model: 'gemini-3-flash-preview',
-        contents: chatContents,
-        config: {
-          systemInstruction,
-        }
+      const response = await fetch('/api/ai/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages,
+          userMessage,
+          catalogContext
+        })
       });
 
-      setMessages(prev => [...prev, { id: Date.now().toString(), role: 'model', content: response.text || 'Sorry, I couldn\'t find a good answer.' }]);
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+
+      const data = await response.json();
+      if (data.error) throw new Error(data.error);
+
+      setMessages(prev => [...prev, { id: Date.now().toString(), role: 'model', content: data.text || 'Sorry, I couldn\'t find a good answer.' }]);
     } catch (e) {
       console.error(e);
       setMessages(prev => [...prev, { 

@@ -64,6 +64,45 @@ router.get('/auth/me', authenticate, getMe);
 router.put('/auth/me', authenticate, auditLog('User'), updateMe);
 router.put('/auth/password', authenticate, auditLog('User'), updatePassword);
 
+import { GoogleGenAI } from '@google/genai';
+router.post('/ai/chat', async (req: any, res: any) => {
+  try {
+    const { messages, userMessage, catalogContext } = req.body;
+    
+    if (!process.env.GEMINI_API_KEY) {
+      return res.status(500).json({ error: 'Gemini API Key is not configured on the server.' });
+    }
+
+    const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+    
+    const systemInstruction = `You are a helpful and expert AI assistant for Dealbuzz, a premium storefront.
+Your goal is to understand the customer's problem or needs and recommend appropriate products or services from our catalog.
+Be concise, friendly, and persuasive. If we don't have something that completely solves their problem, suggest the closest alternative.
+
+Here is our current catalog:
+${catalogContext}`;
+
+    const chatContents = messages.map((m: any) => ({
+        role: m.role,
+        parts: [{ text: m.content }]
+    }));
+    chatContents.push({ role: 'user', parts: [{ text: userMessage }]});
+
+    const response = await ai.models.generateContent({
+      model: 'gemini-3-flash-preview',
+      contents: chatContents,
+      config: {
+        systemInstruction,
+      }
+    });
+
+    res.json({ text: response.text || 'Sorry, I couldn\'t find a good answer.' });
+  } catch (error: any) {
+    console.error('AI Chat Error:', error);
+    res.status(500).json({ error: 'Apologies, I encountered an issue while trying to help you. Please try again later.' });
+  }
+});
+
 // Middleware to use for all protected routes
 router.use(authenticate);
 
