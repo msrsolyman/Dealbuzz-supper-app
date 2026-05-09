@@ -29,6 +29,7 @@ import Coupon from '../models/Coupon.js';
 import ManufacturingOrder from '../models/ManufacturingOrder.js';
 import SalesTarget from '../models/SalesTarget.js';
 import Campaign from '../models/Campaign.js';
+import Offer from '../models/Offer.js';
 
 import Ticket from '../models/Ticket.js';
 import Task from '../models/Task.js';
@@ -75,6 +76,9 @@ const generateCrud = (model: any, collectionName: string) => {
     try {
       const { page = 1, limit = 10, search, ...filters } = req.query;
       const query: any = { tenantId: req.tenantId, ...filters };
+      if (['product_seller', 'service_seller', 'reseller'].includes(req.user?.role) && model.schema.paths.sellerId) {
+         query.sellerId = req.user._id;
+      }
       if (model.schema.paths.isDeleted) query.isDeleted = false;
       if (search && model.schema.paths.name) query.name = { $regex: search, $options: 'i' };
       
@@ -97,7 +101,7 @@ const generateCrud = (model: any, collectionName: string) => {
   r.post('/', async (req: any, res: any) => {
     try {
       const data = { ...req.body, tenantId: req.tenantId };
-      if (['product_seller', 'service_seller', 'reseller'].includes(req.user?.role) && !data.sellerId) {
+      if (!data.sellerId && model.schema.paths.sellerId) {
          data.sellerId = req.user._id;
       }
       const doc = await model.create(data);
@@ -107,7 +111,10 @@ const generateCrud = (model: any, collectionName: string) => {
 
   r.put('/:id', async (req: any, res: any) => {
     try {
-      const q = { _id: req.params.id, tenantId: req.tenantId };
+      const q: any = { _id: req.params.id, tenantId: req.tenantId };
+      if (['product_seller', 'service_seller', 'reseller'].includes(req.user?.role) && model.schema.paths.sellerId) {
+         q.sellerId = req.user._id;
+      }
       const doc = await model.findOneAndUpdate(q, req.body, { new: true });
       if (!doc) return res.status(404).json({ error: 'Not found' });
       res.json(doc);
@@ -116,7 +123,10 @@ const generateCrud = (model: any, collectionName: string) => {
 
   r.delete('/:id', async (req: any, res: any) => {
     try {
-      const q = { _id: req.params.id, tenantId: req.tenantId };
+      const q: any = { _id: req.params.id, tenantId: req.tenantId };
+      if (['product_seller', 'service_seller', 'reseller'].includes(req.user?.role) && model.schema.paths.sellerId) {
+         q.sellerId = req.user._id;
+      }
       let doc;
       if (model.schema.paths.isDeleted) {
         doc = await (model as any).findOneAndUpdate(q, { isDeleted: true }, { new: true });
@@ -207,6 +217,7 @@ router.use('/returns', generateCrud(Return, 'Return'));
 router.use('/coupons', generateCrud(Coupon, 'Coupon'));
 router.use('/manufacturing-orders', generateCrud(ManufacturingOrder, 'ManufacturingOrder'));
 router.use('/campaigns', generateCrud(Campaign, 'Campaign'));
+router.use('/offers', generateCrud(Offer, 'Offer'));
 
 router.use('/sales-targets', generateCrud(SalesTarget, 'SalesTarget'));
 router.use('/tickets', generateCrud(Ticket, 'Ticket'));

@@ -16,8 +16,8 @@ export default function Sidebar({ isOpen, setIsOpen }: { isOpen: boolean, setIsO
 
   if (user?.role === 'customer') {
     navItems.push({ name: 'Shop Online', path: '/storefront', icon: ShoppingCart });
-    navItems.push({ name: t('products'), path: '/products', icon: Package });
-    navItems.push({ name: t('services'), path: '/services', icon: Settings });
+    navItems.push({ name: 'Products', path: '/storefront?tab=products', icon: Package });
+    navItems.push({ name: 'Services', path: '/storefront?tab=services', icon: Settings });
     navItems.push({ name: t('sellers_directory'), path: '/sellers', icon: Store });
     navItems.push({ name: 'My Invoices', path: '/invoices', icon: FileText });
     navItems.push({ name: 'Support', path: '/support', icon: MessageSquare });
@@ -47,9 +47,13 @@ export default function Sidebar({ isOpen, setIsOpen }: { isOpen: boolean, setIsO
     if (['super_admin', 'admin', 'product_seller', 'reseller'].includes(user?.role || '')) {
       navItems.push({ name: t('warehouses'), path: '/warehouses', icon: Archive });
       navItems.push({ name: 'Manufacturing', path: '/manufacturing', icon: Package });
-      navItems.push({ name: 'Marketing', path: '/marketing', icon: Megaphone });
       navItems.push({ name: 'Expenses', path: '/expenses', icon: Coins });
       navItems.push({ name: 'HR & Payroll', path: '/hr', icon: Briefcase });
+    }
+
+    if (['super_admin', 'admin', 'product_seller', 'service_seller', 'reseller'].includes(user?.role || '')) {
+      navItems.push({ name: 'Marketing', path: '/marketing', icon: Megaphone });
+      navItems.push({ name: 'Offers/Promos', path: '/offers', icon: FileText });
     }
 
     
@@ -85,7 +89,18 @@ export default function Sidebar({ isOpen, setIsOpen }: { isOpen: boolean, setIsO
         <div className="text-[10px] text-slate-500 font-bold px-3 mb-3 uppercase tracking-wider mt-2">Core Modules</div>
         {navItems.map((item) => {
           const Icon = item.icon;
-          const isActive = pathname === item.path;
+          const searchParamsExtracted = item.path.split('?')[1] || '';
+          const pathOnly = item.path.split('?')[0];
+          
+          let isActive = pathname === pathOnly;
+          if (isActive && searchParamsExtracted) {
+            // Need to check if current window.location.search includes the params provided in the item.path
+            isActive = window.location.search.includes(searchParamsExtracted);
+          } else if (isActive && !searchParamsExtracted && window.location.search.includes('tab=')) {
+            // If it's the base /storefront but there is a tab specified, don't mark base shop online as active (or do, up to preference. we will disable it here so only the specific tab is highlighted)
+            isActive = false;
+          }
+
           return (
              <Link
               key={item.path}

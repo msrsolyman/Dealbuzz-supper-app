@@ -4,9 +4,15 @@ import Product from '../models/Product.js';
 
 export const getProducts = async (req: AuthRequest, res: Response) => {
   try {
-    const { page = 1, limit = 10, search } = req.query;
+    const { page = 1, limit = 10, search, sellerId } = req.query;
     const query: any = { tenantId: req.tenantId, isDeleted: false };
     
+    if (['product_seller', 'service_seller', 'reseller'].includes(req.user?.role as string)) {
+       query.sellerId = req.user?._id;
+    } else if (sellerId) {
+       query.sellerId = sellerId;
+    }
+
     if (search) {
       query.name = { $regex: search, $options: 'i' };
     }
@@ -35,6 +41,11 @@ export const createProduct = async (req: AuthRequest, res: Response) => {
     if (!productData.sellerId && req.user && ['product_seller', 'service_seller', 'reseller'].includes(req.user.role)) {
       productData.sellerId = req.user._id;
     }
+    
+    // Force sellerId to current user if they are a seller, to prevent impersonation
+    if (req.user && ['product_seller', 'service_seller', 'reseller'].includes(req.user.role)) {
+      productData.sellerId = req.user._id;
+    }
 
     const product = await Product.create(productData);
     res.status(201).json(product);
@@ -45,8 +56,12 @@ export const createProduct = async (req: AuthRequest, res: Response) => {
 
 export const updateProduct = async (req: AuthRequest, res: Response) => {
   try {
+    const q: any = { _id: req.params.id, tenantId: req.tenantId, isDeleted: false };
+    if (req.user && ['product_seller', 'service_seller', 'reseller'].includes(req.user.role)) {
+       q.sellerId = req.user._id;
+    }
     const product = await (Product as any).findOneAndUpdate(
-      { _id: req.params.id, tenantId: req.tenantId, isDeleted: false },
+      q,
       req.body,
       { new: true, runValidators: true }
     );
@@ -59,8 +74,12 @@ export const updateProduct = async (req: AuthRequest, res: Response) => {
 
 export const deleteProduct = async (req: AuthRequest, res: Response) => {
   try {
+    const q: any = { _id: req.params.id, tenantId: req.tenantId };
+    if (req.user && ['product_seller', 'service_seller', 'reseller'].includes(req.user.role)) {
+       q.sellerId = req.user._id;
+    }
     const product = await (Product as any).findOneAndUpdate(
-      { _id: req.params.id, tenantId: req.tenantId },
+      q,
       { isDeleted: true },
       { new: true }
     );

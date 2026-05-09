@@ -37,15 +37,20 @@ export default function SellersDirectory() {
           >
             <div className="absolute inset-0 bg-gradient-to-b from-indigo-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
             <div 
-               className="h-28 relative overflow-hidden bg-gradient-to-br from-indigo-600 via-fuchsia-500 to-rose-500"
-               style={seller.coverPhoto ? { backgroundImage: `url(${seller.coverPhoto})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}
+               className="h-28 relative overflow-hidden bg-gradient-to-br"
+               style={{
+                 backgroundColor: seller.coverColor || '#4f46e5',
+                 backgroundImage: seller.coverPhoto ? `url(${seller.coverPhoto})` : (seller.coverColor ? 'none' : 'linear-gradient(to bottom right, var(--tw-gradient-stops))'),
+                 backgroundSize: 'cover',
+                 backgroundPosition: 'center'
+               }}
              >
                {/* Pattern overlay */}
                {!seller.coverPhoto && <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-white via-transparent to-transparent mix-blend-overlay"></div>}
                {seller.coverPhoto && <div className="absolute inset-0 bg-black/20"></div>}
                <div className="absolute -bottom-8 left-6 w-16 h-16 bg-white rounded-2xl shadow-xl border-4 border-white flex items-center justify-center text-indigo-600 font-bold group-hover:scale-110 group-hover:-rotate-3 transition-transform duration-300 relative z-10 overflow-hidden">
                  {seller.profilePicture ? (
-                    <img src={seller.profilePicture} alt={seller.name} className="w-full h-full object-cover" />
+                    <img src={seller.profilePicture} alt={seller.companyName || seller.name} className="w-full h-full object-cover" />
                  ) : (
                     <Store className="w-7 h-7" />
                  )}
@@ -53,7 +58,7 @@ export default function SellersDirectory() {
             </div>
             <div className="pt-12 px-6 pb-6 flex-1 flex flex-col relative z-10">
               <h3 className="text-xl font-display font-bold text-slate-900 mb-1 flex items-center gap-2 leading-tight truncate">
-                {seller.name} <ShieldCheck className="w-4.5 h-4.5 text-emerald-500 shrink-0" />
+                {seller.companyName || seller.name} <ShieldCheck className="w-4.5 h-4.5 text-emerald-500 shrink-0" />
               </h3>
               <p className="text-[10px] uppercase font-bold text-indigo-600 tracking-widest mb-4 bg-indigo-50/50 inline-block w-fit px-2 py-0.5 rounded-md border border-indigo-100 mt-1">{seller.role.replace('_', ' ')}</p>
               <div className="text-sm text-slate-500 line-clamp-2 mb-6 leading-relaxed flex-1">

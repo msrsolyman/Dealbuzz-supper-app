@@ -10,6 +10,12 @@ export interface IUser extends Document {
   profilePicture?: string;
   coverPhoto?: string;
   bio?: string;
+  companyName?: string;
+  companyDescription?: string;
+  address?: string;
+  phone?: string;
+  website?: string;
+  coverColor?: string;
   isDeleted?: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -36,6 +42,12 @@ const UserSchema = new Schema<IUser>(
     profilePicture: { type: String },
     coverPhoto: { type: String },
     bio: { type: String },
+    companyName: { type: String },
+    companyDescription: { type: String },
+    address: { type: String },
+    phone: { type: String },
+    website: { type: String },
+    coverColor: { type: String, default: '#4f46e5' },
     isDeleted: { type: Boolean, default: false }
   },
   { timestamps: true }

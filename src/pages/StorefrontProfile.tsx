@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Store, Camera, Save, MapPin, Globe, Phone, Mail, Sparkles, Building2 } from 'lucide-react';
+import { Store, Camera, Save, MapPin, Globe, Phone, Mail, Sparkles, Building2, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
 import { fetchWithAuth } from '../lib/api';
+import { useNavigate } from 'react-router';
 
 export default function StorefrontProfile() {
-  const { user } = useAuth();
+  const { user, setUser } = useAuth();
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     storeName: '',
     description: '',
@@ -15,15 +17,22 @@ export default function StorefrontProfile() {
     email: user?.email || '',
     website: '',
     coverColor: '#4f46e5',
-    logoUrl: ''
+    logoUrl: '',
+    coverPhoto: ''
   });
 
   useEffect(() => {
-    // In a real app we would load the existing storefront profile from the server
-    // For now we populate with some defaults
+    // Populate with actual user data if available
     setFormData(prev => ({
       ...prev,
-      storeName: user?.role === 'product_seller' ? 'My Premium Store' : user?.role === 'service_seller' ? 'Expert Services Agency' : 'Global Reseller network'
+      storeName: user?.companyName || user?.name || (user?.role === 'product_seller' ? 'My Premium Store' : user?.role === 'service_seller' ? 'Expert Services Agency' : 'Global Reseller network'),
+      description: user?.companyDescription || user?.bio || '',
+      address: user?.address || '',
+      phone: user?.phone || '',
+      website: user?.website || '',
+      coverColor: user?.coverColor || '#4f46e5',
+      logoUrl: user?.profilePicture || '',
+      coverPhoto: user?.coverPhoto || ''
     }));
   }, [user]);
 
@@ -47,8 +56,23 @@ export default function StorefrontProfile() {
     setLoading(true);
     
     try {
-      // Simulate API call to save profile
-      await new Promise(resolve => setTimeout(resolve, 800));
+      const payload = {
+        name: user?.name, // Keep existing name
+        companyName: formData.storeName,
+        companyDescription: formData.description,
+        address: formData.address,
+        phone: formData.phone,
+        website: formData.website,
+        coverColor: formData.coverColor,
+        profilePicture: formData.logoUrl,
+        coverPhoto: formData.coverPhoto,
+        bio: formData.description
+      };
+      const res = await fetchWithAuth('/auth/me', {
+        method: 'PUT',
+        body: JSON.stringify(payload)
+      });
+      setUser(res.user);
       
       toast.success('Storefront profile updated successfully!');
       toast.info('Customers will now see your updated profile.');
@@ -85,16 +109,27 @@ export default function StorefrontProfile() {
       </div>
 
       <div className="bg-white rounded-3xl shadow-sm border border-slate-200/60 overflow-hidden">
-        {/* Cover Video/Color Area */}
+        {/* Cover Image/Color Area */}
         <div 
           className="h-56 w-full relative group transition-colors duration-300"
-          style={{ backgroundColor: formData.coverColor }}
+          style={{ 
+            backgroundColor: formData.coverColor,
+            backgroundImage: formData.coverPhoto ? `url(${formData.coverPhoto})` : 'none',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center'
+          }}
         >
-          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
-            <label className="cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-2 bg-white text-slate-900 px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-black/10 hover:scale-105 active:scale-95 duration-200">
-              <Camera className="w-4 h-4" /> Change Cover Color
-              <input type="color" name="coverColor" value={formData.coverColor} onChange={handleChange} className="absolute inset-0 opacity-0 cursor-pointer" />
-            </label>
+          <div className="absolute inset-0 bg-black/10 group-hover:bg-black/30 transition-colors flex flex-col items-center justify-center gap-3">
+            <div className="flex gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
+               <label className="cursor-pointer flex items-center gap-2 bg-white text-slate-900 px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-black/10 hover:scale-105 active:scale-95 duration-200 relative overflow-hidden">
+                 <Camera className="w-4 h-4" /> Upload Cover Photo
+                 <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, 'coverPhoto')} className="absolute inset-0 opacity-0 cursor-pointer" />
+               </label>
+               <label className="cursor-pointer flex items-center gap-2 bg-white text-slate-900 px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-black/10 hover:scale-105 active:scale-95 duration-200 relative overflow-hidden">
+                 <div className="w-4 h-4 rounded-full border border-slate-300" style={{backgroundColor: formData.coverColor}}></div> Color
+                 <input type="color" name="coverColor" value={formData.coverColor} onChange={handleChange} className="absolute inset-0 opacity-0 cursor-pointer" />
+               </label>
+            </div>
           </div>
           <div className="absolute inset-0 opacity-20 pointer-events-none">
             <div className="w-72 h-72 bg-white/40 rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/2"></div>
@@ -217,9 +252,10 @@ export default function StorefrontProfile() {
           <div className="mt-10 pt-8 border-t border-slate-100 flex justify-end gap-3">
             <button 
               type="button" 
-              className="px-6 py-2.5 text-sm font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 hover:text-slate-900 rounded-xl transition-colors border border-slate-200 shadow-sm"
+              onClick={() => navigate(`/sellers/${user?._id}`)}
+              className="px-6 py-2.5 text-sm font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 hover:text-slate-900 rounded-xl transition-colors border border-slate-200 shadow-sm flex items-center gap-2"
             >
-              Preview Store
+              <ExternalLink className="w-4 h-4" /> Preview Store
             </button>
             <button 
               type="submit" 

@@ -99,8 +99,14 @@ export default function SellerProfile() {
       <div className="bg-white rounded-3xl border border-slate-200/60 overflow-hidden shadow-sm mb-8 relative">
         <div className="absolute top-0 left-0 w-full h-48 bg-indigo-500/10 blur-3xl rounded-full pointer-events-none -translate-y-1/2"></div>
         <div 
-           className="h-48 relative overflow-hidden bg-gradient-to-br from-[#0B1120] via-indigo-900 to-fuchsia-900 group"
-           style={seller.coverPhoto ? { backgroundImage: `url(${seller.coverPhoto})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}
+           className="h-48 relative overflow-hidden bg-gradient-to-br group"
+           style={{
+             backgroundColor: seller.coverColor || '#312e81',
+             backgroundImage: seller.coverPhoto ? `url(${seller.coverPhoto})` : (seller.coverColor ? 'none' : 'linear-gradient(to bottom right, var(--tw-gradient-stops))'),
+             backgroundSize: 'cover',
+             backgroundPosition: 'center',
+             borderColor: seller.coverColor || '#312e81'
+           }}
         >
           {/* Decorative Pattern overlay */}
           {!seller.coverPhoto && <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_bottom_left,_var(--tw-gradient-stops))] from-white via-transparent to-transparent mix-blend-overlay"></div>}
@@ -140,7 +146,7 @@ export default function SellerProfile() {
             <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
               <div>
                 <h1 className="text-3xl font-display font-black text-slate-900 flex items-center gap-2 mb-1">
-                  {seller.name} <ShieldCheck className="w-6 h-6 text-emerald-500 shrink-0" />
+                  {seller.companyName || seller.name} <ShieldCheck className="w-6 h-6 text-emerald-500 shrink-0" />
                 </h1>
                 <div className="inline-flex items-center px-2.5 py-1 rounded-md bg-indigo-50/80 border border-indigo-100 text-xs font-bold text-indigo-700 uppercase tracking-widest mt-1">
                   <Star className="w-3.5 h-3.5 mr-1.5" />

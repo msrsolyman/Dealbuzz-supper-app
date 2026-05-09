@@ -28,6 +28,7 @@ import Manufacturing from './pages/production/Manufacturing';
 import Returns from './pages/sales/Returns';
 import PurchaseOrders from './pages/inventory/PurchaseOrders';
 import Marketing from './pages/marketing/Marketing';
+import Offers from './pages/marketing/Offers';
 import Support from './pages/crm/Support';
 import Tasks from './pages/hrm/Tasks';
 import Delivery from './pages/inventory/Delivery';
@@ -61,6 +62,7 @@ export default function App() {
               <Route path="returns" element={<Returns />} />
               <Route path="purchase-orders" element={<PurchaseOrders />} />
               <Route path="marketing" element={<Marketing />} />
+              <Route path="offers" element={<Offers />} />
               <Route path="delivery" element={<Delivery />} />
               <Route path="support" element={<Support />} />
               <Route path="tasks" element={<Tasks />} />

@@ -65,7 +65,8 @@ export const login = async (req: Request, res: Response) => {
 
 export const getMe = async (req: AuthRequest, res: Response) => {
   try {
-    res.json({ user: req.user });
+    const user = await (User as any).findById(req.user?._id).select('-password');
+    res.json({ user });
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }
@@ -73,7 +74,7 @@ export const getMe = async (req: AuthRequest, res: Response) => {
 
 export const updateMe = async (req: AuthRequest, res: Response) => {
   try {
-    const { name, email, profilePicture, coverPhoto, bio } = req.body;
+    const { name, email, profilePicture, coverPhoto, bio, companyName, companyDescription, address, phone, website, coverColor } = req.body;
     const user = await (User as any).findById(req.user?._id);
     if (!user) return res.status(404).json({ error: 'User not found' });
 
@@ -82,10 +83,17 @@ export const updateMe = async (req: AuthRequest, res: Response) => {
     if (profilePicture) user.profilePicture = profilePicture;
     if (coverPhoto) user.coverPhoto = coverPhoto;
     if (bio) user.bio = bio;
+    if (companyName !== undefined) user.companyName = companyName;
+    if (companyDescription !== undefined) user.companyDescription = companyDescription;
+    if (address !== undefined) user.address = address;
+    if (phone !== undefined) user.phone = phone;
+    if (website !== undefined) user.website = website;
+    if (coverColor !== undefined) user.coverColor = coverColor;
 
     await user.save();
     
-    res.json({ user: { id: user._id, name: user.name, email: user.email, role: user.role, tenantId: user.tenantId, profilePicture: user.profilePicture, bio: user.bio } });
+    // Return all fields
+    res.json({ user });
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }
