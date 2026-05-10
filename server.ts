@@ -16,7 +16,8 @@ import { initSocket } from './server/services/socketService.ts';
 
 async function startServer() {
   const app = express();
-  const PORT = 3000;
+  // Support both AI Studio (requires 3000) and Render/Heroku (requires process.env.PORT)
+  const PORT = process.env.APPLET_ID ? 3000 : (Number(process.env.PORT) || 3000);
   const httpServer = createHttpServer(app);
 
   // Middlewares
