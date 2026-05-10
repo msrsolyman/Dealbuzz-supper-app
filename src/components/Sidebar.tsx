@@ -128,26 +128,28 @@ export default function Sidebar({ isOpen, setIsOpen }: { isOpen: boolean, setIsO
       </nav>
 
       <div className="p-5 border-t border-slate-800/80 flex flex-col gap-3 bg-[#0B1120]">
-        <div className="bg-slate-800/40 p-3.5 rounded-xl border border-slate-700/50">
-          <div className="text-[10px] text-indigo-400 uppercase font-bold mb-2 tracking-wider flex items-center gap-1.5">
-            <Shield className="w-3 h-3" /> Dev Tools
+        {user?.role === 'super_admin' && (
+          <div className="bg-slate-800/40 p-3.5 rounded-xl border border-slate-700/50">
+            <div className="text-[10px] text-indigo-400 uppercase font-bold mb-2 tracking-wider flex items-center gap-1.5">
+              <Shield className="w-3 h-3" /> Dev Tools
+            </div>
+            <select 
+              value={user?.role || 'admin'} 
+              onChange={(e) => {
+                if (setRole) {
+                  setRole(e.target.value);
+                }
+              }}
+              className="w-full bg-[#0B1120] border border-slate-700 text-slate-200 text-xs rounded-lg px-2.5 py-2 outline-none focus:border-indigo-500 transition-colors cursor-pointer"
+            >
+              <option value="super_admin">Super Admin</option>
+              <option value="product_seller">Product Seller</option>
+              <option value="service_seller">Service Seller</option>
+              <option value="reseller">Reseller</option>
+              <option value="customer">Customer</option>
+            </select>
           </div>
-          <select 
-            value={user?.role || 'admin'} 
-            onChange={(e) => {
-              if (setRole) {
-                setRole(e.target.value);
-              }
-            }}
-            className="w-full bg-[#0B1120] border border-slate-700 text-slate-200 text-xs rounded-lg px-2.5 py-2 outline-none focus:border-indigo-500 transition-colors cursor-pointer"
-          >
-            <option value="super_admin">Super Admin</option>
-            <option value="product_seller">Product Seller</option>
-            <option value="service_seller">Service Seller</option>
-            <option value="reseller">Reseller</option>
-            <option value="customer">Customer</option>
-          </select>
-        </div>
+        )}
 
         <button
           onClick={logout}
