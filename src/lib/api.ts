@@ -39,7 +39,11 @@ export const fetchWithAuth = async (
             credentials: 'include' // Crucial to send refreshToken cookie
           });
           
-          if (!refreshRes.ok) throw new Error('Refresh failed');
+          if (!refreshRes.ok) {
+            const errBody = await refreshRes.text();
+            console.error(`[Refresh] Failed with status ${refreshRes.status}: ${errBody}`);
+            throw new Error('Refresh failed');
+          }
           const refreshData = await refreshRes.json();
           localStorage.setItem('token', refreshData.token);
           isRefreshing = false;
