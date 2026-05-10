@@ -52,7 +52,7 @@ export const sendNotification = async (options: SendNotificationOptions) => {
   // Handle other channels (Email, WhatsApp, Push)
   if (channels.includes('EMAIL') && userId) {
     try {
-      const user = await (User as any).findById(userId).lean();
+      const user = await User.findById(userId).lean();
       if (user && user.email) {
         // Pseudo logic for sending email
         console.log(`[EMAIL] Sending to ${user.email}: ${title} - ${message}`);
@@ -67,7 +67,7 @@ export const sendNotification = async (options: SendNotificationOptions) => {
 
   if (channels.includes('WHATSAPP') && userId) {
     try {
-      const user = await (User as any).findById(userId).lean();
+      const user = await User.findById(userId).lean();
       if (user && (user as any).phone) {
         // Third part WhatsApp API (Twilio / MessageBird)
         console.log(`[WHATSAPP] Sending to ${(user as any).phone}: ${title} - ${message}`);

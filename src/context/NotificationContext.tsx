@@ -70,24 +70,9 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
         default:
           toast.info(newNotification.title, { description: newNotification.message });
       }
-
-      // Native Push/Desktop Notification
-      if (typeof window !== 'undefined' && 'Notification' in window) {
-        if (Notification.permission === 'granted') {
-          new Notification(newNotification.title, {
-            body: newNotification.message,
-            icon: '/icon.svg'
-          });
-        }
-      }
     });
 
     setSocket(newSocket);
-
-    // Request Notification permission for PWA
-    if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'default') {
-      Notification.requestPermission();
-    }
 
     return () => {
       newSocket.disconnect();

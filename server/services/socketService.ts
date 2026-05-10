@@ -21,7 +21,7 @@ export const initSocket = (httpServer: HttpServer) => {
       if (!token) return next(new Error('Authentication Error'));
 
       const decoded: any = jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret');
-      const user = await (User as any).findById(decoded.id).lean();
+      const user = await User.findById(decoded.id).lean();
       
       if (!user) return next(new Error('User not found'));
       

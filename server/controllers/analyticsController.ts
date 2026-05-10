@@ -14,7 +14,7 @@ export const getDashboardAnalytics = async (req: any, res: Response) => {
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
     // Sales/Revenue
-    const invoices = await (Invoice as any).find({ tenantId, isDeleted: false });
+    const invoices = await Invoice.find({ tenantId, isDeleted: false });
     const totalRevenue = invoices.reduce((sum: number, inv: any) => sum + (inv.totalAmount || 0), 0);
     const recentInvoices = invoices.filter((inv: any) => inv.createdAt >= thirtyDaysAgo);
     const recentRevenue = recentInvoices.reduce((sum: number, inv: any) => sum + (inv.totalAmount || 0), 0);
@@ -40,7 +40,7 @@ export const getDashboardAnalytics = async (req: any, res: Response) => {
     });
 
     // Top Products
-    const products = await (Product as any).find({ tenantId, isDeleted: false });
+    const products = await Product.find({ tenantId, isDeleted: false });
     const totalProducts = products.length;
     // Just a placeholder calculation: sum of stock * price
     const inventoryValuation = products.reduce((sum: number, p: any) => sum + (p.stockCount * (p.price || 0)), 0);
@@ -61,18 +61,18 @@ export const getDashboardAnalytics = async (req: any, res: Response) => {
         .slice(0, 5)
         .map(entry => entry[0]);
     
-    const topProducts = products.filter((p: any) => topSellingProductIds.includes(p._id.toString())).map((p: any) => ({
+    const topProducts = products.filter(p => topSellingProductIds.includes(p._id.toString())).map(p => ({
         name: p.name,
         sold: productSales.get(p._id.toString()) || 0,
         currentStock: p.stockCount
     }));
 
     // Customer Growth
-    const totalCustomers = await (Customer as any).countDocuments({ tenantId, isDeleted: false });
-    const recentCustomers = await (Customer as any).countDocuments({ tenantId, isDeleted: false, createdAt: { $gte: thirtyDaysAgo } });
+    const totalCustomers = await Customer.countDocuments({ tenantId, isDeleted: false });
+    const recentCustomers = await Customer.countDocuments({ tenantId, isDeleted: false, createdAt: { $gte: thirtyDaysAgo } });
 
     // Recent Activity (User activity tracking)
-    const recentActivity = await (AuditLog as any).find({ tenantId }).sort({ createdAt: -1 }).limit(10).populate('userId', 'name role email');
+    const recentActivity = await AuditLog.find({ tenantId }).sort({ createdAt: -1 }).limit(10).populate('userId', 'name role email');
 
     res.json({
       summary: {

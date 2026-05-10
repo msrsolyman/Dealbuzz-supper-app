@@ -7,7 +7,7 @@ export const getNotifications = async (req: any, res: Response) => {
     const userId = req.user._id;
 
     // Fetch tenant-wide notifications or user-specific notifications
-    const notifications = await (Notification as any).find({
+    const notifications = await Notification.find({
       tenantId,
       $or: [{ userId }, { userId: { $exists: false } }, { userId: null }]
     })
@@ -27,12 +27,12 @@ export const markAsRead = async (req: any, res: Response) => {
 
     if (id === 'all') {
       const userId = req.user._id;
-      await (Notification as any).updateMany(
+      await Notification.updateMany(
         { tenantId, $or: [{ userId }, { userId: { $exists: false } }, { userId: null }], isRead: false },
         { $set: { isRead: true } }
       );
     } else {
-      await (Notification as any).findOneAndUpdate(
+      await Notification.findOneAndUpdate(
         { _id: id, tenantId },
         { $set: { isRead: true } }
       );

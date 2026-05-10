@@ -1,4 +1,4 @@
-import mongoose, { Model } from 'mongoose';
+import { Model, FilterQuery } from 'mongoose';
 
 export interface PaginationOptions {
   page?: number;
@@ -25,7 +25,7 @@ export interface PaginatedResult<T> {
  */
 export const paginateQuery = async <T>(
   model: Model<any>,
-  query: any = {},
+  query: FilterQuery<any> = {},
   options: PaginationOptions = {}
 ): Promise<PaginatedResult<T>> => {
   const page = Math.max(1, options.page || 1);

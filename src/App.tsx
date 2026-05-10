@@ -46,7 +46,6 @@ import { HelmetProvider } from "react-helmet-async";
 
 import { ErrorBoundary } from "./components/ErrorBoundary";
 const NotFound = React.lazy(() => import("./pages/NotFound"));
-import { toast } from 'sonner';
 
 import { NotificationProvider } from './context/NotificationContext';
 

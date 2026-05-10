@@ -1,6 +1,6 @@
 import NodeCache from 'node-cache';
 import { Request, Response, NextFunction } from 'express';
-import { AuthRequest } from '../middlewares/authMiddleware.ts'; // to get tenantId if available
+import { AuthRequest } from './authMiddleware.ts'; // to get tenantId if available
 
 // Standard 5 minutes cache
 const cache = new NodeCache({ stdTTL: 300, checkperiod: 320 });
