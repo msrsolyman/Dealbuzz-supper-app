@@ -1,16 +1,31 @@
-import React, { useState, useEffect } from 'react';
-import { fetchWithAuth } from '../../lib/api';
-import { toast } from 'sonner';
-import { FileText, Download, Plus, Trash2, Search, X, Filter, CheckCircle2, AlertCircle, Clock, Eye, Printer, Mail, Zap } from 'lucide-react';
-import { format } from 'date-fns';
-import { motion, AnimatePresence } from 'motion/react';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
-import QRCode from 'qrcode';
-import { QRCodeSVG } from 'qrcode.react';
-import { useTranslation } from 'react-i18next';
-import { useSettings } from '../../context/SettingsContext';
-import { useAuth } from '../../context/AuthContext';
+import React, { useState, useEffect } from "react";
+import { fetchWithAuth } from "../../lib/api";
+import { toast } from "sonner";
+import {
+  FileText,
+  Download,
+  Plus,
+  Trash2,
+  Search,
+  X,
+  Filter,
+  CheckCircle2,
+  AlertCircle,
+  Clock,
+  Eye,
+  Printer,
+  Mail,
+  Zap,
+} from "lucide-react";
+import { format } from "date-fns";
+import { motion, AnimatePresence } from "motion/react";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import QRCode from "qrcode";
+import { QRCodeSVG } from "qrcode.react";
+import { useTranslation } from "react-i18next";
+import { useSettings } from "../../context/SettingsContext";
+import { useAuth } from "../../context/AuthContext";
 
 export default function Invoices() {
   const { t } = useTranslation();
@@ -20,32 +35,40 @@ export default function Invoices() {
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [customers, setCustomers] = useState<any[]>([]);
-  const [formData, setFormData] = useState({ 
-    customerId: '', dueDate: '', 
-    status: 'DRAFT', invoiceNumber: `INV-${Date.now().toString().slice(-6)}`,
-    items: [{ name: '', itemType: 'Product', quantity: 1, rate: 0, total: 0 }],
-    subtotal: 0, tax: 0, total: 0, taxRate: 5
+  const [formData, setFormData] = useState({
+    customerId: "",
+    dueDate: "",
+    status: "DRAFT",
+    invoiceNumber: `INV-${Date.now().toString().slice(-6)}`,
+    items: [{ name: "", itemType: "Product", quantity: 1, rate: 0, total: 0 }],
+    subtotal: 0,
+    tax: 0,
+    total: 0,
+    taxRate: 5,
   });
   const [selectedInvoice, setSelectedInvoice] = useState<any>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
-  const [customerSearch, setCustomerSearch] = useState('');
+  const [customerSearch, setCustomerSearch] = useState("");
   const [showCustomerDropdown, setShowCustomerDropdown] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
 
-  const filteredInvoices = invoices.filter(inv => 
-    inv.invoiceNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (inv.customerId?.name || '').toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredInvoices = invoices.filter(
+    (inv) =>
+      inv.invoiceNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (inv.customerId?.name || "")
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase()),
   );
 
   const loadInvoices = async () => {
     try {
-      const data = await fetchWithAuth('/invoices');
+      const data = await fetchWithAuth("/invoices");
       setInvoices(data.data || []);
-      
-      const resCustomers = await fetchWithAuth('/customers');
+
+      const resCustomers = await fetchWithAuth("/customers");
       setCustomers(resCustomers.data || []);
     } catch (e: any) {
-      toast.error('Failed to load invoices');
+      toast.error("Failed to load invoices");
     } finally {
       setLoading(false);
     }
@@ -55,8 +78,14 @@ export default function Invoices() {
     loadInvoices();
   }, []);
 
-  const calculateTotals = (items = formData.items, taxRate = formData.taxRate) => {
-    const subtotal = items.reduce((acc, curr) => acc + (curr.quantity * curr.rate), 0);
+  const calculateTotals = (
+    items = formData.items,
+    taxRate = formData.taxRate,
+  ) => {
+    const subtotal = items.reduce(
+      (acc, curr) => acc + curr.quantity * curr.rate,
+      0,
+    );
     const tax = subtotal * (taxRate / 100);
     const total = subtotal + tax;
     return { subtotal, tax, total };
@@ -64,21 +93,21 @@ export default function Invoices() {
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.customerId) return toast.error('Please select a customer');
+    if (!formData.customerId) return toast.error("Please select a customer");
 
     const { subtotal, tax, total } = calculateTotals();
 
     try {
-      await fetchWithAuth('/invoices', {
-        method: 'POST',
+      await fetchWithAuth("/invoices", {
+        method: "POST",
         body: JSON.stringify({
           ...formData,
           subtotal,
           tax,
-          total
+          total,
         }),
       });
-      toast.success('Invoice created');
+      toast.success("Invoice created");
       setIsModalOpen(false);
       loadInvoices();
     } catch (e: any) {
@@ -88,142 +117,175 @@ export default function Invoices() {
 
   const downloadPDF = async (invoice: any) => {
     const doc = new jsPDF();
-    const primaryColor = '#4f46e5'; // indigo-600
-    const secondaryColor = '#64748b'; // slate-500
-    const accentColor = '#0f172a'; // slate-900
+    const primaryColor = "#4f46e5"; // indigo-600
+    const secondaryColor = "#64748b"; // slate-500
+    const accentColor = "#0f172a"; // slate-900
 
     // Header - Company Info
-    doc.setFont('helvetica', 'bold');
+    doc.setFont("helvetica", "bold");
     doc.setFontSize(24);
     doc.setTextColor(primaryColor);
-    doc.text('INVOICE', 14, 25);
-    
+    doc.text("INVOICE", 14, 25);
+
     doc.setFontSize(10);
     doc.setTextColor(secondaryColor);
-    doc.text('Generated by Dealbuzz', 14, 32);
+    doc.text("Generated by Dealbuzz", 14, 32);
 
     // Business Details (Right aligned)
     doc.setTextColor(accentColor);
     doc.setFontSize(14);
-    doc.setFont('helvetica', 'bold');
-    doc.text(user?.tenantId ? 'Dealbuzz Merchant' : 'Your Business Name', 196, 25, { align: 'right' });
-    doc.setFont('helvetica', 'normal');
+    doc.setFont("helvetica", "bold");
+    doc.text(
+      user?.tenantId ? "Dealbuzz Merchant" : "Your Business Name",
+      196,
+      25,
+      { align: "right" },
+    );
+    doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
     doc.setTextColor(secondaryColor);
-    doc.text(user?.email || 'support@business.com', 196, 32, { align: 'right' });
-    doc.text('Dhaka, Bangladesh', 196, 38, { align: 'right' });
+    doc.text(user?.email || "support@business.com", 196, 32, {
+      align: "right",
+    });
+    doc.text("Dhaka, Bangladesh", 196, 38, { align: "right" });
 
     // Divider
     doc.setDrawColor(241, 245, 249); // slate-100
     doc.line(14, 45, 196, 45);
 
     // Invoice Meta & Client Info
-    doc.setFont('helvetica', 'bold');
+    doc.setFont("helvetica", "bold");
     doc.setTextColor(accentColor);
-    doc.text('BILL TO:', 14, 60);
-    doc.setFont('helvetica', 'normal');
+    doc.text("BILL TO:", 14, 60);
+    doc.setFont("helvetica", "normal");
     doc.setTextColor(secondaryColor);
-    doc.text(invoice.customerId?.name || 'Walk-in Customer', 14, 67);
+    doc.text(invoice.customerId?.name || "Walk-in Customer", 14, 67);
     if (invoice.customerId?.email) doc.text(invoice.customerId.email, 14, 72);
     if (invoice.customerId?.phone) doc.text(invoice.customerId.phone, 14, 77);
 
-    doc.setFont('helvetica', 'bold');
+    doc.setFont("helvetica", "bold");
     doc.setTextColor(accentColor);
-    doc.text('INVOICE DETAILS:', 140, 60);
-    doc.setFont('helvetica', 'normal');
+    doc.text("INVOICE DETAILS:", 140, 60);
+    doc.setFont("helvetica", "normal");
     doc.setTextColor(secondaryColor);
     doc.text(`Number: ${invoice.invoiceNumber}`, 140, 67);
-    doc.text(`Date: ${format(new Date(invoice.createdAt), 'MMM d, yyyy')}`, 140, 72);
-    doc.text(`Due Date: ${format(new Date(invoice.dueDate), 'MMM d, yyyy')}`, 140, 77);
+    doc.text(
+      `Date: ${format(new Date(invoice.createdAt), "MMM d, yyyy")}`,
+      140,
+      72,
+    );
+    doc.text(
+      `Due Date: ${format(new Date(invoice.dueDate), "MMM d, yyyy")}`,
+      140,
+      77,
+    );
 
     // Status Badge
-    const status = invoice.status?.toUpperCase() || 'DRAFT';
-    const isPaid = status === 'PAID';
-    doc.setFillColor(isPaid ? 236 : 255, isPaid ? 253 : 251, isPaid ? 245 : 235); // emerald-50 or amber-50
-    doc.roundedRect(140, 83, 56, 8, 1, 1, 'F');
+    const status = invoice.status?.toUpperCase() || "DRAFT";
+    const isPaid = status === "PAID";
+    doc.setFillColor(
+      isPaid ? 236 : 255,
+      isPaid ? 253 : 251,
+      isPaid ? 245 : 235,
+    ); // emerald-50 or amber-50
+    doc.roundedRect(140, 83, 56, 8, 1, 1, "F");
     doc.setTextColor(isPaid ? 5 : 146, isPaid ? 150 : 64, isPaid ? 105 : 14); // emerald-700 or amber-700
     doc.setFontSize(8);
-    doc.setFont('helvetica', 'bold');
-    doc.text(`STATUS: ${status}`, 168, 88.5, { align: 'center' });
+    doc.setFont("helvetica", "bold");
+    doc.text(`STATUS: ${status}`, 168, 88.5, { align: "center" });
 
     // Table
     const safeItems = Array.isArray(invoice.items) ? invoice.items : [];
     autoTable(doc, {
       startY: 100,
-      head: [['Item Description', 'Type', 'Qty', 'Rate', 'Total']],
+      head: [["Item Description", "Type", "Qty", "Rate", "Total"]],
       body: safeItems.map((item: any) => [
         item.name,
-        item.itemType || 'Product',
+        item.itemType || "Product",
         item.quantity,
         formatAmount(item.rate),
-        formatAmount(item.total)
+        formatAmount(item.total),
       ]),
       styles: {
         fontSize: 9,
         cellPadding: 6,
-        font: 'helvetica'
+        font: "helvetica",
       },
       headStyles: {
         fillColor: [15, 23, 42], // slate-900
         textColor: [255, 255, 255],
-        fontStyle: 'bold',
-        halign: 'left'
+        fontStyle: "bold",
+        halign: "left",
       },
       columnStyles: {
-        2: { halign: 'center' },
-        3: { halign: 'right' },
-        4: { halign: 'right', fontStyle: 'bold' }
+        2: { halign: "center" },
+        3: { halign: "right" },
+        4: { halign: "right", fontStyle: "bold" },
       },
       alternateRowStyles: {
-        fillColor: [248, 250, 252] // slate-50
-      }
+        fillColor: [248, 250, 252], // slate-50
+      },
     });
 
     // Summary
     const finalY = (doc as any).lastAutoTable.finalY + 10;
-    
+
     doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
+    doc.setFont("helvetica", "normal");
     doc.setTextColor(secondaryColor);
-    doc.text('Subtotal:', 140, finalY);
-    doc.text(formatAmount(invoice.subtotal), 196, finalY, { align: 'right' });
+    doc.text("Subtotal:", 140, finalY);
+    doc.text(formatAmount(invoice.subtotal), 196, finalY, { align: "right" });
 
     doc.text(`Tax (${invoice.taxRate || 0}%):`, 140, finalY + 7);
-    doc.text(formatAmount(invoice.tax || 0), 196, finalY + 7, { align: 'right' });
+    doc.text(formatAmount(invoice.tax || 0), 196, finalY + 7, {
+      align: "right",
+    });
 
     doc.setDrawColor(241, 245, 249);
     doc.line(140, finalY + 12, 196, finalY + 12);
 
     doc.setFontSize(12);
-    doc.setFont('helvetica', 'bold');
+    doc.setFont("helvetica", "bold");
     doc.setTextColor(primaryColor);
-    doc.text('Total Amount:', 140, finalY + 22);
-    doc.text(formatAmount(invoice.total), 196, finalY + 22, { align: 'right' });
+    doc.text("Total Amount:", 140, finalY + 22);
+    doc.text(formatAmount(invoice.total), 196, finalY + 22, { align: "right" });
 
     // Generate QR Code
     try {
       const qrData = `https://dealbuzz.com/pay/${invoice._id}?amount=${invoice.total}`;
-      const qrDataURL = await QRCode.toDataURL(qrData, { width: 100, margin: 1 });
-      doc.addImage(qrDataURL, 'PNG', 14, finalY, 30, 30);
+      const qrDataURL = await QRCode.toDataURL(qrData, {
+        width: 100,
+        margin: 1,
+      });
+      doc.addImage(qrDataURL, "PNG", 14, finalY, 30, 30);
       doc.setFontSize(9);
-      doc.setFont('helvetica', 'bold');
+      doc.setFont("helvetica", "bold");
       doc.setTextColor(accentColor);
-      doc.text('Scan to Pay via Card/bKash', 29, finalY + 35, { align: 'center' });
+      doc.text("Scan to Pay via Card/bKash", 29, finalY + 35, {
+        align: "center",
+      });
     } catch (err) {
-      console.error('Failed to generate QR code', err);
+      console.error("Failed to generate QR code", err);
     }
 
     // Footer
     const pageHeight = doc.internal.pageSize.height;
     doc.setFontSize(10);
     doc.setTextColor(accentColor);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Thank you for choosing Dealbuzz!', 105, pageHeight - 30, { align: 'center' });
-    
+    doc.setFont("helvetica", "bold");
+    doc.text("Thank you for choosing Dealbuzz!", 105, pageHeight - 30, {
+      align: "center",
+    });
+
     doc.setFontSize(8);
-    doc.setFont('helvetica', 'normal');
+    doc.setFont("helvetica", "normal");
     doc.setTextColor(secondaryColor);
-    doc.text('Payment is due within the specified period. Please include invoice number on your payment.', 105, pageHeight - 20, { align: 'center' });
+    doc.text(
+      "Payment is due within the specified period. Please include invoice number on your payment.",
+      105,
+      pageHeight - 20,
+      { align: "center" },
+    );
 
     doc.save(`Invoice_${invoice.invoiceNumber}.pdf`);
   };
@@ -232,37 +294,41 @@ export default function Invoices() {
     <div className="bg-white border border-slate-200/60 rounded-3xl flex flex-col h-full overflow-hidden shadow-sm font-sans">
       <div className="p-6 border-b border-slate-100 flex flex-col sm:flex-row gap-4 justify-between items-center bg-slate-50/50 shrink-0">
         <div className="flex items-center gap-3">
-           <motion.div 
-             initial={{ scale: 0.8, opacity: 0 }}
-             animate={{ scale: 1, opacity: 1 }}
-             className="w-12 h-12 rounded-2xl bg-indigo-600 border border-indigo-500 flex items-center justify-center text-white shadow-lg shadow-indigo-600/20"
-           >
-             <FileText className="w-6 h-6" />
-           </motion.div>
-           <div>
-             <h2 className="text-2xl font-display font-bold tracking-tight text-slate-900">{t('invoices')}</h2>
-             <p className="text-xs text-slate-500 font-medium">Manage and track your customer billing</p>
-           </div>
+          <motion.div
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="w-12 h-12 rounded-2xl bg-indigo-600 border border-indigo-500 flex items-center justify-center text-white shadow-lg shadow-indigo-600/20"
+          >
+            <FileText className="w-6 h-6" />
+          </motion.div>
+          <div>
+            <h2 className="text-2xl font-display font-bold tracking-tight text-slate-900">
+              {t("invoices")}
+            </h2>
+            <p className="text-xs text-slate-500 font-medium">
+              Manage and track your customer billing
+            </p>
+          </div>
         </div>
-        
+
         <div className="flex items-center gap-2 w-full sm:w-auto">
           <div className="relative flex-1 sm:w-64">
             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input 
-              type="text" 
-              placeholder="Search invoices..." 
+            <input
+              type="text"
+              placeholder="Search invoices..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-9 pr-4 py-2 text-sm bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all font-medium"
             />
           </div>
-          {user?.role !== 'customer' && (
-            <button 
+          {user?.role !== "customer" && (
+            <button
               onClick={() => setIsModalOpen(true)}
               className="whitespace-nowrap text-sm font-bold text-white uppercase bg-indigo-600 hover:bg-indigo-700 px-5 py-2.5 rounded-xl flex items-center gap-2 shadow-lg shadow-indigo-600/20 transition-all active:scale-95 disabled:opacity-50"
             >
               <Plus className="w-4 h-4" />
-              {t('create_invoice')}
+              {t("create_invoice")}
             </button>
           )}
         </div>
@@ -272,18 +338,18 @@ export default function Invoices() {
         <table className="w-full text-sm text-left border-collapse">
           <thead className="bg-slate-50/80 backdrop-blur-sm text-slate-400 uppercase text-[10px] tracking-[0.1em] border-b border-slate-100 sticky top-0 z-10">
             <tr>
-              <th className="px-6 py-4 font-bold">{t('invoice_number')}</th>
-              <th className="px-6 py-4 font-bold">{t('customer')}</th>
-              <th className="px-6 py-4 font-bold text-right">{t('total')}</th>
-              <th className="px-6 py-4 font-bold text-center">{t('status')}</th>
-              <th className="px-6 py-4 font-bold">{t('due_date')}</th>
-              <th className="px-6 py-4 font-bold text-right">{t('actions')}</th>
+              <th className="px-6 py-4 font-bold">{t("invoice_number")}</th>
+              <th className="px-6 py-4 font-bold">{t("customer")}</th>
+              <th className="px-6 py-4 font-bold text-right">{t("total")}</th>
+              <th className="px-6 py-4 font-bold text-center">{t("status")}</th>
+              <th className="px-6 py-4 font-bold">{t("due_date")}</th>
+              <th className="px-6 py-4 font-bold text-right">{t("actions")}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
             <AnimatePresence mode="popLayout">
               {filteredInvoices.map((inv, idx) => (
-                <motion.tr 
+                <motion.tr
                   key={inv._id}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -296,20 +362,32 @@ export default function Invoices() {
                       <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500 group-hover:bg-white group-hover:text-indigo-600 transition-colors shadow-sm">
                         <FileText className="w-4 h-4" />
                       </div>
-                      <span className="font-mono font-bold text-slate-900">{inv.invoiceNumber}</span>
+                      <span className="font-mono font-bold text-slate-900">
+                        {inv.invoiceNumber}
+                      </span>
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-slate-600 font-medium">{inv.customerId?.name || 'Unknown'}</td>
+                  <td className="px-6 py-4 text-slate-600 font-medium">
+                    {inv.customerId?.name || "Unknown"}
+                  </td>
                   <td className="px-6 py-4 text-right">
-                    <span className="font-mono font-black text-slate-900 text-base">{formatAmount(inv.total)}</span>
+                    <span className="font-mono font-black text-slate-900 text-base">
+                      {formatAmount(inv.total)}
+                    </span>
                   </td>
                   <td className="px-6 py-4 text-center">
                     {(() => {
                       const status = inv.status?.toUpperCase();
-                      const isPaid = status === 'PAID';
+                      const isPaid = status === "PAID";
                       return (
-                        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold tracking-wider uppercase border ${isPaid ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-amber-50 text-amber-700 border-amber-100'}`}>
-                          {isPaid ? <CheckCircle2 className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
+                        <span
+                          className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold tracking-wider uppercase border ${isPaid ? "bg-emerald-50 text-emerald-700 border-emerald-100" : "bg-amber-50 text-amber-700 border-amber-100"}`}
+                        >
+                          {isPaid ? (
+                            <CheckCircle2 className="w-3 h-3" />
+                          ) : (
+                            <Clock className="w-3 h-3" />
+                          )}
                           {inv.status}
                         </span>
                       );
@@ -317,27 +395,40 @@ export default function Invoices() {
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex flex-col">
-                      <span className="text-slate-900 font-bold text-xs">{format(new Date(inv.dueDate), 'MMM d, yyyy')}</span>
-                      <span className="text-[10px] text-slate-400 font-bold uppercase tracking-tight">Due in {Math.ceil((new Date(inv.dueDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))} days</span>
+                      <span className="text-slate-900 font-bold text-xs">
+                        {format(new Date(inv.dueDate), "MMM d, yyyy")}
+                      </span>
+                      <span className="text-[10px] text-slate-400 font-bold uppercase tracking-tight">
+                        Due in{" "}
+                        {Math.ceil(
+                          (new Date(inv.dueDate).getTime() -
+                            new Date().getTime()) /
+                            (1000 * 60 * 60 * 24),
+                        )}{" "}
+                        days
+                      </span>
                     </div>
                   </td>
                   <td className="px-6 py-4 text-right">
-                     <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0">
-                       <button 
-                          onClick={() => { setSelectedInvoice(inv); setIsPreviewOpen(true); }}
-                          className="w-9 h-9 rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-indigo-600 hover:border-indigo-200 flex items-center justify-center transition-all shadow-sm hover:shadow-md active:scale-90"
-                          title="View Details"
-                        >
-                          <Eye className="w-4.5 h-4.5" />
-                        </button>
-                       <button 
-                          onClick={() => downloadPDF(inv)}
-                          className="w-9 h-9 rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-indigo-600 hover:border-indigo-200 flex items-center justify-center transition-all shadow-sm hover:shadow-md active:scale-90"
-                          title="Download PDF"
-                        >
-                          <Download className="w-4.5 h-4.5" />
-                        </button>
-                     </div>
+                    <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0">
+                      <button
+                        onClick={() => {
+                          setSelectedInvoice(inv);
+                          setIsPreviewOpen(true);
+                        }}
+                        className="w-9 h-9 rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-indigo-600 hover:border-indigo-200 flex items-center justify-center transition-all shadow-sm hover:shadow-md active:scale-90"
+                        title="View Details"
+                      >
+                        <Eye className="w-4.5 h-4.5" />
+                      </button>
+                      <button
+                        onClick={() => downloadPDF(inv)}
+                        className="w-9 h-9 rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-indigo-600 hover:border-indigo-200 flex items-center justify-center transition-all shadow-sm hover:shadow-md active:scale-90"
+                        title="Download PDF"
+                      >
+                        <Download className="w-4.5 h-4.5" />
+                      </button>
+                    </div>
                   </td>
                 </motion.tr>
               ))}
@@ -349,8 +440,12 @@ export default function Invoices() {
                     <div className="w-16 h-16 rounded-3xl bg-slate-50 flex items-center justify-center text-slate-200 mb-4 border border-slate-100">
                       <Search className="w-8 h-8" />
                     </div>
-                    <p className="text-slate-500 font-bold text-lg">{t('no_invoices_found')}</p>
-                    <p className="text-slate-400 text-sm mt-1">Try adjusting your search query</p>
+                    <p className="text-slate-500 font-bold text-lg">
+                      {t("no_invoices_found")}
+                    </p>
+                    <p className="text-slate-400 text-sm mt-1">
+                      Try adjusting your search query
+                    </p>
                   </div>
                 </td>
               </tr>
@@ -360,7 +455,9 @@ export default function Invoices() {
                 <td colSpan={6} className="px-6 py-24 text-center">
                   <div className="flex flex-col items-center">
                     <div className="w-12 h-12 border-4 border-indigo-100 border-t-indigo-600 rounded-full animate-spin mb-4" />
-                    <p className="text-slate-400 font-medium uppercase tracking-widest text-[10px]">{t('loading_invoices')}</p>
+                    <p className="text-slate-400 font-medium uppercase tracking-widest text-[10px]">
+                      {t("loading_invoices")}
+                    </p>
                   </div>
                 </td>
               </tr>
@@ -372,15 +469,15 @@ export default function Invoices() {
       <AnimatePresence>
         {isModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsModalOpen(false)}
-              className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" 
+              className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
             />
-            
-            <motion.div 
+
+            <motion.div
               initial={{ scale: 0.95, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 20 }}
@@ -393,11 +490,15 @@ export default function Invoices() {
                     <Plus className="w-5 h-5" />
                   </div>
                   <div>
-                    <h2 className="text-xl font-display font-bold text-slate-900">{t('create_invoice')}</h2>
-                    <p className="text-[10px] text-slate-400 uppercase tracking-widest font-bold">New Billing Settlement</p>
+                    <h2 className="text-xl font-display font-bold text-slate-900">
+                      {t("create_invoice")}
+                    </h2>
+                    <p className="text-[10px] text-slate-400 uppercase tracking-widest font-bold">
+                      New Billing Settlement
+                    </p>
                   </div>
                 </div>
-                <button 
+                <button
                   onClick={() => setIsModalOpen(false)}
                   className="w-10 h-10 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-900 transition-colors"
                 >
@@ -405,76 +506,117 @@ export default function Invoices() {
                 </button>
               </div>
 
-              <form onSubmit={handleCreate} className="flex-1 flex flex-col overflow-hidden">
+              <form
+                onSubmit={handleCreate}
+                className="flex-1 flex flex-col overflow-hidden"
+              >
                 <div className="flex-1 overflow-y-auto custom-scrollbar p-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                     {/* Customer Selection */}
                     <div className="space-y-3">
                       <div className="flex items-center gap-2 mb-1">
                         <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                        <h4 className="text-[10px] font-black text-slate-900 uppercase tracking-[0.2em]">Client Information</h4>
+                        <h4 className="text-[10px] font-black text-slate-900 uppercase tracking-[0.2em]">
+                          Client Information
+                        </h4>
                       </div>
-                      
+
                       <div className="relative">
                         {formData.customerId ? (
-                          <motion.div 
+                          <motion.div
                             initial={{ opacity: 0, x: -10 }}
                             animate={{ opacity: 1, x: 0 }}
                             className="flex flex-col border border-indigo-100 rounded-xl p-3 bg-indigo-50/40 gap-1 relative group"
                           >
                             <div className="flex justify-between items-center">
                               <span className="text-xs font-black text-indigo-900">
-                                {customers.find(c => c._id === formData.customerId)?.name}
+                                {
+                                  customers.find(
+                                    (c) => c._id === formData.customerId,
+                                  )?.name
+                                }
                               </span>
-                              <button 
-                                type="button" 
-                                onClick={() => setFormData({...formData, customerId: ''})} 
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setFormData({ ...formData, customerId: "" })
+                                }
                                 className="w-5 h-5 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center hover:bg-rose-500 hover:text-white transition-all shadow-sm"
                               >
                                 <X className="w-3 h-3" />
                               </button>
                             </div>
                             <span className="text-[10px] text-indigo-600 font-bold uppercase tracking-tight">
-                              {customers.find(c => c._id === formData.customerId)?.email || customers.find(c => c._id === formData.customerId)?.phone}
+                              {customers.find(
+                                (c) => c._id === formData.customerId,
+                              )?.email ||
+                                customers.find(
+                                  (c) => c._id === formData.customerId,
+                                )?.phone}
                             </span>
                           </motion.div>
                         ) : (
                           <div className="relative">
                             <Search className="w-5 h-5 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-                            <input 
-                              type="text" 
-                              placeholder="Search customers to add..." 
+                            <input
+                              type="text"
+                              placeholder="Search customers to add..."
                               value={customerSearch}
-                              onChange={e => { setCustomerSearch(e.target.value); setShowCustomerDropdown(true); }}
+                              onChange={(e) => {
+                                setCustomerSearch(e.target.value);
+                                setShowCustomerDropdown(true);
+                              }}
                               onFocus={() => setShowCustomerDropdown(true)}
                               className="w-full border-2 border-slate-100 rounded-2xl pl-11 pr-4 py-3 text-sm outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/5 transition-all font-medium"
                             />
-                            
+
                             <AnimatePresence>
                               {showCustomerDropdown && (
-                                <motion.div 
+                                <motion.div
                                   initial={{ opacity: 0, y: 10 }}
                                   animate={{ opacity: 1, y: 0 }}
                                   exit={{ opacity: 0, y: 10 }}
                                   className="absolute z-20 w-full mt-2 bg-white border border-slate-200 rounded-2xl shadow-2xl max-h-60 overflow-y-auto p-2"
                                 >
-                                  {customers.filter(c => 
-                                    (c.name?.toLowerCase() || '').includes(customerSearch.toLowerCase()) || 
-                                    (c.email?.toLowerCase() || '').includes(customerSearch.toLowerCase())
-                                  ).map(c => (
-                                    <div 
-                                      key={c._id} 
-                                      onClick={() => { setFormData({...formData, customerId: c._id}); setShowCustomerDropdown(false); setCustomerSearch(''); }}
-                                      className="p-3 hover:bg-slate-50 cursor-pointer rounded-xl flex items-center justify-between group transition-colors"
-                                    >
-                                      <div>
-                                        <div className="text-sm font-bold text-slate-800">{c.name}</div>
-                                        <div className="text-[10px] text-slate-400 font-medium">{c.email}</div>
+                                  {customers
+                                    .filter(
+                                      (c) =>
+                                        (c.name?.toLowerCase() || "").includes(
+                                          customerSearch.toLowerCase(),
+                                        ) ||
+                                        (c.email?.toLowerCase() || "").includes(
+                                          customerSearch.toLowerCase(),
+                                        ),
+                                    )
+                                    .map((c) => (
+                                      <div
+                                        key={c._id}
+                                        onClick={() => {
+                                          setFormData({
+                                            ...formData,
+                                            customerId: c._id,
+                                          });
+                                          setShowCustomerDropdown(false);
+                                          setCustomerSearch("");
+                                        }}
+                                        className="p-3 hover:bg-slate-50 cursor-pointer rounded-xl flex items-center justify-between group transition-colors"
+                                      >
+                                        <div>
+                                          <div className="text-sm font-bold text-slate-800">
+                                            {c.name}
+                                          </div>
+                                          <div className="text-[10px] text-slate-400 font-medium">
+                                            {c.email}
+                                          </div>
+                                        </div>
+                                        <Plus className="w-4 h-4 text-slate-300 group-hover:text-indigo-500 transition-colors" />
                                       </div>
-                                      <Plus className="w-4 h-4 text-slate-300 group-hover:text-indigo-500 transition-colors" />
+                                    ))}
+                                  {customers.length === 0 && (
+                                    <div className="p-4 text-center text-xs text-slate-400">
+                                      No customers found
                                     </div>
-                                  ))}
-                                  {customers.length === 0 && <div className="p-4 text-center text-xs text-slate-400">No customers found</div>}
+                                  )}
                                 </motion.div>
                               )}
                             </AnimatePresence>
@@ -487,17 +629,38 @@ export default function Invoices() {
                     <div className="space-y-3">
                       <div className="flex items-center gap-2 mb-1">
                         <Filter className="w-4 h-4 text-indigo-500" />
-                        <h4 className="text-[10px] font-black text-slate-900 uppercase tracking-[0.2em]">Invoice Settings</h4>
+                        <h4 className="text-[10px] font-black text-slate-900 uppercase tracking-[0.2em]">
+                          Invoice Settings
+                        </h4>
                       </div>
-                      
+
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <label className="block text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1.5 ml-1">Invoice Number</label>
-                          <input disabled value={formData.invoiceNumber} className="w-full border border-slate-100 bg-slate-50/50 rounded-xl px-4 py-2 text-xs font-mono font-bold text-slate-400 cursor-not-allowed" />
+                          <label className="block text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1.5 ml-1">
+                            Invoice Number
+                          </label>
+                          <input
+                            disabled
+                            value={formData.invoiceNumber}
+                            className="w-full border border-slate-100 bg-slate-50/50 rounded-xl px-4 py-2 text-xs font-mono font-bold text-slate-400 cursor-not-allowed"
+                          />
                         </div>
                         <div>
-                          <label className="block text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1.5 ml-1">{t('due_date')}</label>
-                          <input required type="date" value={formData.dueDate} onChange={e => setFormData({...formData, dueDate: e.target.value})} className="w-full border border-slate-100 rounded-xl px-4 py-2 text-xs outline-none focus:border-indigo-500 focus:bg-slate-50 transition-all font-bold" />
+                          <label className="block text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1.5 ml-1">
+                            {t("due_date")}
+                          </label>
+                          <input
+                            required
+                            type="date"
+                            value={formData.dueDate}
+                            onChange={(e) =>
+                              setFormData({
+                                ...formData,
+                                dueDate: e.target.value,
+                              })
+                            }
+                            className="w-full border border-slate-100 rounded-xl px-4 py-2 text-xs outline-none focus:border-indigo-500 focus:bg-slate-50 transition-all font-bold"
+                          />
                         </div>
                       </div>
                     </div>
@@ -508,77 +671,141 @@ export default function Invoices() {
                     <div className="flex border-b border-slate-100 pb-2 justify-between items-center bg-white sticky top-0 z-10">
                       <div className="flex items-center gap-2">
                         <FileText className="w-4 h-4 text-indigo-500" />
-                        <h4 className="text-[10px] font-black text-slate-900 uppercase tracking-[0.2em]">{t('item_details')}</h4>
+                        <h4 className="text-[10px] font-black text-slate-900 uppercase tracking-[0.2em]">
+                          {t("item_details")}
+                        </h4>
                       </div>
-                      <button 
-                        type="button" 
-                        onClick={() => setFormData({...formData, items: [...formData.items, { name: '', itemType: 'Product', quantity: 1, rate: 0, total: 0 }]})}
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setFormData({
+                            ...formData,
+                            items: [
+                              ...formData.items,
+                              {
+                                name: "",
+                                itemType: "Product",
+                                quantity: 1,
+                                rate: 0,
+                                total: 0,
+                              },
+                            ],
+                          })
+                        }
                         className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-indigo-50 text-indigo-600 text-[10px] font-black uppercase tracking-widest hover:bg-slate-900 hover:text-white transition-all active:scale-95 shadow-sm"
                       >
-                        <Plus className="w-3.5 h-3.5" /> {t('add_item')}
+                        <Plus className="w-3.5 h-3.5" /> {t("add_item")}
                       </button>
                     </div>
-                    
+
                     <div className="space-y-2 pt-1 uppercase">
                       <AnimatePresence initial={false}>
                         {formData.items.map((item, index) => (
-                          <motion.div 
+                          <motion.div
                             key={index}
                             initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: 'auto' }}
+                            animate={{ opacity: 1, height: "auto" }}
                             exit={{ opacity: 0, height: 0 }}
                             className="bg-white border border-slate-100 rounded-xl p-3 shadow-sm relative group overflow-hidden"
                           >
                             <div className="grid grid-cols-12 gap-3 items-end">
                               <div className="col-span-12 sm:col-span-4">
-                                <label className="block text-[9px] font-black text-slate-400 uppercase mb-1">{t('item_name')}</label>
-                                <input required placeholder="Item description..." type="text" value={item.name} onChange={e => {
-                                  const newItm = [...formData.items];
-                                  newItm[index].name = e.target.value;
-                                  setFormData({...formData, items: newItm});
-                                }} className="w-full border border-slate-50 focus:border-indigo-100 rounded-lg px-3 py-1.5 text-xs outline-none bg-slate-50/50 focus:bg-white transition-all font-bold" />
+                                <label className="block text-[9px] font-black text-slate-400 uppercase mb-1">
+                                  {t("item_name")}
+                                </label>
+                                <input
+                                  required
+                                  placeholder="Item description..."
+                                  type="text"
+                                  value={item.name}
+                                  onChange={(e) => {
+                                    const newItm = [...formData.items];
+                                    newItm[index].name = e.target.value;
+                                    setFormData({ ...formData, items: newItm });
+                                  }}
+                                  className="w-full border border-slate-50 focus:border-indigo-100 rounded-lg px-3 py-1.5 text-xs outline-none bg-slate-50/50 focus:bg-white transition-all font-bold"
+                                />
                               </div>
                               <div className="col-span-4 sm:col-span-2">
-                                <label className="block text-[9px] font-black text-slate-400 uppercase mb-1">Type</label>
-                                <select required value={item.itemType} onChange={e => {
-                                  const newItm = [...formData.items];
-                                  newItm[index].itemType = e.target.value as any;
-                                  setFormData({...formData, items: newItm});
-                                }} className="w-full border border-slate-50 focus:border-indigo-100 rounded-lg px-2 py-1.5 text-xs outline-none bg-slate-50/50 transition-all font-bold cursor-pointer">
+                                <label className="block text-[9px] font-black text-slate-400 uppercase mb-1">
+                                  Type
+                                </label>
+                                <select
+                                  required
+                                  value={item.itemType}
+                                  onChange={(e) => {
+                                    const newItm = [...formData.items];
+                                    newItm[index].itemType = e.target
+                                      .value as any;
+                                    setFormData({ ...formData, items: newItm });
+                                  }}
+                                  className="w-full border border-slate-50 focus:border-indigo-100 rounded-lg px-2 py-1.5 text-xs outline-none bg-slate-50/50 transition-all font-bold cursor-pointer"
+                                >
                                   <option value="Product">📦 PROD</option>
                                   <option value="Service">⚡ SERV</option>
                                 </select>
                               </div>
                               <div className="col-span-3 sm:col-span-2">
-                                <label className="block text-[9px] font-black text-slate-400 uppercase mb-1">Qty</label>
-                                <input required type="number" min="1" value={item.quantity} onChange={e => {
-                                  const newItm = [...formData.items];
-                                  newItm[index].quantity = Number(e.target.value);
-                                  newItm[index].total = newItm[index].quantity * newItm[index].rate;
-                                  setFormData({...formData, items: newItm});
-                                }} className="w-full border border-slate-50 focus:border-indigo-100 rounded-lg px-2 py-1.5 text-xs outline-none bg-slate-50/50 transition-all font-mono font-bold text-center" />
+                                <label className="block text-[9px] font-black text-slate-400 uppercase mb-1">
+                                  Qty
+                                </label>
+                                <input
+                                  required
+                                  type="number"
+                                  min="1"
+                                  value={item.quantity}
+                                  onChange={(e) => {
+                                    const newItm = [...formData.items];
+                                    newItm[index].quantity = Number(
+                                      e.target.value,
+                                    );
+                                    newItm[index].total =
+                                      newItm[index].quantity *
+                                      newItm[index].rate;
+                                    setFormData({ ...formData, items: newItm });
+                                  }}
+                                  className="w-full border border-slate-50 focus:border-indigo-100 rounded-lg px-2 py-1.5 text-xs outline-none bg-slate-50/50 transition-all font-mono font-bold text-center"
+                                />
                               </div>
                               <div className="col-span-5 sm:col-span-2">
-                                <label className="block text-[9px] font-black text-slate-400 uppercase mb-1">Rate</label>
-                                <input required type="number" min="0" step="0.01" value={item.rate || ''} onChange={e => {
-                                  const newItm = [...formData.items];
-                                  newItm[index].rate = Number(e.target.value);
-                                  newItm[index].total = newItm[index].quantity * newItm[index].rate;
-                                  setFormData({...formData, items: newItm});
-                                }} className="w-full border border-slate-50 focus:border-indigo-100 rounded-lg px-3 py-1.5 text-xs outline-none bg-slate-50/50 transition-all font-mono font-bold text-right" />
+                                <label className="block text-[9px] font-black text-slate-400 uppercase mb-1">
+                                  Rate
+                                </label>
+                                <input
+                                  required
+                                  type="number"
+                                  min="0"
+                                  step="0.01"
+                                  value={item.rate || ""}
+                                  onChange={(e) => {
+                                    const newItm = [...formData.items];
+                                    newItm[index].rate = Number(e.target.value);
+                                    newItm[index].total =
+                                      newItm[index].quantity *
+                                      newItm[index].rate;
+                                    setFormData({ ...formData, items: newItm });
+                                  }}
+                                  className="w-full border border-slate-50 focus:border-indigo-100 rounded-lg px-3 py-1.5 text-xs outline-none bg-slate-50/50 transition-all font-mono font-bold text-right"
+                                />
                               </div>
                               <div className="col-span-12 sm:col-span-2 text-right">
-                                <label className="block text-[9px] font-black text-slate-400 uppercase mb-1">Total</label>
-                                <div className="font-mono font-black text-slate-900 text-sm px-2 py-1.5">{formatAmount(item.total)}</div>
+                                <label className="block text-[9px] font-black text-slate-400 uppercase mb-1">
+                                  Total
+                                </label>
+                                <div className="font-mono font-black text-slate-900 text-sm px-2 py-1.5">
+                                  {formatAmount(item.total)}
+                                </div>
                               </div>
                             </div>
-                            
+
                             {formData.items.length > 1 && (
-                              <button 
+                              <button
                                 type="button"
                                 onClick={() => {
-                                   const newItm = formData.items.filter((_, i) => i !== index);
-                                   setFormData({...formData, items: newItm});
+                                  const newItm = formData.items.filter(
+                                    (_, i) => i !== index,
+                                  );
+                                  setFormData({ ...formData, items: newItm });
                                 }}
                                 className="absolute top-1 right-1 p-1 text-slate-300 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all"
                               >
@@ -596,45 +823,63 @@ export default function Invoices() {
                 <div className="px-6 py-4 border-t border-slate-100 bg-white flex flex-col sm:flex-row gap-4 items-center justify-between shrink-0 shadow-[0_-4px_20px_rgba(0,0,0,0.03)] relative z-20">
                   <div className="flex gap-4 items-center bg-slate-50 border border-slate-100 rounded-xl px-4 py-2">
                     <div className="flex flex-col items-end border-r border-slate-200 pr-4">
-                      <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">{t('subtotal')}</span>
-                      <span className="font-mono font-bold text-slate-700 text-xs leading-none">{formatAmount(calculateTotals().subtotal)}</span>
+                      <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">
+                        {t("subtotal")}
+                      </span>
+                      <span className="font-mono font-bold text-slate-700 text-xs leading-none">
+                        {formatAmount(calculateTotals().subtotal)}
+                      </span>
                     </div>
-                    
+
                     <div className="flex flex-col items-center border-r border-slate-200 pr-4">
                       <div className="flex items-center gap-1.5 mb-1">
-                        <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">{t('tax')}</span>
+                        <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">
+                          {t("tax")}
+                        </span>
                         <div className="relative">
-                          <input 
-                            type="number" 
-                            min="0" max="100" 
-                            value={formData.taxRate} 
-                            onChange={e => setFormData({...formData, taxRate: Number(e.target.value)})} 
-                            className="w-10 border border-slate-200 rounded px-1 py-0.5 text-[8px] font-bold text-center outline-none bg-white focus:border-indigo-300 transition-colors" 
+                          <input
+                            type="number"
+                            min="0"
+                            max="100"
+                            value={formData.taxRate}
+                            onChange={(e) =>
+                              setFormData({
+                                ...formData,
+                                taxRate: Number(e.target.value),
+                              })
+                            }
+                            className="w-10 border border-slate-200 rounded px-1 py-0.5 text-[8px] font-bold text-center outline-none bg-white focus:border-indigo-300 transition-colors"
                           />
                         </div>
                       </div>
-                      <span className="font-mono font-bold text-slate-500 text-[10px] leading-none">{formatAmount(calculateTotals().tax)}</span>
+                      <span className="font-mono font-bold text-slate-500 text-[10px] leading-none">
+                        {formatAmount(calculateTotals().tax)}
+                      </span>
                     </div>
 
                     <div className="flex flex-col items-end">
-                      <span className="text-[9px] font-black text-indigo-500 uppercase tracking-widest mb-1">{t('total')}</span>
-                      <span className="text-base font-mono font-black text-indigo-600 leading-none">{formatAmount(calculateTotals().total)}</span>
+                      <span className="text-[9px] font-black text-indigo-500 uppercase tracking-widest mb-1">
+                        {t("total")}
+                      </span>
+                      <span className="text-base font-mono font-black text-indigo-600 leading-none">
+                        {formatAmount(calculateTotals().total)}
+                      </span>
                     </div>
                   </div>
 
                   <div className="flex justify-end gap-2 w-full sm:w-auto">
-                    <button 
-                      type="button" 
-                      onClick={() => setIsModalOpen(false)} 
+                    <button
+                      type="button"
+                      onClick={() => setIsModalOpen(false)}
                       className="px-4 py-2 text-[10px] font-black text-slate-500 uppercase hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-all tracking-widest"
                     >
-                      {t('cancel')}
+                      {t("cancel")}
                     </button>
-                    <button 
-                      type="submit" 
+                    <button
+                      type="submit"
                       className="px-6 py-2 text-[10px] font-black text-white uppercase bg-indigo-600 hover:bg-indigo-500 rounded-lg shadow-md shadow-indigo-600/20 transition-all active:scale-95 tracking-widest"
                     >
-                      {t('create_invoice')}
+                      {t("create_invoice")}
                     </button>
                   </div>
                 </div>
@@ -647,15 +892,15 @@ export default function Invoices() {
       <AnimatePresence>
         {isPreviewOpen && selectedInvoice && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 lg:p-8">
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsPreviewOpen(false)}
-              className="absolute inset-0 bg-slate-900/60 backdrop-blur-md" 
+              className="absolute inset-0 bg-slate-900/60 backdrop-blur-md"
             />
-            
-            <motion.div 
+
+            <motion.div
               initial={{ scale: 0.9, opacity: 0, y: 30 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.9, opacity: 0, y: 30 }}
@@ -668,25 +913,32 @@ export default function Invoices() {
                     <FileText className="w-5 h-5" />
                   </div>
                   <div>
-                    <h3 className="font-display font-black text-slate-900 uppercase tracking-tight">{selectedInvoice.invoiceNumber}</h3>
-                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.2em]">{format(new Date(selectedInvoice.createdAt), 'MMMM dd, yyyy')}</p>
+                    <h3 className="font-display font-black text-slate-900 uppercase tracking-tight">
+                      {selectedInvoice.invoiceNumber}
+                    </h3>
+                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.2em]">
+                      {format(
+                        new Date(selectedInvoice.createdAt),
+                        "MMMM dd, yyyy",
+                      )}
+                    </p>
                   </div>
                 </div>
-                
+
                 <div className="flex items-center gap-2">
-                  <button 
+                  <button
                     onClick={() => downloadPDF(selectedInvoice)}
                     className="flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 text-white text-[11px] font-black uppercase tracking-widest hover:bg-indigo-700 transition-all active:scale-95 shadow-lg shadow-indigo-600/20"
                   >
                     <Download className="w-4 h-4" /> Download
                   </button>
-                  <button 
+                  <button
                     onClick={() => window.print()}
                     className="p-2.5 rounded-xl border border-slate-200 text-slate-400 hover:text-slate-900 hover:bg-slate-50 transition-all"
                   >
                     <Printer className="w-4.5 h-4.5" />
                   </button>
-                  <button 
+                  <button
                     onClick={() => setIsPreviewOpen(false)}
                     className="p-2.5 rounded-xl border border-slate-200 text-slate-400 hover:text-rose-500 hover:bg-rose-50 hover:border-rose-100 transition-all"
                   >
@@ -705,58 +957,113 @@ export default function Invoices() {
                         <Zap className="w-8 h-8 text-indigo-400" />
                       </div>
                       <div>
-                        <h1 className="text-3xl font-display font-black text-slate-900 tracking-tighter">INVOICE</h1>
-                        <p className="text-sm text-slate-400 font-medium tracking-wide italic">Billed through Business Manager</p>
+                        <h1 className="text-3xl font-display font-black text-slate-900 tracking-tighter">
+                          INVOICE
+                        </h1>
+                        <p className="text-sm text-slate-400 font-medium tracking-wide italic">
+                          Billed through Business Manager
+                        </p>
                       </div>
                     </div>
-                    
+
                     <div className="text-right space-y-1">
-                      <p className="text-lg font-black text-slate-900 uppercase">Your Company Name</p>
-                      <p className="text-sm text-slate-400 font-medium italic">123 Street Address, City, State, ZIP</p>
-                      <p className="text-sm text-slate-400 font-medium">support@yourcompany.com</p>
-                      <p className="text-sm text-slate-400 font-medium">+1 (234) 567-890</p>
+                      <p className="text-lg font-black text-slate-900 uppercase">
+                        Your Company Name
+                      </p>
+                      <p className="text-sm text-slate-400 font-medium italic">
+                        123 Street Address, City, State, ZIP
+                      </p>
+                      <p className="text-sm text-slate-400 font-medium">
+                        support@yourcompany.com
+                      </p>
+                      <p className="text-sm text-slate-400 font-medium">
+                        +1 (234) 567-890
+                      </p>
                     </div>
                   </div>
 
                   {/* Status Banner */}
-                  <div className={`mb-12 p-6 rounded-3xl border flex items-center justify-between ${selectedInvoice.status?.toUpperCase() === 'PAID' ? 'bg-emerald-50/50 border-emerald-100 text-emerald-900' : 'bg-amber-50/50 border-amber-100 text-amber-900'}`}>
+                  <div
+                    className={`mb-12 p-6 rounded-3xl border flex items-center justify-between ${selectedInvoice.status?.toUpperCase() === "PAID" ? "bg-emerald-50/50 border-emerald-100 text-emerald-900" : "bg-amber-50/50 border-amber-100 text-amber-900"}`}
+                  >
                     <div className="flex items-center gap-3">
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center ${selectedInvoice.status?.toUpperCase() === 'PAID' ? 'bg-emerald-500 text-white' : 'bg-amber-500 text-white'}`}>
-                        {selectedInvoice.status?.toUpperCase() === 'PAID' ? <CheckCircle2 className="w-5 h-5" /> : <Clock className="w-5 h-5" />}
+                      <div
+                        className={`w-10 h-10 rounded-full flex items-center justify-center ${selectedInvoice.status?.toUpperCase() === "PAID" ? "bg-emerald-500 text-white" : "bg-amber-500 text-white"}`}
+                      >
+                        {selectedInvoice.status?.toUpperCase() === "PAID" ? (
+                          <CheckCircle2 className="w-5 h-5" />
+                        ) : (
+                          <Clock className="w-5 h-5" />
+                        )}
                       </div>
                       <div>
-                        <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-60">Settlement Status</p>
-                        <p className="text-lg font-black uppercase tracking-tight">{selectedInvoice.status}</p>
+                        <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-60">
+                          Settlement Status
+                        </p>
+                        <p className="text-lg font-black uppercase tracking-tight">
+                          {selectedInvoice.status}
+                        </p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-60">Payment Due By</p>
-                      <p className="text-lg font-mono font-black">{format(new Date(selectedInvoice.dueDate), 'MMM dd, yyyy')}</p>
+                      <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-60">
+                        Payment Due By
+                      </p>
+                      <p className="text-lg font-mono font-black">
+                        {format(
+                          new Date(selectedInvoice.dueDate),
+                          "MMM dd, yyyy",
+                        )}
+                      </p>
                     </div>
                   </div>
 
                   {/* Client Info Grid */}
                   <div className="grid grid-cols-2 gap-16 mb-16">
                     <div>
-                      <h4 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">Bill To</h4>
+                      <h4 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">
+                        Bill To
+                      </h4>
                       <div className="space-y-1">
-                        <p className="text-xl font-black text-slate-900">{selectedInvoice.customerId?.name || 'Walk-in Customer'}</p>
-                        <p className="text-slate-500 font-medium">{selectedInvoice.customerId?.email}</p>
-                        <p className="text-slate-500 font-medium">{selectedInvoice.customerId?.phone}</p>
-                        <p className="text-slate-400 text-sm mt-2 font-medium italic">Client ID: {selectedInvoice.customerId?._id?.slice(-8).toUpperCase()}</p>
+                        <p className="text-xl font-black text-slate-900">
+                          {selectedInvoice.customerId?.name ||
+                            "Walk-in Customer"}
+                        </p>
+                        <p className="text-slate-500 font-medium">
+                          {selectedInvoice.customerId?.email}
+                        </p>
+                        <p className="text-slate-500 font-medium">
+                          {selectedInvoice.customerId?.phone}
+                        </p>
+                        <p className="text-slate-400 text-sm mt-2 font-medium italic">
+                          Client ID:{" "}
+                          {selectedInvoice.customerId?._id
+                            ?.slice(-8)
+                            .toUpperCase()}
+                        </p>
                       </div>
                     </div>
-                    
+
                     <div className="text-right">
-                      <h4 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">Invoice Summary</h4>
+                      <h4 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">
+                        Invoice Summary
+                      </h4>
                       <div className="space-y-2">
                         <div className="flex justify-end gap-8">
-                          <span className="text-slate-400 font-bold uppercase text-[10px] tracking-widest self-center">Invoice No.</span>
-                          <span className="text-slate-900 font-mono font-black border-b-2 border-slate-100 pb-1">{selectedInvoice.invoiceNumber}</span>
+                          <span className="text-slate-400 font-bold uppercase text-[10px] tracking-widest self-center">
+                            Invoice No.
+                          </span>
+                          <span className="text-slate-900 font-mono font-black border-b-2 border-slate-100 pb-1">
+                            {selectedInvoice.invoiceNumber}
+                          </span>
                         </div>
                         <div className="flex justify-end gap-8">
-                          <span className="text-slate-400 font-bold uppercase text-[10px] tracking-widest self-center">Reference</span>
-                          <span className="text-slate-900 font-mono font-black border-b-2 border-slate-100 pb-1">BMS-{selectedInvoice._id?.slice(-6).toUpperCase()}</span>
+                          <span className="text-slate-400 font-bold uppercase text-[10px] tracking-widest self-center">
+                            Reference
+                          </span>
+                          <span className="text-slate-900 font-mono font-black border-b-2 border-slate-100 pb-1">
+                            BMS-{selectedInvoice._id?.slice(-6).toUpperCase()}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -776,17 +1083,33 @@ export default function Invoices() {
                       </thead>
                       <tbody className="divide-y divide-slate-100">
                         {selectedInvoice.items?.map((item: any, i: number) => (
-                          <tr key={i} className="hover:bg-slate-50/30 transition-colors">
+                          <tr
+                            key={i}
+                            className="hover:bg-slate-50/30 transition-colors"
+                          >
                             <td className="py-6 px-4">
-                              <p className="font-bold text-slate-900">{item.name}</p>
-                              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Product SKU: {i+1}00-{item.itemType.slice(0,1)}</p>
+                              <p className="font-bold text-slate-900">
+                                {item.name}
+                              </p>
+                              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">
+                                Product SKU: {i + 1}00-
+                                {item.itemType.slice(0, 1)}
+                              </p>
                             </td>
                             <td className="py-6 px-4 text-center">
-                              <span className="text-[10px] font-black px-2 py-1 bg-slate-100 rounded text-slate-600 uppercase">{item.itemType}</span>
+                              <span className="text-[10px] font-black px-2 py-1 bg-slate-100 rounded text-slate-600 uppercase">
+                                {item.itemType}
+                              </span>
                             </td>
-                            <td className="py-6 px-4 text-center font-mono font-bold text-slate-600">{item.quantity}</td>
-                            <td className="py-6 px-4 text-right font-mono font-bold text-slate-600">{formatAmount(item.rate)}</td>
-                            <td className="py-6 px-4 text-right font-mono font-black text-slate-900">{formatAmount(item.total)}</td>
+                            <td className="py-6 px-4 text-center font-mono font-bold text-slate-600">
+                              {item.quantity}
+                            </td>
+                            <td className="py-6 px-4 text-right font-mono font-bold text-slate-600">
+                              {formatAmount(item.rate)}
+                            </td>
+                            <td className="py-6 px-4 text-right font-mono font-black text-slate-900">
+                              {formatAmount(item.total)}
+                            </td>
                           </tr>
                         ))}
                       </tbody>
@@ -796,46 +1119,92 @@ export default function Invoices() {
                   {/* Summary Section */}
                   <div className="flex justify-between items-end pt-8 border-t-2 border-slate-100">
                     <div className="flex flex-col items-center gap-2">
-                       <QRCodeSVG value={`Payment Link: https://pay.example.com?inv=${selectedInvoice.invoiceNumber}&amount=${selectedInvoice.total}`} size={100} level="H" />
-                       <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Scan to Pay</span>
+                      <QRCodeSVG
+                        value={`Payment Link: https://pay.example.com?inv=${selectedInvoice.invoiceNumber}&amount=${selectedInvoice.total}`}
+                        size={100}
+                        level="H"
+                      />
+                      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                        Scan to Pay
+                      </span>
                     </div>
 
                     <div className="w-full max-w-sm space-y-4">
                       <div className="flex justify-between items-center px-4">
-                        <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Subtotal</span>
-                        <span className="font-mono font-bold text-slate-600">{formatAmount(selectedInvoice.subtotal)}</span>
+                        <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest">
+                          Subtotal
+                        </span>
+                        <span className="font-mono font-bold text-slate-600">
+                          {formatAmount(selectedInvoice.subtotal)}
+                        </span>
                       </div>
                       <div className="flex justify-between items-center px-4">
-                        <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Tax ({selectedInvoice.taxRate}%)</span>
-                        <span className="font-mono font-bold text-slate-600">{formatAmount(selectedInvoice.tax)}</span>
+                        <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest">
+                          Tax ({selectedInvoice.taxRate}%)
+                        </span>
+                        <span className="font-mono font-bold text-slate-600">
+                          {formatAmount(selectedInvoice.tax)}
+                        </span>
                       </div>
                       <div className="flex justify-between items-center bg-slate-900 p-6 rounded-3xl text-white shadow-xl shadow-slate-900/20">
-                        <span className="text-sm font-black uppercase tracking-[0.25em]">Grand Total</span>
-                        <span className="text-3xl font-mono font-black tracking-tighter">{formatAmount(selectedInvoice.total)}</span>
+                        <span className="text-sm font-black uppercase tracking-[0.25em]">
+                          Grand Total
+                        </span>
+                        <span className="text-3xl font-mono font-black tracking-tighter">
+                          {formatAmount(selectedInvoice.total)}
+                        </span>
                       </div>
-                      {selectedInvoice.status !== 'PAID' && (
-                         <div className="flex gap-2">
-                            <button onClick={async () => {
-                               try {
-                                  await fetchWithAuth(`/invoices/${selectedInvoice._id}`, { method: 'PUT', body: JSON.stringify({ status: 'PAID', paymentMethod: 'Stripe' }) });
-                                  toast.success('Payment completed via Stripe!');
-                                  setIsPreviewOpen(false);
-                                  loadInvoices();
-                               } catch (e) {
-                                  toast.error('Payment failed');
-                               }
-                            }} className="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white py-3 rounded-xl font-black uppercase tracking-widest text-xs transition-colors shadow-lg">Pay with Card</button>
-                            <button onClick={async () => {
-                               try {
-                                  await fetchWithAuth(`/invoices/${selectedInvoice._id}`, { method: 'PUT', body: JSON.stringify({ status: 'PAID', paymentMethod: 'bKash' }) });
-                                  toast.success('Payment completed via bKash!');
-                                  setIsPreviewOpen(false);
-                                  loadInvoices();
-                               } catch (e) {
-                                  toast.error('Payment failed');
-                               }
-                            }} className="flex-1 bg-pink-600 hover:bg-pink-500 text-white py-3 rounded-xl font-black uppercase tracking-widest text-xs transition-colors shadow-lg">Pay via bKash</button>
-                         </div>
+                      {selectedInvoice.status !== "PAID" && (
+                        <div className="flex gap-2">
+                          <button
+                            onClick={async () => {
+                              try {
+                                await fetchWithAuth(
+                                  `/invoices/${selectedInvoice._id}`,
+                                  {
+                                    method: "PUT",
+                                    body: JSON.stringify({
+                                      status: "PAID",
+                                      paymentMethod: "Stripe",
+                                    }),
+                                  },
+                                );
+                                toast.success("Payment completed via Stripe!");
+                                setIsPreviewOpen(false);
+                                loadInvoices();
+                              } catch (e) {
+                                toast.error("Payment failed");
+                              }
+                            }}
+                            className="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white py-3 rounded-xl font-black uppercase tracking-widest text-xs transition-colors shadow-lg"
+                          >
+                            Pay with Card
+                          </button>
+                          <button
+                            onClick={async () => {
+                              try {
+                                await fetchWithAuth(
+                                  `/invoices/${selectedInvoice._id}`,
+                                  {
+                                    method: "PUT",
+                                    body: JSON.stringify({
+                                      status: "PAID",
+                                      paymentMethod: "bKash",
+                                    }),
+                                  },
+                                );
+                                toast.success("Payment completed via bKash!");
+                                setIsPreviewOpen(false);
+                                loadInvoices();
+                              } catch (e) {
+                                toast.error("Payment failed");
+                              }
+                            }}
+                            className="flex-1 bg-pink-600 hover:bg-pink-500 text-white py-3 rounded-xl font-black uppercase tracking-widest text-xs transition-colors shadow-lg"
+                          >
+                            Pay via bKash
+                          </button>
+                        </div>
                       )}
                     </div>
                   </div>

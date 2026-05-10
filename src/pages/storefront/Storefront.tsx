@@ -1,51 +1,64 @@
-import React, { useState, useEffect } from 'react';
-import { fetchWithAuth } from '../../lib/api';
-import { useSearchParams, Link } from 'react-router';
-import { useSettings } from '../../context/SettingsContext';
-import { useAuth } from '../../context/AuthContext';
-import { toast } from 'sonner';
-import { ShoppingCart, Plus, Minus, Search, CreditCard, ShoppingBag, Briefcase, Star, Zap, Flame } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
-import StorefrontAIChat from './StorefrontAIChat';
+import React, { useState, useEffect } from "react";
+import { fetchWithAuth } from "../../lib/api";
+import { useSearchParams, Link } from "react-router";
+import { useSettings } from "../../context/SettingsContext";
+import { useAuth } from "../../context/AuthContext";
+import { toast } from "sonner";
+import {
+  ShoppingCart,
+  Plus,
+  Minus,
+  Search,
+  CreditCard,
+  ShoppingBag,
+  Briefcase,
+  Star,
+  Zap,
+  Flame,
+} from "lucide-react";
+import { motion, AnimatePresence } from "motion/react";
+import StorefrontAIChat from "./StorefrontAIChat";
 
 export default function Storefront() {
   const { formatAmount } = useSettings();
   const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
-  
+
   const [items, setItems] = useState<any[]>([]);
   const [cart, setCart] = useState<any[]>([]);
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<'all' | 'products' | 'services'>('all');
+  const [activeTab, setActiveTab] = useState<"all" | "products" | "services">(
+    "all",
+  );
   const [offers, setOffers] = useState<any[]>([]);
   const [currentSlide, setCurrentSlide] = useState(0);
 
   useEffect(() => {
     if (offers.length > 0) {
       const interval = setInterval(() => {
-        setCurrentSlide(prev => (prev + 1) % offers.length);
+        setCurrentSlide((prev) => (prev + 1) % offers.length);
       }, 5000);
       return () => clearInterval(interval);
     }
   }, [offers]);
 
   useEffect(() => {
-    const tabParam = searchParams.get('tab');
-    if (tabParam === 'products' || tabParam === 'services') {
-      setActiveTab(tabParam as 'products' | 'services');
+    const tabParam = searchParams.get("tab");
+    if (tabParam === "products" || tabParam === "services") {
+      setActiveTab(tabParam as "products" | "services");
     } else {
-      setActiveTab('all');
+      setActiveTab("all");
     }
   }, [searchParams]);
 
-  const handleTabChange = (tab: 'all' | 'products' | 'services') => {
+  const handleTabChange = (tab: "all" | "products" | "services") => {
     setActiveTab(tab);
-    if (tab === 'all') {
-      searchParams.delete('tab');
+    if (tab === "all") {
+      searchParams.delete("tab");
     } else {
-      searchParams.set('tab', tab);
+      searchParams.set("tab", tab);
     }
     setSearchParams(searchParams);
   };
@@ -58,28 +71,40 @@ export default function Storefront() {
     setLoading(true);
     try {
       const [prodRes, servRes, offersRes] = await Promise.all([
-        fetchWithAuth('/products?limit=100'),
-        fetchWithAuth('/services?limit=100'),
-        fetchWithAuth('/offers?status=ACTIVE&limit=10')
+        fetchWithAuth("/products?limit=100"),
+        fetchWithAuth("/services?limit=100"),
+        fetchWithAuth("/offers?status=ACTIVE&limit=10"),
       ]);
-      const prods = (prodRes.data || []).map((p: any) => ({ ...p, itemType: 'Product', sellPrice: p.price }));
-      const servs = (servRes.data || []).map((s: any) => ({ ...s, itemType: 'Service', sellPrice: s.rate }));
+      const prods = (prodRes.data || []).map((p: any) => ({
+        ...p,
+        itemType: "Product",
+        sellPrice: p.price,
+      }));
+      const servs = (servRes.data || []).map((s: any) => ({
+        ...s,
+        itemType: "Service",
+        sellPrice: s.rate,
+      }));
       setItems([...prods, ...servs]);
-      
-      const activeOffers = (offersRes.data || []).sort((a: any, b: any) => a.priority - b.priority);
+
+      const activeOffers = (offersRes.data || []).sort(
+        (a: any, b: any) => a.priority - b.priority,
+      );
       setOffers(activeOffers);
     } catch (e) {
-      toast.error('Failed to load catalog');
+      toast.error("Failed to load catalog");
     } finally {
       setLoading(false);
     }
   };
 
   const addToCart = (item: any) => {
-    setCart(prev => {
-      const exists = prev.find(i => i._id === item._id);
+    setCart((prev) => {
+      const exists = prev.find((i) => i._id === item._id);
       if (exists) {
-        return prev.map(i => i._id === item._id ? { ...i, qty: i.qty + 1 } : i);
+        return prev.map((i) =>
+          i._id === item._id ? { ...i, qty: i.qty + 1 } : i,
+        );
       }
       return [...prev, { ...item, qty: 1 }];
     });
@@ -87,65 +112,75 @@ export default function Storefront() {
   };
 
   const updateQty = (id: string, delta: number) => {
-    setCart(prev => prev.map(i => {
-      if (i._id === id) {
-        return { ...i, qty: Math.max(1, i.qty + delta) };
-      }
-      return i;
-    }).filter(i => i.qty > 0));
+    setCart((prev) =>
+      prev
+        .map((i) => {
+          if (i._id === id) {
+            return { ...i, qty: Math.max(1, i.qty + delta) };
+          }
+          return i;
+        })
+        .filter((i) => i.qty > 0),
+    );
   };
 
   const removeFromCart = (id: string) => {
-    setCart(prev => prev.filter(i => i._id !== id));
+    setCart((prev) => prev.filter((i) => i._id !== id));
   };
 
-  const cartTotal = cart.reduce((sum, item) => sum + (item.sellPrice * item.qty), 0);
+  const cartTotal = cart.reduce(
+    (sum, item) => sum + item.sellPrice * item.qty,
+    0,
+  );
 
   const handleCheckout = async () => {
     if (cart.length === 0) return;
     try {
       const invoiceData = {
         customerId: user?._id || undefined, // customerId is optional if not strictly tracked or we can enforce it.
-        items: cart.map(i => ({
+        items: cart.map((i) => ({
           itemId: i._id,
           itemType: i.itemType,
           name: i.name,
           quantity: i.qty,
           rate: i.sellPrice,
-          total: i.qty * i.sellPrice
+          total: i.qty * i.sellPrice,
         })),
         subtotal: cartTotal,
         tax: 0,
         discount: 0,
         total: cartTotal,
         dueDate: new Date(),
-        status: 'OPEN',
-        paymentMethod: 'bKash' // default
+        status: "OPEN",
+        paymentMethod: "bKash", // default
       };
 
-      await fetchWithAuth('/invoices', {
-        method: 'POST',
-        body: JSON.stringify(invoiceData)
+      await fetchWithAuth("/invoices", {
+        method: "POST",
+        body: JSON.stringify(invoiceData),
       });
-      toast.success('Order placed successfully! Check your invoices.');
+      toast.success("Order placed successfully! Check your invoices.");
       setCart([]);
       setIsCartOpen(false);
     } catch (e) {
-      toast.error('Failed to place order');
+      toast.error("Failed to place order");
     }
   };
 
-  const filtered = items.filter(item => {
-    const matchSearch = item.name.toLowerCase().includes(search.toLowerCase()) || 
-                        (item.category && item.category.toLowerCase().includes(search.toLowerCase()));
-    const matchTab = activeTab === 'all' || 
-                     (activeTab === 'products' && item.itemType === 'Product') || 
-                     (activeTab === 'services' && item.itemType === 'Service');
+  const filtered = items.filter((item) => {
+    const matchSearch =
+      item.name.toLowerCase().includes(search.toLowerCase()) ||
+      (item.category &&
+        item.category.toLowerCase().includes(search.toLowerCase()));
+    const matchTab =
+      activeTab === "all" ||
+      (activeTab === "products" && item.itemType === "Product") ||
+      (activeTab === "services" && item.itemType === "Service");
     return matchSearch && matchTab;
   });
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6 md:space-y-8 pb-32 md:pb-12 px-4 md:px-0">
+    <div className="max-w-7xl mx-auto space-y-6 md:space-y-8 pb-32 md:pb-12 px-4 md:px-0 text-[13px]">
       {/* Top Navbar Header */}
       <div className="flex justify-between items-center bg-white rounded-[2rem] p-4 lg:p-6 shadow-sm border border-slate-100 mt-4 md:mt-0 sticky top-4 z-50 backdrop-blur-xl bg-white/90">
         <div className="flex items-center gap-3">
@@ -153,23 +188,42 @@ export default function Storefront() {
             <Zap className="w-6 h-6 fill-current" />
           </div>
           <div>
-            <h1 className="text-2xl font-black uppercase tracking-tighter text-slate-900 leading-none">Dealbuzz</h1>
-            <p className="text-sm font-medium text-slate-500">Premium Storefront</p>
+            <h1 className="text-2xl font-black uppercase tracking-tighter text-slate-900 leading-none">
+              Dealbuzz
+            </h1>
+            <p className="text-sm font-medium text-slate-500">
+              Premium Storefront
+            </p>
           </div>
         </div>
-        
+
         <div className="flex items-center gap-4 hidden md:flex">
           {!user ? (
             <div className="flex items-center gap-3 mr-2">
-               <Link to="/login" className="text-sm font-bold text-slate-600 hover:text-indigo-600 px-4 py-2 hover:bg-slate-50 border border-transparent rounded-xl transition-all">Login</Link>
-               <Link to="/register" className="text-sm font-bold bg-slate-900 text-white px-5 py-2 hover:bg-indigo-600 rounded-xl transition-all shadow-sm">Sign Up</Link>
+              <Link
+                to="/login"
+                className="text-sm font-bold text-slate-600 hover:text-indigo-600 px-4 py-2 hover:bg-slate-50 border border-transparent rounded-xl transition-all"
+              >
+                Login
+              </Link>
+              <Link
+                to="/register"
+                className="text-sm font-bold bg-slate-900 text-white px-5 py-2 hover:bg-indigo-600 rounded-xl transition-all shadow-sm"
+              >
+                Sign Up
+              </Link>
             </div>
           ) : (
-             <div className="flex items-center gap-3 mr-2">
-               <Link to="/dashboard" className="text-sm font-bold bg-indigo-50 text-indigo-700 px-5 py-2 hover:bg-indigo-100 rounded-xl transition-all shadow-sm">Go to Dashboard</Link>
-             </div>
+            <div className="flex items-center gap-3 mr-2">
+              <Link
+                to="/dashboard"
+                className="text-sm font-bold bg-indigo-50 text-indigo-700 px-5 py-2 hover:bg-indigo-100 rounded-xl transition-all shadow-sm"
+              >
+                Go to Dashboard
+              </Link>
+            </div>
           )}
-          <button 
+          <button
             onClick={() => setIsCartOpen(true)}
             className="relative bg-slate-50 hover:bg-slate-100 p-4 rounded-2xl transition-colors"
           >
@@ -184,96 +238,173 @@ export default function Storefront() {
       </div>
 
       {/* Promotional Slideshow */}
-      {offers.filter(o => activeTab === 'all' || o.type.toLowerCase() === activeTab.replace(/s$/, '')).length > 0 ? (
+      {offers.filter(
+        (o) =>
+          activeTab === "all" ||
+          o.type.toLowerCase() === activeTab.replace(/s$/, ""),
+      ).length > 0 ? (
         <div className="relative overflow-hidden rounded-[2.5rem] shadow-2xl h-[400px]">
-          {offers.filter(o => activeTab === 'all' || o.type.toLowerCase() === activeTab.replace(/s$/, '')).map((offer, index) => (
-            <div 
-              key={offer._id} 
-              className={`absolute inset-0 transition-opacity duration-1000 ${index === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
-              style={{
-                backgroundImage: offer.bannerImage ? `url(${offer.bannerImage})` : 'none',
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                backgroundColor: offer.bannerImage ? '#000' : (offer.type === 'Service' ? '#4a044e' : '#312e81')
-              }}
-            >
-              <div className="absolute inset-0 bg-black/50 mix-blend-multiply"></div>
-              <div className="relative p-10 lg:p-16 flex flex-col items-start justify-center h-full gap-6 w-full max-w-2xl text-white">
-                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-xs font-black uppercase tracking-widest text-white shadow-xl">
-                  {offer.priority === 1 && <Star className="w-4 h-4 text-amber-400 fill-current" />}
-                  {!offer.priority || offer.priority > 1 ? <Flame className="w-4 h-4 text-rose-400" /> : null}
-                  {offer.type} Offer
-                </div>
-                <h2 className="text-4xl sm:text-5xl lg:text-7xl font-black uppercase tracking-tighter leading-[0.9] text-white drop-shadow-lg">
-                  {offer.title}
-                </h2>
-                <p className="text-base sm:text-lg lg:text-xl text-white/90 font-medium max-w-lg leading-relaxed drop-shadow">
-                  {offer.description}
-                </p>
-                <div className="mt-2 sm:mt-4 flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 w-full sm:w-auto">
-                  {offer.discountPercentage > 0 && <span className="text-2xl sm:text-3xl font-black text-amber-400 drop-shadow-md">{offer.discountPercentage}% OFF</span>}
-                  <button className="w-full sm:w-auto bg-white text-slate-900 px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-sm hover:bg-slate-100 transition-colors shadow-xl shadow-white/10 flex items-center justify-center gap-3">
-                    {offer.type === 'Service' ? 'Book Now' : 'Shop Now'} <Zap className="w-4 h-4" />
-                  </button>
+          {offers
+            .filter(
+              (o) =>
+                activeTab === "all" ||
+                o.type.toLowerCase() === activeTab.replace(/s$/, ""),
+            )
+            .map((offer, index) => (
+              <div
+                key={offer._id}
+                className={`absolute inset-0 transition-opacity duration-1000 ${index === currentSlide ? "opacity-100 z-10" : "opacity-0 z-0"}`}
+                style={{
+                  backgroundImage: offer.bannerImage
+                    ? `url(${offer.bannerImage})`
+                    : "none",
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+                  backgroundColor: offer.bannerImage
+                    ? "#000"
+                    : offer.type === "Service"
+                      ? "#4a044e"
+                      : "#312e81",
+                }}
+              >
+                <div className="absolute inset-0 bg-black/50 mix-blend-multiply"></div>
+                <div className="relative p-10 lg:p-16 flex flex-col items-start justify-center h-full gap-6 w-full max-w-2xl text-white">
+                  <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-xs font-black uppercase tracking-widest text-white shadow-xl">
+                    {offer.priority === 1 && (
+                      <Star className="w-4 h-4 text-amber-400 fill-current" />
+                    )}
+                    {!offer.priority || offer.priority > 1 ? (
+                      <Flame className="w-4 h-4 text-rose-400" />
+                    ) : null}
+                    {offer.type} Offer
+                  </div>
+                  <h2 className="text-4xl sm:text-5xl lg:text-7xl font-black uppercase tracking-tighter leading-[0.9] text-white drop-shadow-lg">
+                    {offer.title}
+                  </h2>
+                  <p className="text-base sm:text-lg lg:text-xl text-white/90 font-medium max-w-lg leading-relaxed drop-shadow">
+                    {offer.description}
+                  </p>
+                  <div className="mt-2 sm:mt-4 flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 w-full sm:w-auto">
+                    {offer.discountPercentage > 0 && (
+                      <span className="text-2xl sm:text-3xl font-black text-amber-400 drop-shadow-md">
+                        {offer.discountPercentage}% OFF
+                      </span>
+                    )}
+                    <button className="w-full sm:w-auto bg-white text-slate-900 px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-sm hover:bg-slate-100 transition-colors shadow-xl shadow-white/10 flex items-center justify-center gap-3">
+                      {offer.type === "Service" ? "Book Now" : "Shop Now"}{" "}
+                      <Zap className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))}
 
           {/* Slideshow dots */}
           <div className="absolute bottom-6 left-0 right-0 z-20 flex justify-center gap-2">
-             {offers.filter(o => activeTab === 'all' || o.type.toLowerCase() === activeTab.replace(/s$/, '')).map((_, i) => (
-                <button 
-                  key={i} 
-                  onClick={() => setCurrentSlide(i)} 
-                  className={`w-3 h-3 rounded-full transition-all ${i === currentSlide ? 'bg-white scale-125' : 'bg-white/40 hover:bg-white/60'}`}
+            {offers
+              .filter(
+                (o) =>
+                  activeTab === "all" ||
+                  o.type.toLowerCase() === activeTab.replace(/s$/, ""),
+              )
+              .map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setCurrentSlide(i)}
+                  className={`w-3 h-3 rounded-full transition-all ${i === currentSlide ? "bg-white scale-125" : "bg-white/40 hover:bg-white/60"}`}
                 />
-             ))}
+              ))}
           </div>
         </div>
       ) : (
-        <div className={`relative overflow-hidden rounded-[2.5rem] text-white shadow-2xl transition-colors duration-500 ${
-          activeTab === 'services' ? 'bg-fuchsia-900' : 
-          activeTab === 'products' ? 'bg-indigo-900' : 'bg-slate-900'
-        }`}>
-          <div className={`absolute inset-0 opacity-90 mix-blend-multiply ${
-            activeTab === 'services' ? 'bg-gradient-to-r from-fuchsia-600 to-rose-600' : 
-            activeTab === 'products' ? 'bg-gradient-to-r from-indigo-600 to-cyan-600' : 
-            'bg-gradient-to-r from-indigo-600 to-fuchsia-600'
-          }`}></div>
-          
+        <div
+          className={`relative overflow-hidden rounded-[2.5rem] text-white shadow-2xl transition-colors duration-500 ${
+            activeTab === "services"
+              ? "bg-fuchsia-900"
+              : activeTab === "products"
+                ? "bg-indigo-900"
+                : "bg-slate-900"
+          }`}
+        >
+          <div
+            className={`absolute inset-0 opacity-90 mix-blend-multiply ${
+              activeTab === "services"
+                ? "bg-gradient-to-r from-fuchsia-600 to-rose-600"
+                : activeTab === "products"
+                  ? "bg-gradient-to-r from-indigo-600 to-cyan-600"
+                  : "bg-gradient-to-r from-indigo-600 to-fuchsia-600"
+            }`}
+          ></div>
+
           <div className="absolute top-0 right-0 -m-32 w-96 h-96 bg-white rounded-full mix-blend-overlay filter blur-3xl opacity-20 animate-pulse"></div>
-          <div className="absolute bottom-0 left-0 -m-32 w-96 h-96 bg-amber-500 rounded-full mix-blend-overlay filter blur-3xl opacity-40 animate-pulse" style={{ animationDelay: '1s'}}></div>
-          
+          <div
+            className="absolute bottom-0 left-0 -m-32 w-96 h-96 bg-amber-500 rounded-full mix-blend-overlay filter blur-3xl opacity-40 animate-pulse"
+            style={{ animationDelay: "1s" }}
+          ></div>
+
           <div className="relative p-10 lg:p-16 flex flex-col items-start gap-6 max-w-2xl">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-xs font-black uppercase tracking-widest text-white shadow-xl">
-              <Flame className="w-4 h-4 text-amber-400" /> 
-              {activeTab === 'services' ? 'Service Mega Offer' : activeTab === 'products' ? 'Product Flash Sale' : 'Festive Mega Sale'}
+              <Flame className="w-4 h-4 text-amber-400" />
+              {activeTab === "services"
+                ? "Service Mega Offer"
+                : activeTab === "products"
+                  ? "Product Flash Sale"
+                  : "Festive Mega Sale"}
             </div>
-            
+
             <h2 className="text-4xl lg:text-7xl font-black uppercase tracking-tighter leading-[0.9]">
-              {activeTab === 'services' ? (
-                <>Elevate<br/>Your Life<br/><span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-rose-300">Top Services</span></>
-              ) : activeTab === 'products' ? (
-                <>Discover<br/>The Best<br/><span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-emerald-300">New Gadgets</span></>
+              {activeTab === "services" ? (
+                <>
+                  Elevate
+                  <br />
+                  Your Life
+                  <br />
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-rose-300">
+                    Top Services
+                  </span>
+                </>
+              ) : activeTab === "products" ? (
+                <>
+                  Discover
+                  <br />
+                  The Best
+                  <br />
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-emerald-300">
+                    New Gadgets
+                  </span>
+                </>
               ) : (
-                <>Welcome<br/>To The<br/><span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-rose-300">Future</span></>
+                <>
+                  Welcome
+                  <br />
+                  To The
+                  <br />
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-rose-300">
+                    Future
+                  </span>
+                </>
               )}
             </h2>
-            
+
             <p className="text-lg lg:text-xl text-white/90 font-medium max-w-lg leading-relaxed">
-              {activeTab === 'services' 
-                ? 'Get up to 30% discount on personalized services based on your past preferences.'
-                : activeTab === 'products'
-                ? 'Curated products matching your shopping behavior. Grab them before they run out!'
-                : 'Get up to 50% discount on selected premium products and top-rated services. Limited time only!'}
+              {activeTab === "services"
+                ? "Get up to 30% discount on personalized services based on your past preferences."
+                : activeTab === "products"
+                  ? "Curated products matching your shopping behavior. Grab them before they run out!"
+                  : "Get up to 50% discount on selected premium products and top-rated services. Limited time only!"}
             </p>
-            
-            <button className={`mt-4 bg-white px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-sm transition-colors shadow-xl shadow-white/10 flex items-center gap-3 ${
-              activeTab === 'services' ? 'text-fuchsia-900 hover:bg-fuchsia-100' : 
-              activeTab === 'products' ? 'text-indigo-900 hover:bg-cyan-100' : 'text-slate-900 hover:bg-slate-100'
-            }`}>
-              {activeTab === 'services' ? 'Book Now' : 'Shop Now'} <Zap className="w-4 h-4" />
+
+            <button
+              className={`mt-4 bg-white px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-sm transition-colors shadow-xl shadow-white/10 flex items-center gap-3 ${
+                activeTab === "services"
+                  ? "text-fuchsia-900 hover:bg-fuchsia-100"
+                  : activeTab === "products"
+                    ? "text-indigo-900 hover:bg-cyan-100"
+                    : "text-slate-900 hover:bg-slate-100"
+              }`}
+            >
+              {activeTab === "services" ? "Book Now" : "Shop Now"}{" "}
+              <Zap className="w-4 h-4" />
             </button>
           </div>
         </div>
@@ -281,37 +412,49 @@ export default function Storefront() {
 
       <div className="flex flex-col md:flex-row gap-4 items-center sticky top-28 z-40 bg-slate-50/80 backdrop-blur-xl p-2 -mx-2 rounded-3xl pb-4 md:pb-2">
         <div className="relative w-full md:flex-1">
-          <input 
-            type="text" 
-            placeholder={activeTab === 'services' ? "Search recommended services..." : activeTab === 'products' ? "Search curated products..." : "Search for amazing products or services..."}
+          <input
+            type="text"
+            placeholder={
+              activeTab === "services"
+                ? "Search recommended services..."
+                : activeTab === "products"
+                  ? "Search curated products..."
+                  : "Search for amazing products or services..."
+            }
             value={search}
-            onChange={e => setSearch(e.target.value)}
+            onChange={(e) => setSearch(e.target.value)}
             className="w-full bg-white border-2 border-slate-100 rounded-2xl py-4 pl-14 pr-6 font-medium text-slate-700 outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all shadow-sm"
           />
           <Search className="w-6 h-6 text-slate-400 absolute left-5 top-1/2 -translate-y-1/2" />
         </div>
-        
+
         <div className="flex bg-white p-2 rounded-2xl shadow-sm border border-slate-100 w-full md:w-auto overflow-x-auto">
           <button
-            onClick={() => handleTabChange('all')}
+            onClick={() => handleTabChange("all")}
             className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all whitespace-nowrap ${
-              activeTab === 'all' ? 'bg-slate-900 text-white shadow-md' : 'text-slate-500 hover:bg-slate-50'
+              activeTab === "all"
+                ? "bg-slate-900 text-white shadow-md"
+                : "text-slate-500 hover:bg-slate-50"
             }`}
           >
             All Items
           </button>
           <button
-            onClick={() => handleTabChange('products')}
+            onClick={() => handleTabChange("products")}
             className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all whitespace-nowrap ${
-              activeTab === 'products' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-500 hover:bg-slate-50'
+              activeTab === "products"
+                ? "bg-indigo-600 text-white shadow-md"
+                : "text-slate-500 hover:bg-slate-50"
             }`}
           >
             <ShoppingBag className="w-4 h-4" /> Products
           </button>
           <button
-            onClick={() => handleTabChange('services')}
+            onClick={() => handleTabChange("services")}
             className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all whitespace-nowrap ${
-              activeTab === 'services' ? 'bg-fuchsia-600 text-white shadow-md' : 'text-slate-500 hover:bg-slate-50'
+              activeTab === "services"
+                ? "bg-fuchsia-600 text-white shadow-md"
+                : "text-slate-500 hover:bg-slate-50"
             }`}
           >
             <Briefcase className="w-4 h-4" /> Services
@@ -322,11 +465,15 @@ export default function Storefront() {
       <div className="flex justify-between items-end">
         <div>
           <h3 className="text-xl font-black text-slate-900 uppercase tracking-tighter">
-            {activeTab === 'products' ? 'Recommended Products for You' : 
-             activeTab === 'services' ? 'Top Services Based On Your Needs' : 
-             'Curated For You'}
+            {activeTab === "products"
+              ? "Recommended Products for You"
+              : activeTab === "services"
+                ? "Top Services Based On Your Needs"
+                : "Curated For You"}
           </h3>
-          <p className="text-sm font-medium text-slate-500 mt-1">Based on your activity and preferences</p>
+          <p className="text-sm font-medium text-slate-500 mt-1">
+            Based on your activity and preferences
+          </p>
         </div>
       </div>
 
@@ -337,69 +484,101 @@ export default function Storefront() {
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {filtered.map(item => (
-            <motion.div 
+          {filtered.map((item) => (
+            <motion.div
               layout
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
               transition={{ duration: 0.2 }}
-              key={item._id} 
+              key={item._id}
               className="bg-white rounded-[2rem] border border-slate-100 overflow-hidden shadow-sm hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 group flex flex-col"
             >
-              <div className={`aspect-square relative overflow-hidden flex items-center justify-center p-4 lg:p-6 ${item.itemType === 'Service' ? 'bg-fuchsia-50' : 'bg-indigo-50/50'}`}>
+              <div
+                className={`aspect-square relative overflow-hidden flex items-center justify-center p-4 lg:p-6 ${item.itemType === "Service" ? "bg-fuchsia-50" : "bg-indigo-50/50"}`}
+              >
                 {/* Badge specifying product vs service */}
-                <div className={`absolute top-4 left-4 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-sm backdrop-blur-md flex items-center gap-1.5 ${
-                  item.itemType === 'Service' 
-                    ? 'bg-fuchsia-100 text-fuchsia-700 border border-fuchsia-200' 
-                    : 'bg-indigo-100 text-indigo-700 border border-indigo-200'
-                }`}>
-                  {item.itemType === 'Service' ? <Briefcase className="w-3 h-3" /> : <ShoppingBag className="w-3 h-3" />}
+                <div
+                  className={`absolute top-4 left-4 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-sm backdrop-blur-md flex items-center gap-1.5 ${
+                    item.itemType === "Service"
+                      ? "bg-fuchsia-100 text-fuchsia-700 border border-fuchsia-200"
+                      : "bg-indigo-100 text-indigo-700 border border-indigo-200"
+                  }`}
+                >
+                  {item.itemType === "Service" ? (
+                    <Briefcase className="w-3 h-3" />
+                  ) : (
+                    <ShoppingBag className="w-3 h-3" />
+                  )}
                   {item.itemType}
                 </div>
-                
+
                 {item.mainImage ? (
-                  <img src={item.mainImage} alt={item.name} className="object-contain w-full h-full group-hover:scale-110 transition-transform duration-500 mix-blend-multiply" />
+                  <img
+                    src={item.mainImage}
+                    alt={item.name}
+                    className="object-contain w-full h-full group-hover:scale-110 transition-transform duration-500 mix-blend-multiply"
+                  />
                 ) : (
-                  <div className={`text-5xl font-black opacity-30 ${item.itemType === 'Service' ? 'text-fuchsia-400' : 'text-indigo-400'}`}>
+                  <div
+                    className={`text-5xl font-black opacity-30 ${item.itemType === "Service" ? "text-fuchsia-400" : "text-indigo-400"}`}
+                  >
                     {item.name.substring(0, 2).toUpperCase()}
                   </div>
                 )}
-                
-                {item.itemType === 'Product' && item.stockCount <= 0 && (
+
+                {item.itemType === "Product" && item.stockCount <= 0 && (
                   <div className="absolute inset-0 bg-white/60 backdrop-blur-sm flex items-center justify-center">
-                    <span className="bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-xl shadow-xl">Out of Stock</span>
+                    <span className="bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-xl shadow-xl">
+                      Out of Stock
+                    </span>
                   </div>
                 )}
               </div>
               <div className="p-6 flex-1 flex flex-col">
                 <div className="flex justify-between items-start mb-2">
-                  <div className="text-[10px] font-black uppercase tracking-widest text-slate-400">{item.category || 'General'}</div>
+                  <div className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                    {item.category || "General"}
+                  </div>
                   <div className="flex items-center gap-1 text-amber-500 text-xs font-bold">
                     <Star className="w-3 h-3 fill-current" /> 4.9
                   </div>
                 </div>
-                
-                <h3 className="font-bold text-slate-800 mb-2 leading-snug line-clamp-2">{item.name}</h3>
-                <p className="text-xs text-slate-500 line-clamp-2 mb-6 flex-1">{item.shortDescription || 'High quality premium item ready for you.'}</p>
-                
+
+                <h3 className="font-bold text-slate-800 mb-2 leading-snug line-clamp-2">
+                  {item.name}
+                </h3>
+                <p className="text-xs text-slate-500 line-clamp-2 mb-6 flex-1">
+                  {item.shortDescription ||
+                    "High quality premium item ready for you."}
+                </p>
+
                 <div className="flex justify-between items-end mt-auto">
                   <div className="flex flex-col">
-                    {item.regularPrice && item.regularPrice > item.sellPrice && (
-                      <span className="text-xs text-slate-400 line-through font-medium">{formatAmount(item.regularPrice)}</span>
-                    )}
+                    {item.regularPrice &&
+                      item.regularPrice > item.sellPrice && (
+                        <span className="text-xs text-slate-400 line-through font-medium">
+                          {formatAmount(item.regularPrice)}
+                        </span>
+                      )}
                     <div className="text-xl font-black font-mono text-slate-900 tracking-tighter">
                       {formatAmount(item.sellPrice)}
-                      {item.priceType === 'hourly' && <span className="text-xs text-slate-500 font-sans tracking-normal ml-1">/hr</span>}
+                      {item.priceType === "hourly" && (
+                        <span className="text-xs text-slate-500 font-sans tracking-normal ml-1">
+                          /hr
+                        </span>
+                      )}
                     </div>
                   </div>
-                  <button 
-                    disabled={item.itemType === 'Product' && item.stockCount <= 0}
+                  <button
+                    disabled={
+                      item.itemType === "Product" && item.stockCount <= 0
+                    }
                     onClick={() => addToCart(item)}
                     className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed ${
-                      item.itemType === 'Service' 
-                        ? 'bg-fuchsia-600 hover:bg-fuchsia-700 text-white shadow-fuchsia-600/20 hover:shadow-fuchsia-600/40' 
-                        : 'bg-slate-900 hover:bg-indigo-600 text-white shadow-slate-900/20 hover:shadow-indigo-600/40'
+                      item.itemType === "Service"
+                        ? "bg-fuchsia-600 hover:bg-fuchsia-700 text-white shadow-fuchsia-600/20 hover:shadow-fuchsia-600/40"
+                        : "bg-slate-900 hover:bg-indigo-600 text-white shadow-slate-900/20 hover:shadow-indigo-600/40"
                     }`}
                   >
                     <Plus className="w-5 h-5" />
@@ -410,14 +589,18 @@ export default function Storefront() {
           ))}
         </div>
       )}
-      
+
       {!loading && filtered.length === 0 && (
         <div className="py-24 text-center bg-white rounded-[2rem] border border-slate-100 flex flex-col items-center justify-center shadow-sm">
           <div className="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center mb-6">
             <Search className="w-10 h-10 text-slate-300" />
           </div>
-          <h3 className="text-xl font-bold text-slate-900 mb-2">No items found</h3>
-          <p className="text-slate-500 font-medium">Try adjusting your search or category filters.</p>
+          <h3 className="text-xl font-bold text-slate-900 mb-2">
+            No items found
+          </h3>
+          <p className="text-slate-500 font-medium">
+            Try adjusting your search or category filters.
+          </p>
         </div>
       )}
 
@@ -425,19 +608,19 @@ export default function Storefront() {
       <AnimatePresence>
         {isCartOpen && (
           <div className="fixed inset-0 z-[100] flex justify-end">
-            <motion.div 
-              initial={{ opacity: 0 }} 
-              animate={{ opacity: 1 }} 
-              exit={{ opacity: 0 }} 
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
               className="absolute inset-0 bg-slate-900/30 backdrop-blur-sm"
               onClick={() => setIsCartOpen(false)}
             />
-            
-            <motion.div 
-              initial={{ x: '100%' }}
+
+            <motion.div
+              initial={{ x: "100%" }}
               animate={{ x: 0 }}
-              exit={{ x: '100%' }}
-              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
               className="w-full max-w-md bg-white h-[100dvh] shadow-2xl flex flex-col relative z-10"
             >
               <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
@@ -445,9 +628,14 @@ export default function Storefront() {
                   <div className="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center text-indigo-600">
                     <ShoppingCart className="w-5 h-5" />
                   </div>
-                  <h2 className="text-lg font-black text-slate-900 uppercase tracking-tight">Your Cart</h2>
+                  <h2 className="text-lg font-black text-slate-900 uppercase tracking-tight">
+                    Your Cart
+                  </h2>
                 </div>
-                <button onClick={() => setIsCartOpen(false)} className="w-10 h-10 bg-white border border-slate-200 text-slate-400 hover:text-slate-900 flex items-center justify-center rounded-xl shadow-sm transition-colors">
+                <button
+                  onClick={() => setIsCartOpen(false)}
+                  className="w-10 h-10 bg-white border border-slate-200 text-slate-400 hover:text-slate-900 flex items-center justify-center rounded-xl shadow-sm transition-colors"
+                >
                   <Minus className="w-4 h-4 rotate-45 transform" />
                 </button>
               </div>
@@ -455,33 +643,80 @@ export default function Storefront() {
               <div className="flex-1 overflow-y-auto p-6 space-y-4">
                 {cart.length === 0 ? (
                   <div className="h-full flex flex-col items-center justify-center text-slate-400 space-y-4">
-                     <div className="w-32 h-32 bg-slate-50 rounded-full flex items-center justify-center shadow-inner">
+                    <div className="w-32 h-32 bg-slate-50 rounded-full flex items-center justify-center shadow-inner">
                       <ShoppingCart className="w-10 h-10 text-slate-300" />
                     </div>
-                    <p className="font-bold text-slate-500">Your cart is empty</p>
-                    <button onClick={() => setIsCartOpen(false)} className="px-6 py-2 bg-indigo-50 text-indigo-600 font-bold rounded-xl mt-4">Continue Shopping</button>
+                    <p className="font-bold text-slate-500">
+                      Your cart is empty
+                    </p>
+                    <button
+                      onClick={() => setIsCartOpen(false)}
+                      className="px-6 py-2 bg-indigo-50 text-indigo-600 font-bold rounded-xl mt-4"
+                    >
+                      Continue Shopping
+                    </button>
                   </div>
                 ) : (
-                  cart.map(item => (
-                    <div key={item._id} className="flex gap-4 items-center bg-white border border-slate-100 p-3 rounded-2xl shadow-sm group hover:border-slate-300 transition-colors">
-                      <div className={`w-20 h-20 rounded-xl overflow-hidden flex items-center justify-center p-2 shrink-0 ${item.itemType === 'Service' ? 'bg-fuchsia-50' : 'bg-slate-50'}`}>
+                  cart.map((item) => (
+                    <div
+                      key={item._id}
+                      className="flex gap-4 items-center bg-white border border-slate-100 p-3 rounded-2xl shadow-sm group hover:border-slate-300 transition-colors"
+                    >
+                      <div
+                        className={`w-20 h-20 rounded-xl overflow-hidden flex items-center justify-center p-2 shrink-0 ${item.itemType === "Service" ? "bg-fuchsia-50" : "bg-slate-50"}`}
+                      >
                         {item.mainImage ? (
-                          <img src={item.mainImage} alt={item.name} className="w-full h-full object-contain mix-blend-multiply" />
+                          <img
+                            src={item.mainImage}
+                            alt={item.name}
+                            className="w-full h-full object-contain mix-blend-multiply"
+                          />
                         ) : (
-                          <div className={`text-xs font-black ${item.itemType === 'Service' ? 'text-fuchsia-300' : 'text-slate-300'}`}>{item.name.substring(0,2).toUpperCase()}</div>
+                          <div
+                            className={`text-xs font-black ${item.itemType === "Service" ? "text-fuchsia-300" : "text-slate-300"}`}
+                          >
+                            {item.name.substring(0, 2).toUpperCase()}
+                          </div>
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-0.5">{item.itemType}</div>
-                        <h4 className="font-bold text-slate-800 text-sm truncate leading-tight">{item.name}</h4>
-                        <div className="text-xs font-mono font-bold text-indigo-600 mt-1.5">{formatAmount(item.sellPrice)}</div>
+                        <div className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-0.5">
+                          {item.itemType}
+                        </div>
+                        <h4 className="font-bold text-slate-800 text-sm truncate leading-tight">
+                          {item.name}
+                        </h4>
+                        <div className="text-xs font-mono font-bold text-indigo-600 mt-1.5">
+                          {formatAmount(item.sellPrice)}
+                        </div>
                       </div>
                       <div className="flex flex-col items-end gap-2">
-                        <button onClick={() => removeFromCart(item._id)} className="text-[10px] font-bold text-slate-400 hover:text-red-500 uppercase tracking-wider">Remove</button>
+                        <button
+                          onClick={() => removeFromCart(item._id)}
+                          className="text-[10px] font-bold text-slate-400 hover:text-red-500 uppercase tracking-wider"
+                        >
+                          Remove
+                        </button>
                         <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-lg border border-slate-200">
-                          <button onClick={() => item.qty === 1 ? removeFromCart(item._id) : updateQty(item._id, -1)} className="w-7 h-7 flex items-center justify-center text-slate-600 hover:text-red-500 hover:bg-white rounded transition-colors font-medium">-</button>
-                          <span className="text-xs font-black w-6 text-center">{item.qty}</span>
-                          <button onClick={() => updateQty(item._id, 1)} className="w-7 h-7 flex items-center justify-center text-slate-600 hover:text-indigo-600 hover:bg-white rounded transition-colors font-medium">+</button>
+                          <button
+                            onClick={() =>
+                              item.qty === 1
+                                ? removeFromCart(item._id)
+                                : updateQty(item._id, -1)
+                            }
+                            className="w-7 h-7 flex items-center justify-center text-slate-600 hover:text-red-500 hover:bg-white rounded transition-colors font-medium"
+                          >
+                            -
+                          </button>
+                          <span className="text-xs font-black w-6 text-center">
+                            {item.qty}
+                          </span>
+                          <button
+                            onClick={() => updateQty(item._id, 1)}
+                            className="w-7 h-7 flex items-center justify-center text-slate-600 hover:text-indigo-600 hover:bg-white rounded transition-colors font-medium"
+                          >
+                            +
+                          </button>
                         </div>
                       </div>
                     </div>
@@ -493,21 +728,33 @@ export default function Storefront() {
                 <div className="p-6 border-t border-slate-100 bg-white">
                   <div className="bg-slate-50 rounded-2xl p-4 mb-6">
                     <div className="flex justify-between items-center mb-2">
-                      <span className="text-sm font-medium text-slate-500">Subtotal</span>
-                      <span className="text-sm font-bold font-mono text-slate-700">{formatAmount(cartTotal)}</span>
+                      <span className="text-sm font-medium text-slate-500">
+                        Subtotal
+                      </span>
+                      <span className="text-sm font-bold font-mono text-slate-700">
+                        {formatAmount(cartTotal)}
+                      </span>
                     </div>
                     <div className="flex justify-between items-center mb-3">
-                      <span className="text-sm font-medium text-slate-500">Tax & Fees</span>
-                      <span className="text-sm font-bold font-mono text-slate-400">Calculated later</span>
+                      <span className="text-sm font-medium text-slate-500">
+                        Tax & Fees
+                      </span>
+                      <span className="text-sm font-bold font-mono text-slate-400">
+                        Calculated later
+                      </span>
                     </div>
                     <div className="h-px bg-slate-200 w-full mb-3"></div>
                     <div className="flex justify-between items-center">
-                      <span className="text-sm font-bold text-slate-900 uppercase tracking-widest">Total</span>
-                      <span className="text-2xl font-mono font-black tracking-tighter text-indigo-600">{formatAmount(cartTotal)}</span>
+                      <span className="text-sm font-bold text-slate-900 uppercase tracking-widest">
+                        Total
+                      </span>
+                      <span className="text-2xl font-mono font-black tracking-tighter text-indigo-600">
+                        {formatAmount(cartTotal)}
+                      </span>
                     </div>
                   </div>
-                  
-                  <button 
+
+                  <button
                     onClick={handleCheckout}
                     className="w-full bg-slate-900 hover:bg-indigo-600 text-white font-black py-4 rounded-xl uppercase tracking-widest text-sm transition-all shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:shadow-[0_8px_30px_rgba(79,70,229,0.3)] flex justify-center items-center gap-2"
                   >
@@ -522,49 +769,63 @@ export default function Storefront() {
 
       {/* Mobile Bottom Navigation Component */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-slate-100 p-2 z-[90] flex justify-around items-center pb-safe text-[10px] sm:text-xs font-bold text-slate-500 shadow-[0_-10px_40px_rgba(0,0,0,0.05)] pt-3">
-        <button 
-          onClick={() => { window.scrollTo({top: 0, behavior: 'smooth'}); handleTabChange('all'); }}
-          className={`flex flex-col items-center gap-1 p-2 ${activeTab === 'all' ? 'text-indigo-600' : ''}`}
+        <button
+          onClick={() => {
+            window.scrollTo({ top: 0, behavior: "smooth" });
+            handleTabChange("all");
+          }}
+          className={`flex flex-col items-center gap-1 p-2 ${activeTab === "all" ? "text-indigo-600" : ""}`}
         >
           <Zap className="w-5 h-5 sm:w-6 sm:h-6" />
           <span>Home</span>
         </button>
-        
-        <button 
-          onClick={() => handleTabChange('products')}
-          className={`flex flex-col items-center gap-1 p-2 ${activeTab === 'products' ? 'text-indigo-600' : ''}`}
+
+        <button
+          onClick={() => handleTabChange("products")}
+          className={`flex flex-col items-center gap-1 p-2 ${activeTab === "products" ? "text-indigo-600" : ""}`}
         >
           <ShoppingBag className="w-5 h-5 sm:w-6 sm:h-6" />
           <span>Products</span>
         </button>
 
-        <button 
-          onClick={() => handleTabChange('services')}
-          className={`flex flex-col items-center gap-1 p-2 ${activeTab === 'services' ? 'text-indigo-600' : ''}`}
+        <button
+          onClick={() => handleTabChange("services")}
+          className={`flex flex-col items-center gap-1 p-2 ${activeTab === "services" ? "text-indigo-600" : ""}`}
         >
           <Briefcase className="w-5 h-5 sm:w-6 sm:h-6" />
           <span>Services</span>
         </button>
-        
-        <button 
+
+        <button
           onClick={() => setIsCartOpen(true)}
           className="flex flex-col items-center gap-1 p-2 relative"
         >
           <div className="relative">
-             <ShoppingCart className="w-5 h-5 sm:w-6 sm:h-6" />
-             {cart.length > 0 && <span className="absolute -top-1 -right-2 w-3.5 h-3.5 bg-rose-500 text-white text-[8px] flex items-center justify-center rounded-full border border-white">{cart.reduce((s, i) => s + i.qty, 0)}</span>}
+            <ShoppingCart className="w-5 h-5 sm:w-6 sm:h-6" />
+            {cart.length > 0 && (
+              <span className="absolute -top-1 -right-2 w-3.5 h-3.5 bg-rose-500 text-white text-[8px] flex items-center justify-center rounded-full border border-white">
+                {cart.reduce((s, i) => s + i.qty, 0)}
+              </span>
+            )}
           </div>
           <span>Cart</span>
         </button>
 
         {!user ? (
           <Link to="/login" className="flex flex-col items-center gap-1 p-2">
-            <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-slate-200 flex items-center justify-center"><UserIcon /></div>
+            <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-slate-200 flex items-center justify-center">
+              <UserIcon />
+            </div>
             <span>Login</span>
           </Link>
         ) : (
-          <Link to="/dashboard" className="flex flex-col items-center gap-1 p-2 text-fuchsia-600">
-            <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-fuchsia-100 flex items-center justify-center text-fuchsia-600 font-bold">{user?.name?.charAt(0)}</div>
+          <Link
+            to="/dashboard"
+            className="flex flex-col items-center gap-1 p-2 text-fuchsia-600"
+          >
+            <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-fuchsia-100 flex items-center justify-center text-fuchsia-600 font-bold">
+              {user?.name?.charAt(0)}
+            </div>
             <span>Panel</span>
           </Link>
         )}
@@ -576,6 +837,19 @@ export default function Storefront() {
 }
 
 const UserIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-user"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="14"
+    height="14"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className="lucide lucide-user"
+  >
+    <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+    <circle cx="12" cy="7" r="4" />
+  </svg>
 );
-
