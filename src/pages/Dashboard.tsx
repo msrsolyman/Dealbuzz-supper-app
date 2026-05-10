@@ -29,7 +29,7 @@ import {
   X,
   PlusCircle,
   Tag,
-  Activity,
+  Activity as ActivityIcon,
   Clock,
   AlertTriangle,
   TrendingUp,
@@ -636,7 +636,7 @@ export default function Dashboard() {
             <div className="p-8 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
               <div>
                 <h3 className="font-display font-black text-slate-900 flex items-center gap-2 uppercase tracking-tight">
-                  <Activity className="w-5 h-5 text-indigo-500" />
+                  <ActivityIcon className="w-5 h-5 text-indigo-500" />
                   {t("recent_activities")}
                 </h3>
                 <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">

@@ -7,7 +7,7 @@ import {
     BarChart, Bar, Legend
 } from 'recharts';
 import { 
-    TrendingUp, Package, Users, DollarSign, Download, Activity, FileText, ArrowUpRight, ArrowDownRight, Printer
+    TrendingUp, Package, Users, DollarSign, Download, Activity as ActivityIcon, FileText, ArrowUpRight, ArrowDownRight, Printer
 } from 'lucide-react';
 import { format } from 'date-fns';
 import * as xlsx from 'xlsx';
@@ -181,7 +181,7 @@ export default function AnalyticsDashboard() {
                 <div className="flex justify-between items-center mb-6">
                     <h3 className="text-lg font-bold text-slate-900">Recent System Activity</h3>
                     <div className="flex items-center gap-2 text-sm text-slate-500">
-                        <Activity className="w-4 h-4" />
+                        <ActivityIcon className="w-4 h-4" />
                         Live Feed
                     </div>
                 </div>
