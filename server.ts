@@ -16,7 +16,7 @@ import { initSocket } from './server/services/socketService.ts';
 
 async function startServer() {
   const app = express();
-  const PORT = Number(process.env.PORT) || 3000;
+  const PORT = 3000;
   const httpServer = createHttpServer(app);
 
   // Middlewares
