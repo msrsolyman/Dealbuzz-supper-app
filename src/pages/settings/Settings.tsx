@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { User, Lock, Mail, Save, Image as ImageIcon } from 'lucide-react';
 import { toast } from 'sonner';

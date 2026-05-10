@@ -26,7 +26,7 @@ export default function Products() {
     description: '', features: '', benefits: '', usageInstructions: '',
     deliveryCharge: 0, deliveryTime: '', locationAvailability: '',
     tags: '', metaTitle: '', metaDescription: '', searchKeywords: '',
-    warrantyInfo: '', returnPolicy: '', supplierInfo: '', barcode: ''
+    warrantyInfo: '', returnPolicy: '', supplierInfo: ''
   });
 
   const [formData, setFormData] = useState(getInitialForm());

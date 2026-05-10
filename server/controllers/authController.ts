@@ -1,9 +1,9 @@
-import { Request, Response } from 'express';
+import type {  Request, Response  } from 'express';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import User from '../models/User.js';
-import Tenant from '../models/Tenant.js';
-import { AuthRequest } from '../middlewares/authMiddleware.js';
+import User from '../models/User.ts';
+import Tenant from '../models/Tenant.ts';
+import type { AuthRequest } from '../middlewares/authMiddleware.ts';
 
 export const register = async (req: Request, res: Response) => {
   try {
@@ -47,9 +47,10 @@ export const registerUser = async (req: Request, res: Response) => {
     }
 
     // Find the primary tenant (just the first one for now, as it's a single platform in many cases)
-    const primaryTenant = await Tenant.findOne();
+    let primaryTenant = await Tenant.findOne();
     if (!primaryTenant) {
-      return res.status(400).json({ error: 'Platform not initialized. Please contact support.' });
+      // Auto-create a default tenant if none exists to avoid initialization errors
+      primaryTenant = await Tenant.create({ name: 'DealBuzz Default Tenant' });
     }
 
     const user = await User.create({

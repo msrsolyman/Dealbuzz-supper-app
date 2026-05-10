@@ -1,5 +1,5 @@
-import { Response, NextFunction } from 'express';
-import { AuthRequest } from './authMiddleware.js';
+import type {  Response, NextFunction  } from 'express';
+import type { AuthRequest } from './authMiddleware.ts';
 
 export const authorize = (roles: string[]) => {
   return (req: AuthRequest, res: Response, next: NextFunction) => {

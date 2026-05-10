@@ -11,7 +11,7 @@ export default function Sidebar({ isOpen, setIsOpen }: { isOpen: boolean, setIsO
   const { currency, setCurrency, availableCurrencies, language, setLanguage } = useSettings();
 
   let navItems = [
-    { name: t('dashboard'), path: '/', icon: LayoutDashboard },
+    { name: t('dashboard'), path: '/dashboard', icon: LayoutDashboard },
   ];
 
   if (user?.role === 'customer') {

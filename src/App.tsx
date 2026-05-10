@@ -43,41 +43,45 @@ export default function App() {
       <SettingsProvider>
         <BrowserRouter>
           <Routes>
+            <Route path="/" element={<Storefront />} />
             <Route path="/login" element={<Login />} />
             <Route path="/admin" element={<AdminLogin />} />
             <Route path="/register" element={<Register />} />
             <Route path="/seller-register" element={<SellerRegister />} />
-            <Route path="/" element={<Layout />}>
-              <Route index element={<Dashboard />} />
-              <Route path="products" element={<Products />} />
-              <Route path="audit-logs" element={<AuditLogs />} />
-              <Route path="services" element={<Services />} />
-              <Route path="inventory" element={<Inventory />} />
-              <Route path="invoices" element={<Invoices />} />
-              <Route path="reports" element={<Reports />} />
-              <Route path="settings" element={<Settings />} />
-              <Route path="accounts" element={<Accounts />} />
-              <Route path="users" element={<Users />} />
-              <Route path="customers" element={<Customers />} />
-              <Route path="vendors" element={<Vendors />} />
-              <Route path="hr" element={<HR />} />
-              <Route path="expenses" element={<Expenses />} />
-              <Route path="quotations" element={<Quotations />} />
-              <Route path="returns" element={<Returns />} />
-              <Route path="purchase-orders" element={<PurchaseOrders />} />
-              <Route path="marketing" element={<Marketing />} />
-              <Route path="offers" element={<Offers />} />
-              <Route path="delivery" element={<Delivery />} />
-              <Route path="support" element={<Support />} />
-              <Route path="tasks" element={<Tasks />} />
-              <Route path="manufacturing" element={<Manufacturing />} />
-              <Route path="warehouses" element={<Warehouses />} />
-              <Route path="sellers" element={<SellersDirectory />} />
-              <Route path="sellers/:id" element={<SellerProfile />} />
-              <Route path="storefront-config" element={<StorefrontProfile />} />
-              <Route path="storefront" element={<Storefront />} />
-              <Route path="pos" element={<POS />} />
+            
+            {/* Protected Dashboard Routes wrapped in Layout */}
+            <Route element={<Layout />}>
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/products" element={<Products />} />
+              <Route path="/audit-logs" element={<AuditLogs />} />
+              <Route path="/services" element={<Services />} />
+              <Route path="/inventory" element={<Inventory />} />
+              <Route path="/invoices" element={<Invoices />} />
+              <Route path="/reports" element={<Reports />} />
+              <Route path="/settings" element={<Settings />} />
+              <Route path="/accounts" element={<Accounts />} />
+              <Route path="/users" element={<Users />} />
+              <Route path="/customers" element={<Customers />} />
+              <Route path="/vendors" element={<Vendors />} />
+              <Route path="/hr" element={<HR />} />
+              <Route path="/expenses" element={<Expenses />} />
+              <Route path="/quotations" element={<Quotations />} />
+              <Route path="/returns" element={<Returns />} />
+              <Route path="/purchase-orders" element={<PurchaseOrders />} />
+              <Route path="/marketing" element={<Marketing />} />
+              <Route path="/offers" element={<Offers />} />
+              <Route path="/delivery" element={<Delivery />} />
+              <Route path="/support" element={<Support />} />
+              <Route path="/tasks" element={<Tasks />} />
+              <Route path="/manufacturing" element={<Manufacturing />} />
+              <Route path="/warehouses" element={<Warehouses />} />
+              <Route path="/sellers" element={<SellersDirectory />} />
+              <Route path="/sellers/:id" element={<SellerProfile />} />
+              <Route path="/storefront-config" element={<StorefrontProfile />} />
+              <Route path="/storefront" element={<Storefront />} />
+              <Route path="/pos" element={<POS />} />
             </Route>
+            
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </BrowserRouter>

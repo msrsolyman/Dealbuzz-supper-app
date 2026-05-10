@@ -49,9 +49,9 @@ export default function Layout() {
             >
               <Menu className="w-5 h-5" />
             </button>
-            <div className="hidden sm:flex flex-col">
-              <h2 className="font-display font-black text-slate-900 uppercase tracking-wide text-lg h-5 overflow-visible">Omni Retail Solutions</h2>
-              <div className="text-[10px] font-black text-indigo-500 mt-2 uppercase tracking-[0.2em] flex items-center gap-2">
+            <div className="flex flex-col">
+              <h2 className="font-display font-black text-slate-900 uppercase tracking-wide text-base sm:text-lg sm:h-5 overflow-visible">Omni Retail</h2>
+              <div className="hidden sm:flex text-[10px] font-black text-indigo-500 mt-2 uppercase tracking-[0.2em] items-center gap-2">
                 <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse" />
                 Network ID: {user?.tenantId?.slice(0,6).toUpperCase() || '4092-X'}
               </div>

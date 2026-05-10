@@ -25,7 +25,7 @@ export default function AdminLogin() {
          throw new Error('Access denied. Administrator privileges required.');
       }
       login(data.token, data.user);
-      navigate('/');
+      navigate('/dashboard');
     } catch (error: any) {
       toast.error(error.message);
     } finally {

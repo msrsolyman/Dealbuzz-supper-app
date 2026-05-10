@@ -3,9 +3,9 @@ import express from 'express';
 import { createServer as createViteServer } from 'vite';
 import path from 'path';
 import cors from 'cors';
-import { connectDB } from './server/utils/db.js';
-import apiRoutes from './server/routes/index.js';
-import Invoice from './server/models/Invoice.js';
+import { connectDB } from './server/utils/db.ts';
+import apiRoutes from './server/routes/index.ts';
+import Invoice from './server/models/Invoice.ts';
 
 async function startServer() {
   const app = express();
@@ -27,7 +27,7 @@ async function startServer() {
          status: { $ne: 'PAID' }, 
          dueDate: { $lt: today }, 
          isDeleted: false 
-       }).populate('customerId');
+       } as any).populate('customerId');
        
        if (pdInvoices.length > 0) {
          console.log(`[Auto-Reminder] Found ${pdInvoices.length} due invoices. Sending SMS/Email to customers...`);

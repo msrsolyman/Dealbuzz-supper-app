@@ -1,6 +1,6 @@
-import { Response } from 'express';
-import { AuthRequest } from '../middlewares/authMiddleware.js';
-import Product from '../models/Product.js';
+import type {  Response  } from 'express';
+import type { AuthRequest } from '../middlewares/authMiddleware.ts';
+import Product from '../models/Product.ts';
 
 export const getProducts = async (req: AuthRequest, res: Response) => {
   try {

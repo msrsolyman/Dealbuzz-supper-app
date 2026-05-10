@@ -1,6 +1,6 @@
-import { Response, NextFunction } from 'express';
-import { AuthRequest } from './authMiddleware.js';
-import AuditLog from '../models/AuditLog.js';
+import type {  Response, NextFunction  } from 'express';
+import type { AuthRequest } from './authMiddleware.ts';
+import AuditLog from '../models/AuditLog.ts';
 
 export const auditLog = (collectionName: string) => {
   return async (req: AuthRequest, res: Response, next: NextFunction) => {

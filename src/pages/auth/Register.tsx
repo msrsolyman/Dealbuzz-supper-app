@@ -23,7 +23,7 @@ export default function Register() {
       if (event.data?.type === 'OAUTH_AUTH_SUCCESS') {
         toast.success("Successfully logged in with Google!");
         login(event.data.token, event.data.user);
-        navigate('/');
+        navigate('/dashboard');
       }
     };
     window.addEventListener('message', handleMessage);
@@ -50,7 +50,7 @@ export default function Register() {
           if (token && userStr) {
              toast.success("Successfully logged in with Google!");
              login(token, JSON.parse(userStr));
-             navigate('/');
+             navigate('/dashboard');
           }
         }
       }, 500);

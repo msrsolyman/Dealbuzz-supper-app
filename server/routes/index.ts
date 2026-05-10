@@ -1,38 +1,38 @@
 import express from 'express';
-import { register, registerUser, login, getMe, updateMe, updatePassword } from '../controllers/authController.js';
-import { getProducts, createProduct, updateProduct, deleteProduct } from '../controllers/productController.js';
-import { authenticate } from '../middlewares/authMiddleware.js';
-import { authorize } from '../middlewares/roleMiddleware.js';
-import { auditLog } from '../middlewares/auditMiddleware.js';
+import { register, registerUser, login, getMe, updateMe, updatePassword } from '../controllers/authController.ts';
+import { getProducts, createProduct, updateProduct, deleteProduct } from '../controllers/productController.ts';
+import { authenticate } from '../middlewares/authMiddleware.ts';
+import { authorize } from '../middlewares/roleMiddleware.ts';
+import { auditLog } from '../middlewares/auditMiddleware.ts';
 
-import Tenant from '../models/Tenant.js';
-import User from '../models/User.js';
-import Product from '../models/Product.js';
-import Service from '../models/Service.js';
-import Invoice from '../models/Invoice.js';
-import InventoryTransaction from '../models/InventoryTransaction.js';
-import Account from '../models/Account.js';
-import AccountingTransaction from '../models/AccountingTransaction.js';
-import AuditLog from '../models/AuditLog.js';
-import Warehouse from '../models/Warehouse.js';
-import Customer from '../models/Customer.js';
-import Review from '../models/Review.js';
-import Vendor from '../models/Vendor.js';
-import PurchaseOrder from '../models/PurchaseOrder.js';
-import Attendance from '../models/Attendance.js';
-import Leave from '../models/Leave.js';
-import Payroll from '../models/Payroll.js';
-import Expense from '../models/Expense.js';
-import Quotation from '../models/Quotation.js';
-import Return from '../models/Return.js';
-import Coupon from '../models/Coupon.js';
-import ManufacturingOrder from '../models/ManufacturingOrder.js';
-import SalesTarget from '../models/SalesTarget.js';
-import Campaign from '../models/Campaign.js';
-import Offer from '../models/Offer.js';
+import Tenant from '../models/Tenant.ts';
+import User from '../models/User.ts';
+import Product from '../models/Product.ts';
+import Service from '../models/Service.ts';
+import Invoice from '../models/Invoice.ts';
+import InventoryTransaction from '../models/InventoryTransaction.ts';
+import Account from '../models/Account.ts';
+import AccountingTransaction from '../models/AccountingTransaction.ts';
+import AuditLog from '../models/AuditLog.ts';
+import Warehouse from '../models/Warehouse.ts';
+import Customer from '../models/Customer.ts';
+import Review from '../models/Review.ts';
+import Vendor from '../models/Vendor.ts';
+import PurchaseOrder from '../models/PurchaseOrder.ts';
+import Attendance from '../models/Attendance.ts';
+import Leave from '../models/Leave.ts';
+import Payroll from '../models/Payroll.ts';
+import Expense from '../models/Expense.ts';
+import Quotation from '../models/Quotation.ts';
+import Return from '../models/Return.ts';
+import Coupon from '../models/Coupon.ts';
+import ManufacturingOrder from '../models/ManufacturingOrder.ts';
+import SalesTarget from '../models/SalesTarget.ts';
+import Campaign from '../models/Campaign.ts';
+import Offer from '../models/Offer.ts';
 
-import Ticket from '../models/Ticket.js';
-import Task from '../models/Task.js';
+import Ticket from '../models/Ticket.ts';
+import Task from '../models/Task.ts';
 
 const router = express.Router();
 
@@ -117,9 +117,12 @@ router.get('/auth/google/callback', async (req: any, res: any) => {
     
     let user = await (User as any).findOne({ email: userData.email });
     if (!user) {
-       const primaryTenant = await Tenant.findOne();
+       let primaryTenant = await Tenant.findOne();
+       if (!primaryTenant) {
+         primaryTenant = await Tenant.create({ name: 'DealBuzz Default Tenant' });
+       }
        user = await (User as any).create({
-         tenantId: primaryTenant?._id,
+         tenantId: primaryTenant._id,
          name: userData.name,
          email: userData.email,
          password: Math.random().toString(36).slice(-8),

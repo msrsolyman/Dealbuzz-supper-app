@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { fetchWithAuth } from '../../lib/api';
-import { useSearchParams } from 'react-router';
+import { useSearchParams, Link } from 'react-router';
 import { useSettings } from '../../context/SettingsContext';
 import { useAuth } from '../../context/AuthContext';
 import { toast } from 'sonner';
@@ -145,9 +145,9 @@ export default function Storefront() {
   });
 
   return (
-    <div className="max-w-7xl mx-auto space-y-8 pb-12">
+    <div className="max-w-7xl mx-auto space-y-6 md:space-y-8 pb-32 md:pb-12 px-4 md:px-0">
       {/* Top Navbar Header */}
-      <div className="flex justify-between items-center bg-white rounded-[2rem] p-4 lg:p-6 shadow-sm border border-slate-100">
+      <div className="flex justify-between items-center bg-white rounded-[2rem] p-4 lg:p-6 shadow-sm border border-slate-100 mt-4 md:mt-0 sticky top-4 z-50 backdrop-blur-xl bg-white/90">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center text-white">
             <Zap className="w-6 h-6 fill-current" />
@@ -158,7 +158,17 @@ export default function Storefront() {
           </div>
         </div>
         
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 hidden md:flex">
+          {!user ? (
+            <div className="flex items-center gap-3 mr-2">
+               <Link to="/login" className="text-sm font-bold text-slate-600 hover:text-indigo-600 px-4 py-2 hover:bg-slate-50 border border-transparent rounded-xl transition-all">Login</Link>
+               <Link to="/register" className="text-sm font-bold bg-slate-900 text-white px-5 py-2 hover:bg-indigo-600 rounded-xl transition-all shadow-sm">Sign Up</Link>
+            </div>
+          ) : (
+             <div className="flex items-center gap-3 mr-2">
+               <Link to="/dashboard" className="text-sm font-bold bg-indigo-50 text-indigo-700 px-5 py-2 hover:bg-indigo-100 rounded-xl transition-all shadow-sm">Go to Dashboard</Link>
+             </div>
+          )}
           <button 
             onClick={() => setIsCartOpen(true)}
             className="relative bg-slate-50 hover:bg-slate-100 p-4 rounded-2xl transition-colors"
@@ -194,15 +204,15 @@ export default function Storefront() {
                   {!offer.priority || offer.priority > 1 ? <Flame className="w-4 h-4 text-rose-400" /> : null}
                   {offer.type} Offer
                 </div>
-                <h2 className="text-4xl lg:text-7xl font-black uppercase tracking-tighter leading-[0.9] text-white drop-shadow-lg">
+                <h2 className="text-4xl sm:text-5xl lg:text-7xl font-black uppercase tracking-tighter leading-[0.9] text-white drop-shadow-lg">
                   {offer.title}
                 </h2>
-                <p className="text-lg lg:text-xl text-white/90 font-medium max-w-lg leading-relaxed drop-shadow">
+                <p className="text-base sm:text-lg lg:text-xl text-white/90 font-medium max-w-lg leading-relaxed drop-shadow">
                   {offer.description}
                 </p>
-                <div className="mt-4 flex items-center gap-6">
-                  {offer.discountPercentage > 0 && <span className="text-3xl font-black text-amber-400 drop-shadow-md">{offer.discountPercentage}% OFF</span>}
-                  <button className="bg-white text-slate-900 px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-sm hover:bg-slate-100 transition-colors shadow-xl shadow-white/10 flex items-center gap-3">
+                <div className="mt-2 sm:mt-4 flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 w-full sm:w-auto">
+                  {offer.discountPercentage > 0 && <span className="text-2xl sm:text-3xl font-black text-amber-400 drop-shadow-md">{offer.discountPercentage}% OFF</span>}
+                  <button className="w-full sm:w-auto bg-white text-slate-900 px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-sm hover:bg-slate-100 transition-colors shadow-xl shadow-white/10 flex items-center justify-center gap-3">
                     {offer.type === 'Service' ? 'Book Now' : 'Shop Now'} <Zap className="w-4 h-4" />
                   </button>
                 </div>
@@ -269,9 +279,8 @@ export default function Storefront() {
         </div>
       )}
 
-      {/* Search and Filters */}
-      <div className="flex flex-col md:flex-row gap-4 items-center">
-        <div className="relative flex-1 w-full">
+      <div className="flex flex-col md:flex-row gap-4 items-center sticky top-28 z-40 bg-slate-50/80 backdrop-blur-xl p-2 -mx-2 rounded-3xl pb-4 md:pb-2">
+        <div className="relative w-full md:flex-1">
           <input 
             type="text" 
             placeholder={activeTab === 'services' ? "Search recommended services..." : activeTab === 'products' ? "Search curated products..." : "Search for amazing products or services..."}
@@ -338,7 +347,7 @@ export default function Storefront() {
               key={item._id} 
               className="bg-white rounded-[2rem] border border-slate-100 overflow-hidden shadow-sm hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 group flex flex-col"
             >
-              <div className={`aspect-square relative overflow-hidden flex items-center justify-center p-6 ${item.itemType === 'Service' ? 'bg-fuchsia-50' : 'bg-indigo-50/50'}`}>
+              <div className={`aspect-square relative overflow-hidden flex items-center justify-center p-4 lg:p-6 ${item.itemType === 'Service' ? 'bg-fuchsia-50' : 'bg-indigo-50/50'}`}>
                 {/* Badge specifying product vs service */}
                 <div className={`absolute top-4 left-4 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-sm backdrop-blur-md flex items-center gap-1.5 ${
                   item.itemType === 'Service' 
@@ -511,8 +520,62 @@ export default function Storefront() {
         )}
       </AnimatePresence>
 
+      {/* Mobile Bottom Navigation Component */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-slate-100 p-2 z-[90] flex justify-around items-center pb-safe text-[10px] sm:text-xs font-bold text-slate-500 shadow-[0_-10px_40px_rgba(0,0,0,0.05)] pt-3">
+        <button 
+          onClick={() => { window.scrollTo({top: 0, behavior: 'smooth'}); handleTabChange('all'); }}
+          className={`flex flex-col items-center gap-1 p-2 ${activeTab === 'all' ? 'text-indigo-600' : ''}`}
+        >
+          <Zap className="w-5 h-5 sm:w-6 sm:h-6" />
+          <span>Home</span>
+        </button>
+        
+        <button 
+          onClick={() => handleTabChange('products')}
+          className={`flex flex-col items-center gap-1 p-2 ${activeTab === 'products' ? 'text-indigo-600' : ''}`}
+        >
+          <ShoppingBag className="w-5 h-5 sm:w-6 sm:h-6" />
+          <span>Products</span>
+        </button>
+
+        <button 
+          onClick={() => handleTabChange('services')}
+          className={`flex flex-col items-center gap-1 p-2 ${activeTab === 'services' ? 'text-indigo-600' : ''}`}
+        >
+          <Briefcase className="w-5 h-5 sm:w-6 sm:h-6" />
+          <span>Services</span>
+        </button>
+        
+        <button 
+          onClick={() => setIsCartOpen(true)}
+          className="flex flex-col items-center gap-1 p-2 relative"
+        >
+          <div className="relative">
+             <ShoppingCart className="w-5 h-5 sm:w-6 sm:h-6" />
+             {cart.length > 0 && <span className="absolute -top-1 -right-2 w-3.5 h-3.5 bg-rose-500 text-white text-[8px] flex items-center justify-center rounded-full border border-white">{cart.reduce((s, i) => s + i.qty, 0)}</span>}
+          </div>
+          <span>Cart</span>
+        </button>
+
+        {!user ? (
+          <Link to="/login" className="flex flex-col items-center gap-1 p-2">
+            <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-slate-200 flex items-center justify-center"><UserIcon /></div>
+            <span>Login</span>
+          </Link>
+        ) : (
+          <Link to="/dashboard" className="flex flex-col items-center gap-1 p-2 text-fuchsia-600">
+            <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-fuchsia-100 flex items-center justify-center text-fuchsia-600 font-bold">{user?.name?.charAt(0)}</div>
+            <span>Panel</span>
+          </Link>
+        )}
+      </div>
+
       <StorefrontAIChat catalog={items} />
     </div>
   );
 }
+
+const UserIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-user"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+);
 

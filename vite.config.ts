@@ -12,6 +12,9 @@ export default defineConfig(({mode}) => {
       tailwindcss(),
       VitePWA({ 
         registerType: 'autoUpdate',
+        workbox: {
+          maximumFileSizeToCacheInBytes: 10000000
+        },
         manifest: {
           name: 'Dealbuzz',
           short_name: 'Dealbuzz',

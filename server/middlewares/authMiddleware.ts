@@ -1,6 +1,6 @@
-import { Request, Response, NextFunction } from "express";
+import type {  Request, Response, NextFunction  } from "express";
 import jwt from "jsonwebtoken";
-import User from "../models/User.js";
+import User from "../models/User.ts";
 
 export interface AuthRequest extends Request {
   user?: any;
@@ -15,7 +15,25 @@ export const authenticate = async (
 ) => {
   try {
     const authHeader = req.headers.authorization;
+    
+    // Check if it's a public GET route
+    const isPublicGet = req.method === 'GET' && (
+      req.path.startsWith('/products') || 
+      req.path.startsWith('/services') || 
+      req.path.startsWith('/offers')
+    );
+
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      if (isPublicGet) {
+        // Find default tenant for public routes if needed
+        import('../models/Tenant.ts').then(({ default: Tenant }) => {
+          Tenant.findOne().then((tenant: any) => {
+            if (tenant) req.tenantId = tenant._id.toString();
+            next();
+          }).catch(() => next());
+        });
+        return;
+      }
       return res
         .status(401)
         .json({ error: "Unauthorized: Missing or invalid token" });
