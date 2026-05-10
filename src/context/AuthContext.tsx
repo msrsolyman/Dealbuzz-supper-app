@@ -7,13 +7,23 @@ import {
 } from "react";
 
 interface User {
-  id: string;
+  id?: string;
+  _id?: string;
   name: string;
   email: string;
   role: string;
   tenantId: string;
   allowedFeatures?: string[];
   approvalStatus?: string;
+  companyName?: string;
+  companyDescription?: string;
+  bio?: string;
+  address?: string;
+  phone?: string;
+  website?: string;
+  coverColor?: string;
+  profilePicture?: string;
+  coverPhoto?: string;
 }
 
 interface AuthContextType {
@@ -22,6 +32,7 @@ interface AuthContextType {
   login: (token: string, user: User) => void;
   logout: () => void;
   setRole: (role: string) => void;
+  setUser: (user: User | null) => void;
   loading: boolean;
 }
 
@@ -77,7 +88,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, token, login, logout, setRole, loading }}
+      value={{ user, token, login, logout, setRole, setUser, loading }}
     >
       {children}
     </AuthContext.Provider>
