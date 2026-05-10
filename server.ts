@@ -119,7 +119,7 @@ Sitemap: https://${req.get('host')}/sitemap.xml`);
     });
     app.use(vite.middlewares);
   } else {
-    const distPath = __dirname;
+    const distPath = path.join(process.cwd(), 'dist');
     const fs = await import('fs');
     app.use(express.static(distPath, { index: false }));
     

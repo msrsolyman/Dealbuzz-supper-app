@@ -188,14 +188,14 @@ export default function Sidebar({
 
   return (
     <aside
-      className={`w-64 bg-slate-50 h-screen flex flex-col text-slate-600 fixed top-0 left-0 border-r border-slate-200 z-50 transition-transform duration-300 md:translate-x-0 ${isOpen ? "translate-x-0" : "-translate-x-full"}`}
+      className={`w-64 bg-white/70 backdrop-blur-xl h-[calc(100vh-2rem)] my-4 ml-4 rounded-2xl flex flex-col text-slate-600 fixed top-0 left-0 border border-slate-200/50 shadow-xl shadow-slate-200/20 z-50 transition-transform duration-300 md:translate-x-0 ${isOpen ? "translate-x-0" : "-translate-x-[120%]"}`}
     >
-      <div className="h-16 px-6 border-b border-slate-200 flex justify-between items-center bg-transparent shrink-0">
+      <div className="h-16 px-6 border-b border-slate-100 flex justify-between items-center bg-transparent shrink-0 mt-2">
         <div className="flex items-center gap-3">
-          <div className="w-6 h-6 bg-slate-900 rounded-md flex items-center justify-center font-semibold text-white shrink-0">
-            <span className="text-[10px]">DB</span>
+          <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-indigo-700 rounded-xl flex items-center justify-center font-bold text-white shrink-0 shadow-lg shadow-indigo-500/30">
+            <span className="text-[11px] tracking-wider">DB</span>
           </div>
-          <span className="text-slate-900 font-semibold tracking-tight text-sm">
+          <span className="text-slate-900 font-bold tracking-tight text-lg">
             Dealbuzz
           </span>
         </div>
@@ -207,9 +207,9 @@ export default function Sidebar({
         </button>
       </div>
 
-      <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto custom-scrollbar">
-        <div className="text-[10px] text-slate-400 font-medium px-3 mb-2 mt-2">
-          Overview
+      <nav className="flex-1 p-4 space-y-1 overflow-y-auto custom-scrollbar">
+        <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest px-3 mb-3 mt-2">
+          Platform
         </div>
         {navItems.map((item) => {
           const Icon = item.icon;
@@ -234,14 +234,17 @@ export default function Sidebar({
               onClick={() => {
                 if (window.innerWidth < 768) setIsOpen(false);
               }}
-              className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-all duration-150 group relative ${
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 group relative overflow-hidden ${
                 isActive
-                  ? "text-slate-900 bg-slate-200/50"
-                  : "text-slate-600 hover:text-slate-900 hover:bg-slate-100/50"
+                  ? "text-indigo-700 bg-indigo-50 shadow-sm"
+                  : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
               }`}
             >
+              {isActive && (
+                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-indigo-600 rounded-r-full" />
+              )}
               <Icon
-                className={`w-4 h-4 shrink-0 ${isActive ? "text-slate-900" : "text-slate-400 group-hover:text-slate-600"}`}
+                className={`w-4 h-4 shrink-0 transition-colors ${isActive ? "text-indigo-600" : "text-slate-400 group-hover:text-slate-600"}`}
               />
               <span>{item.name}</span>
             </Link>
@@ -249,11 +252,11 @@ export default function Sidebar({
         })}
       </nav>
 
-      <div className="p-4 border-t border-slate-200 flex flex-col gap-3 bg-slate-50">
+      <div className="p-4 border-t border-slate-100 flex flex-col gap-3 rounded-b-2xl bg-white/50">
         {user?.role === "super_admin" && (
-          <div className="bg-slate-100 p-3 rounded-md border border-slate-200">
-            <div className="text-[10px] text-slate-500 uppercase font-bold mb-2 tracking-wide flex items-center gap-1.5">
-              <Shield className="w-3 h-3" /> Dev Tools
+          <div className="bg-slate-50 p-4 rounded-xl border border-slate-200/60 shadow-sm">
+            <div className="text-[10px] text-indigo-500 uppercase font-black mb-3 tracking-widest flex items-center gap-1.5">
+              <Shield className="w-3.5 h-3.5" /> Dev Overlay
             </div>
             <select
               value={user?.role || "admin"}
@@ -262,7 +265,7 @@ export default function Sidebar({
                   setRole(e.target.value);
                 }
               }}
-              className="w-full bg-white border border-slate-200 text-slate-700 text-xs rounded-md px-2.5 py-1.5 outline-none focus:border-slate-400 transition-colors cursor-pointer"
+              className="w-full bg-white border border-slate-200 text-slate-700 font-semibold text-xs rounded-lg px-3 py-2 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20 transition-all cursor-pointer shadow-sm"
             >
               <option value="super_admin">Super Admin</option>
               <option value="product_seller">Product Seller</option>
@@ -275,9 +278,9 @@ export default function Sidebar({
 
         <button
           onClick={logout}
-          className="flex items-center gap-3 px-3 py-2 text-slate-600 hover:text-rose-600 hover:bg-rose-50 rounded-md text-sm font-medium transition-colors"
+          className="flex items-center gap-3 px-4 py-3 text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-xl text-sm font-semibold transition-all"
         >
-          <LogOut className="w-4 h-4 shrink-0 text-slate-400" />
+          <LogOut className="w-4 h-4 shrink-0 text-slate-400 group-hover:text-red-500" />
           <span>{t("logout")}</span>
         </button>
       </div>

@@ -20,6 +20,20 @@ export class ErrorBoundary extends React.Component<Props, State> {
   }
 
   public static getDerivedStateFromError(error: Error): State {
+    const isChunkLoadFailed =
+      error.message &&
+      (error.message.includes('Failed to fetch dynamically imported module') ||
+        error.message.includes('Importing a module script failed'));
+
+    if (isChunkLoadFailed) {
+      if (!sessionStorage.getItem('chunk_reload')) {
+        sessionStorage.setItem('chunk_reload', 'true');
+        window.location.reload();
+      }
+    } else {
+      sessionStorage.removeItem('chunk_reload');
+    }
+    
     // Update state so the next render will show the fallback UI.
     return { hasError: true, error };
   }
@@ -46,7 +60,10 @@ export class ErrorBoundary extends React.Component<Props, State> {
             </div>
           )}
           <button
-            onClick={() => window.location.reload()}
+            onClick={() => {
+              sessionStorage.removeItem('chunk_reload');
+              window.location.reload();
+            }}
             className="flex items-center gap-2 px-6 py-2.5 bg-slate-900 text-white font-medium rounded-lg hover:bg-slate-800 transition-colors"
           >
             <RefreshCcw className="w-4 h-4" />

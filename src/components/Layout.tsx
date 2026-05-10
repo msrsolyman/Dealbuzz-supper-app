@@ -28,7 +28,7 @@ export default function Layout() {
   }
 
   return (
-    <div className="flex min-h-screen bg-[#FAFAFA] text-slate-900 text-sm font-sans antialiased overflow-hidden relative selection:bg-indigo-100 selection:text-indigo-900">
+    <div className="flex min-h-screen bg-[#f8fafc] text-slate-800 text-sm font-sans antialiased overflow-hidden relative selection:bg-indigo-100 selection:text-indigo-900">
       {/* Mobile overlay */}
       {isSidebarOpen && (
         <div
@@ -39,43 +39,44 @@ export default function Layout() {
 
       <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
 
-      <main className="flex-1 md:ml-64 flex flex-col h-screen overflow-hidden relative z-10 transition-all duration-300">
-        <header className="h-16 bg-white/80 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-6 shrink-0 sticky top-0 z-10 w-full transition-all">
+      <main className="flex-1 md:ml-[280px] flex flex-col h-screen overflow-hidden relative z-10 transition-all duration-300">
+
+        <header className="h-16 bg-white/70 backdrop-blur-xl border-b border-slate-200/50 flex items-center justify-between px-8 shrink-0 w-full transition-all m-4 rounded-2xl shadow-[0_2px_10px_-3px_rgba(6,81,237,0.05)] w-[calc(100%-2rem)] mx-auto top-0 z-10 sticky">
           <div className="flex items-center gap-4">
             <button
-              className="md:hidden p-1.5 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-all"
+              className="md:hidden p-2 text-slate-400 hover:text-slate-800 hover:bg-slate-100/50 rounded-xl transition-all"
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
             >
               <Menu className="w-5 h-5" />
             </button>
-            <div className="flex items-center gap-2">
-              <h2 className="font-semibold tracking-tight text-slate-800 text-sm">
-                Omni Retail
+            <div className="flex items-center gap-3">
+              <h2 className="font-bold tracking-tight text-slate-900 text-base">
+                Dealbuzz
               </h2>
-              <span className="hidden sm:inline-block text-slate-300 px-1">/</span>
-              <div className="hidden sm:flex text-xs font-mono text-slate-500 items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                {user?.tenantId?.slice(0, 6).toUpperCase() || "4092-X"}
+              <span className="hidden sm:inline-block text-slate-300 px-1 font-light">/</span>
+              <div className="hidden sm:flex text-[11px] font-mono text-slate-500 items-center gap-2 bg-slate-100/50 px-2.5 py-1 rounded-md border border-slate-200">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)] animate-pulse" />
+                {user?.tenantId?.slice(0, 6).toUpperCase() || "SYSTEMHQ"}
               </div>
             </div>
           </div>
           <div className="flex items-center gap-4">
             <div className="hidden sm:flex flex-col items-end">
-              <span className="text-sm font-medium text-slate-700">
+              <span className="text-sm font-semibold text-slate-900">
                 {user?.name}
               </span>
-              <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider">
+              <span className="text-[10px] font-bold text-indigo-500 uppercase tracking-widest">
                 {user?.role?.replace("_", " ")}
               </span>
             </div>
-            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-slate-200 to-slate-100 text-slate-600 flex items-center justify-center text-sm font-medium border border-slate-300 shadow-sm cursor-pointer">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-50 to-white text-indigo-600 flex items-center justify-center text-sm font-bold border border-indigo-100 shadow-sm cursor-pointer hover:shadow-md transition-shadow">
               {user?.name?.charAt(0)}
             </div>
           </div>
         </header>
 
-        <div className="flex-1 overflow-auto p-6 md:p-10 relative custom-scrollbar">
-          <div className="max-w-6xl mx-auto">
+        <div className="flex-1 overflow-auto p-4 md:p-8 pt-2 md:pt-4 relative custom-scrollbar">
+          <div className="max-w-[1400px] mx-auto w-full">
             <Outlet />
           </div>
         </div>
