@@ -3,7 +3,7 @@ import React, { Suspense } from "react";
 import { AuthProvider } from "./context/AuthContext";
 import { SettingsProvider } from "./context/SettingsContext";
 import Layout from "./components/Layout";
-import { Toaster } from "sonner";
+import { Toaster, toast } from "sonner";
 import { Loader2 } from "lucide-react";
 
 // Lazy Loaded Pages
