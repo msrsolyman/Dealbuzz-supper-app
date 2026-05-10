@@ -2,6 +2,7 @@ import mongoose, { Document, Schema } from 'mongoose';
 
 export interface ITicket extends Document {
   tenantId: mongoose.Types.ObjectId;
+  sellerId?: mongoose.Types.ObjectId;
   customerId: mongoose.Types.ObjectId;
   subject: string;
   description: string;
@@ -20,6 +21,7 @@ export interface ITicket extends Document {
 
 const TicketSchema = new Schema({
   tenantId: { type: Schema.Types.ObjectId, ref: 'Tenant', required: true, index: true },
+    sellerId: { type: Schema.Types.ObjectId, ref: 'User', index: true },
   customerId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   subject: { type: String, required: true },
   description: { type: String, required: true },

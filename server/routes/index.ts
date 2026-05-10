@@ -356,6 +356,11 @@ invoiceRouter.get('/', async (req: any, res: any) => {
     const query: any = { tenantId: req.tenantId, isDeleted: false };
     if (req.user?.role === 'customer') {
       query.customerId = req.user._id;
+    } else if (['product_seller', 'service_seller', 'reseller'].includes(req.user?.role)) {
+       // Sellers only see invoices related to their sellerId
+       // Add sellerId to invoice model if needed, but for now assuming it has sellerId or we query items
+       // Let's rely on sellerId if it exists on the schema, else they might not see them correctly.
+       query.sellerId = req.user._id;
     }
     const invoices = await (Invoice as any).find(query).populate('customerId');
     res.json({ data: invoices });
@@ -372,7 +377,12 @@ invoiceRouter.post('/', async (req: any, res: any) => {
       itemId: item.itemId || new mongoose.Types.ObjectId()
     })) || [];
     
-    const doc = await Invoice.create({ ...req.body, items, tenantId: req.tenantId });
+    let sellerId = req.body.sellerId;
+    if (['product_seller', 'service_seller', 'reseller'].includes(req.user?.role)) {
+       sellerId = req.user._id;
+    }
+
+    const doc = await Invoice.create({ ...req.body, items, tenantId: req.tenantId, sellerId });
     
     // Deduct stock for products
     for (const item of items) {

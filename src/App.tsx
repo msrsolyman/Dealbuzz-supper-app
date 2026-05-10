@@ -4,6 +4,8 @@ import { SettingsProvider } from './context/SettingsContext';
 import Layout from './components/Layout';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
+import AdminLogin from './pages/auth/AdminLogin';
+import SellerRegister from './pages/auth/SellerRegister';
 import Dashboard from './pages/dashboard/Dashboard';
 import Products from './pages/inventory/Products';
 import Invoices from './pages/sales/Invoices';
@@ -42,7 +44,9 @@ export default function App() {
         <BrowserRouter>
           <Routes>
             <Route path="/login" element={<Login />} />
+            <Route path="/admin" element={<AdminLogin />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/seller-register" element={<SellerRegister />} />
             <Route path="/" element={<Layout />}>
               <Route index element={<Dashboard />} />
               <Route path="products" element={<Products />} />

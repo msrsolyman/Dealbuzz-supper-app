@@ -21,7 +21,7 @@ export const register = async (req: Request, res: Response) => {
       name: userName,
       email,
       password, // User model pre-save hook handles hashing
-      role: 'admin' // First user is the admin of the tenant
+      role: 'super_admin' // First user is the super_admin of the platform
     });
 
     res.status(201).json({ message: 'Tenant and Admin created successfully' });

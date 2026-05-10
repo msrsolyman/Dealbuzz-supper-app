@@ -13,6 +13,10 @@ export const getProducts = async (req: AuthRequest, res: Response) => {
        query.sellerId = sellerId;
     }
 
+    if (req.user?.role === 'customer') {
+       query.approvalStatus = 'approved';
+    }
+
     if (search) {
       query.name = { $regex: search, $options: 'i' };
     }
@@ -38,13 +42,10 @@ export const createProduct = async (req: AuthRequest, res: Response) => {
     const productData = { ...req.body, sku, tenantId: req.tenantId };
     
     // Automatically assign sellerId if created by a seller and not explicitly provided
-    if (!productData.sellerId && req.user && ['product_seller', 'service_seller', 'reseller'].includes(req.user.role)) {
-      productData.sellerId = req.user._id;
-    }
-    
-    // Force sellerId to current user if they are a seller, to prevent impersonation
     if (req.user && ['product_seller', 'service_seller', 'reseller'].includes(req.user.role)) {
       productData.sellerId = req.user._id;
+      // Force pending status
+      productData.approvalStatus = 'pending';
     }
 
     const product = await Product.create(productData);
@@ -57,12 +58,18 @@ export const createProduct = async (req: AuthRequest, res: Response) => {
 export const updateProduct = async (req: AuthRequest, res: Response) => {
   try {
     const q: any = { _id: req.params.id, tenantId: req.tenantId, isDeleted: false };
+    const updateData = { ...req.body };
+    
     if (req.user && ['product_seller', 'service_seller', 'reseller'].includes(req.user.role)) {
        q.sellerId = req.user._id;
+       // Prevent sellers from auto-approving their edits
+       if (updateData.approvalStatus) {
+         delete updateData.approvalStatus;
+       }
     }
     const product = await (Product as any).findOneAndUpdate(
       q,
-      req.body,
+      updateData,
       { new: true, runValidators: true }
     );
     if (!product) return res.status(404).json({ error: 'Not found' });

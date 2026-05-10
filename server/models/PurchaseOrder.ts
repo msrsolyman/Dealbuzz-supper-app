@@ -9,6 +9,7 @@ export interface IPurchaseOrderItem {
 
 export interface IPurchaseOrder extends Document {
   tenantId: mongoose.Types.ObjectId;
+  sellerId?: mongoose.Types.ObjectId;
   vendorId: mongoose.Types.ObjectId;
   poNumber: string;
   items: IPurchaseOrderItem[];
@@ -36,6 +37,7 @@ const PurchaseOrderItemSchema = new Schema({
 const PurchaseOrderSchema = new Schema<IPurchaseOrder>(
   {
     tenantId: { type: Schema.Types.ObjectId, ref: 'Tenant', required: true, index: true },
+    sellerId: { type: Schema.Types.ObjectId, ref: 'User', index: true },
     vendorId: { type: Schema.Types.ObjectId, ref: 'Vendor', required: true },
     poNumber: { type: String, required: true, index: true },
     items: [PurchaseOrderItemSchema],

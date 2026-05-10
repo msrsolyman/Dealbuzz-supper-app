@@ -41,7 +41,8 @@ export interface IProduct extends Document {
   warrantyInfo?: string;
   returnPolicy?: string;
   supplierInfo?: string;
-  barcode?: string;
+
+  approvalStatus: 'pending' | 'approved' | 'rejected';
 
   isDeleted: boolean;
   createdAt: Date;
@@ -97,7 +98,8 @@ const ProductSchema = new Schema<IProduct>(
     warrantyInfo: { type: String },
     returnPolicy: { type: String },
     supplierInfo: { type: String },
-    barcode: { type: String },
+
+    approvalStatus: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'pending' },
 
     isDeleted: { type: Boolean, default: false, index: true }
   },

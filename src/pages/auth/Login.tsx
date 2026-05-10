@@ -64,8 +64,15 @@ export default function Login() {
           </button>
         </form>
 
-        <div className="mt-6 text-center text-[10px] text-slate-500 font-bold uppercase">
-          No tenant? <Link to="/register" className="text-indigo-600 hover:underline">System Initialization</Link>
+        <div className="mt-8 pt-6 border-t border-slate-100 flex flex-col gap-3">
+          <Link to="/seller-register" className="flex items-center justify-center gap-2 w-full border border-indigo-100 bg-indigo-50/50 hover:bg-indigo-50 text-indigo-600 text-[10px] font-bold uppercase tracking-widest py-2 rounded-xl transition-all">
+            Become a Seller
+          </Link>
+          <div className="text-center mt-2">
+            <p className="text-[11px] text-slate-500 font-medium">
+              Don't have an account? <Link to="/register" className="text-indigo-600 hover:text-indigo-700 font-bold ml-1 hover:underline">Register now</Link>
+            </p>
+          </div>
         </div>
       </div>
     </div>

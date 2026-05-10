@@ -2,6 +2,7 @@ import mongoose, { Document, Schema } from 'mongoose';
 
 export interface ITask extends Document {
   tenantId: mongoose.Types.ObjectId;
+  sellerId?: mongoose.Types.ObjectId;
   title: string;
   description: string;
   status: 'TODO' | 'IN_PROGRESS' | 'REVIEW' | 'DONE';
@@ -15,6 +16,7 @@ export interface ITask extends Document {
 
 const TaskSchema = new Schema({
   tenantId: { type: Schema.Types.ObjectId, ref: 'Tenant', required: true, index: true },
+    sellerId: { type: Schema.Types.ObjectId, ref: 'User', index: true },
   title: { type: String, required: true },
   description: { type: String },
   status: { type: String, enum: ['TODO', 'IN_PROGRESS', 'REVIEW', 'DONE'], default: 'TODO' },

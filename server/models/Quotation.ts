@@ -10,6 +10,7 @@ export interface IQuotationItem {
 
 export interface IQuotation extends Document {
   tenantId: mongoose.Types.ObjectId;
+  sellerId?: mongoose.Types.ObjectId;
   customerId?: mongoose.Types.ObjectId;
   quotationNumber: string;
   items: IQuotationItem[];
@@ -34,6 +35,7 @@ const QuotationItemSchema = new Schema({
 const QuotationSchema = new Schema<IQuotation>(
   {
     tenantId: { type: Schema.Types.ObjectId, ref: 'Tenant', required: true, index: true },
+    sellerId: { type: Schema.Types.ObjectId, ref: 'User', index: true },
     customerId: { type: Schema.Types.ObjectId, ref: 'Customer' },
     quotationNumber: { type: String, required: true, index: true },
     items: [QuotationItemSchema],

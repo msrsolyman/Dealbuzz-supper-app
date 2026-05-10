@@ -8,6 +8,7 @@ export interface IReturnItem {
 
 export interface IReturn extends Document {
   tenantId: mongoose.Types.ObjectId;
+  sellerId?: mongoose.Types.ObjectId;
   invoiceId: mongoose.Types.ObjectId;
   reason: string;
   items: IReturnItem[];
@@ -26,6 +27,7 @@ const ReturnItemSchema = new Schema({
 const ReturnSchema = new Schema<IReturn>(
   {
     tenantId: { type: Schema.Types.ObjectId, ref: 'Tenant', required: true, index: true },
+    sellerId: { type: Schema.Types.ObjectId, ref: 'User', index: true },
     invoiceId: { type: Schema.Types.ObjectId, ref: 'Invoice', required: true },
     reason: { type: String, required: true },
     items: [ReturnItemSchema],

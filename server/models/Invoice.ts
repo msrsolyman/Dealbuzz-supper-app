@@ -12,6 +12,7 @@ export interface IInvoiceItem {
 export interface IInvoice extends Document {
   tenantId: mongoose.Types.ObjectId;
   customerId?: mongoose.Types.ObjectId;
+  sellerId?: mongoose.Types.ObjectId;
   invoiceNumber: string;
   items: IInvoiceItem[];
   subtotal: number;
@@ -45,6 +46,7 @@ const InvoiceSchema = new Schema<IInvoice>(
   {
     tenantId: { type: Schema.Types.ObjectId, ref: 'Tenant', required: true, index: true },
     customerId: { type: Schema.Types.ObjectId, ref: 'User', index: true },
+    sellerId: { type: Schema.Types.ObjectId, ref: 'User', index: true },
     invoiceNumber: { type: String, required: true },
     items: [InvoiceItemSchema],
     subtotal: { type: Number, required: true, min: 0 },
