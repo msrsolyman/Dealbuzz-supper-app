@@ -109,15 +109,17 @@ Sitemap: https://${req.get('host')}/sitemap.xml`);
     });
   });
 
+  const isProduction = process.env.NODE_ENV === 'production' || process.argv[1]?.endsWith('server.cjs');
+  
   // Vite middleware for development
-  if (process.env.NODE_ENV !== 'production') {
+  if (!isProduction) {
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: 'spa',
     });
     app.use(vite.middlewares);
   } else {
-    const distPath = path.join(process.cwd(), 'dist');
+    const distPath = __dirname;
     const fs = await import('fs');
     app.use(express.static(distPath, { index: false }));
     
