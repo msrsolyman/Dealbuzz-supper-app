@@ -29,43 +29,56 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50 font-sans text-slate-900 border-8 border-slate-900">
-      <div className="w-full max-w-sm p-6 bg-white border border-slate-200 shadow-xl">
-        <h1 className="text-2xl font-bold text-center text-slate-900 tracking-tight">DEALBUZZ</h1>
-        <p className="text-center text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1 mb-6">Tenant Authentication</p>
+    <div className="min-h-screen flex items-center justify-center bg-slate-50 font-sans text-slate-900 border-8 border-slate-900 p-4">
+      <div className="w-full max-w-sm p-8 bg-white border border-slate-200 shadow-xl rounded-2xl relative overflow-hidden">
+        
+        {/* Decorative corner */}
+        <div className="absolute -top-10 -right-10 w-32 h-32 bg-indigo-50 rounded-full blur-3xl opacity-50"></div>
+        
+        <h1 className="text-3xl font-display font-black text-center text-slate-900 tracking-tighter mb-2">DEALBUZZ</h1>
+        <p className="text-center text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-8">
+          Secure Authentication
+        </p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Email</label>
+            <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Email Address</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full border border-slate-200 rounded px-2 py-1.5 text-xs outline-none focus:border-indigo-500 font-mono"
+              className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all font-mono"
+              placeholder="john@example.com"
               required
             />
           </div>
           <div>
-            <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Password</label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">Password</label>
+              <a href="#" className="text-[10px] font-bold text-indigo-600 hover:text-indigo-700">Forgot?</a>
+            </div>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full border border-slate-200 rounded px-2 py-1.5 text-xs outline-none focus:border-indigo-500"
+              className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all font-medium"
+              placeholder="••••••••"
               required
             />
           </div>
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-indigo-600 text-white text-[10px] font-bold uppercase py-2 rounded border border-indigo-700 hover:bg-indigo-700 transition-colors disabled:opacity-50 tracking-wider mt-2 shadow-sm"
+            className="w-full bg-slate-900 text-white text-xs font-bold uppercase tracking-widest py-3 rounded-xl hover:bg-slate-800 transition-all disabled:opacity-50 mt-4 shadow-xl shadow-slate-900/20 active:scale-[0.98]"
           >
-            {loading ? 'Authenticating...' : 'Secure Login'}
+            {loading ? 'Authenticating...' : 'Sign In'}
           </button>
         </form>
 
-        <div className="mt-6 text-center text-[10px] text-slate-500 font-bold uppercase">
-          No tenant? <Link to="/register" className="text-indigo-600 hover:underline">System Initialization</Link>
+        <div className="mt-8 pt-6 border-t border-slate-100 text-center">
+          <p className="text-[11px] text-slate-500 font-medium">
+            Don't have an account? <Link to="/register" className="text-indigo-600 hover:text-indigo-700 font-bold ml-1 hover:underline">Apply now</Link>
+          </p>
         </div>
       </div>
     </div>

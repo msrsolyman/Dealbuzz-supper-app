@@ -1,4 +1,5 @@
 import mongoose, { Document, Schema } from 'mongoose';
+import bcrypt from 'bcrypt';
 
 export interface IUser extends Document {
   tenantId?: mongoose.Types.ObjectId;
@@ -7,6 +8,8 @@ export interface IUser extends Document {
   password?: string;
   role: 'super_admin' | 'admin' | 'staff' | 'customer' | 'dev' | 'product_seller' | 'service_seller' | 'reseller';
   status: 'active' | 'inactive';
+  approvalStatus: 'pending' | 'approved' | 'rejected';
+  allowedFeatures?: string[];
   profilePicture?: string;
   coverPhoto?: string;
   bio?: string;
@@ -39,6 +42,17 @@ const UserSchema = new Schema<IUser>(
       required: true 
     },
     status: { type: String, enum: ['active', 'inactive'], default: 'active' },
+    approvalStatus: { 
+      type: String, 
+      enum: ['pending', 'approved', 'rejected'], 
+      default: function(this: any) {
+        if (['product_seller', 'service_seller', 'reseller'].includes(this.role)) {
+          return 'pending';
+        }
+        return 'approved';
+      }
+    },
+    allowedFeatures: [{ type: String }],
     profilePicture: { type: String },
     coverPhoto: { type: String },
     bio: { type: String },
@@ -52,6 +66,17 @@ const UserSchema = new Schema<IUser>(
   },
   { timestamps: true }
 );
+
+UserSchema.pre('save', async function(next) {
+  if (!this.isModified('password')) return next();
+  try {
+    const salt = await bcrypt.genSalt(10);
+    this.password = await bcrypt.hash(this.password as string, salt);
+    return next();
+  } catch (err: any) {
+    return next(err);
+  }
+});
 
 // @ts-ignore
 export default mongoose.models.User || mongoose.model<IUser>('User', UserSchema);

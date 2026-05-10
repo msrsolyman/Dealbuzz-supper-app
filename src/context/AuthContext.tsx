@@ -6,6 +6,8 @@ interface User {
   email: string;
   role: string;
   tenantId: string;
+  allowedFeatures?: string[];
+  approvalStatus?: string;
 }
 
 interface AuthContextType {

@@ -15,16 +15,12 @@ export const register = async (req: Request, res: Response) => {
     // Create Tenant
     const tenant = await Tenant.create({ name: tenantName });
 
-    // Hash password
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
-
     // Create Admin User
     const user = await User.create({
       tenantId: tenant._id,
       name: userName,
       email,
-      password: hashedPassword,
+      password, // User model pre-save hook handles hashing
       role: 'admin' // First user is the admin of the tenant
     });
 
@@ -37,6 +33,39 @@ export const register = async (req: Request, res: Response) => {
   }
 };
 
+export const registerUser = async (req: Request, res: Response) => {
+  try {
+    const { name, email, password, role } = req.body;
+
+    const existingUser = await (User as any).findOne({ email });
+    if (existingUser) return res.status(400).json({ error: 'Email already in use' });
+
+    // Validate role
+    const validRoles = ['customer', 'product_seller', 'service_seller', 'reseller'];
+    if (!validRoles.includes(role)) {
+      return res.status(400).json({ error: 'Invalid role for registration' });
+    }
+
+    // Find the primary tenant (just the first one for now, as it's a single platform in many cases)
+    const primaryTenant = await Tenant.findOne();
+    if (!primaryTenant) {
+      return res.status(400).json({ error: 'Platform not initialized. Please contact support.' });
+    }
+
+    const user = await User.create({
+      tenantId: primaryTenant._id,
+      name,
+      email,
+      password, // Pre-save hook hashes
+      role
+    });
+
+    res.status(201).json({ message: 'Registration successful' });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 export const login = async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
@@ -44,6 +73,9 @@ export const login = async (req: Request, res: Response) => {
 
     if (!user) return res.status(404).json({ error: 'User not found' });
     if (user.status === 'inactive') return res.status(401).json({ error: 'User is inactive' });
+    if (['product_seller', 'service_seller', 'reseller'].includes(user.role) && user.approvalStatus !== 'approved') {
+      return res.status(401).json({ error: `Your account is currently ${user.approvalStatus}. Please wait for super admin approval.` });
+    }
 
     const isMatch = await bcrypt.compare(password, user.password!);
     if (!isMatch) return res.status(400).json({ error: 'Invalid credentials' });
@@ -54,7 +86,7 @@ export const login = async (req: Request, res: Response) => {
       { expiresIn: '1d' }
     );
 
-    res.json({ token, user: { id: user._id, name: user.name, email: user.email, role: user.role, tenantId: user.tenantId } });
+    res.json({ token, user: { id: user._id, name: user.name, email: user.email, role: user.role, tenantId: user.tenantId, allowedFeatures: user.allowedFeatures, approvalStatus: user.approvalStatus } });
   } catch (error: any) {
     if (error.name === 'MongooseError' || error.message.includes('buffering') || error.message.toLowerCase().includes('mongo')) {
       return res.status(500).json({ error: 'Database connection failed. Please ensure your MONGODB_URI is correct and you replaced <password> with your actual database password.', details: error.message });
@@ -112,8 +144,7 @@ export const updatePassword = async (req: AuthRequest, res: Response) => {
     const isMatch = await bcrypt.compare(currentPassword, user.password!);
     if (!isMatch) return res.status(400).json({ error: 'Invalid current password' });
 
-    const salt = await bcrypt.genSalt(10);
-    user.password = await bcrypt.hash(newPassword, salt);
+    user.password = newPassword; // User model pre-save hook handles hashing
     await user.save();
 
     res.json({ message: 'Password updated successfully' });

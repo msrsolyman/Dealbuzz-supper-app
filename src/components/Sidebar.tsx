@@ -24,42 +24,50 @@ export default function Sidebar({ isOpen, setIsOpen }: { isOpen: boolean, setIsO
     navItems.push({ name: 'Settings', path: '/settings', icon: Settings });
   } else {
     // product_seller, service_seller, reseller, super_admin, admin
-    if (['super_admin', 'admin', 'product_seller', 'reseller'].includes(user?.role || '')) {
-      navItems.push({ name: t('products'), path: '/products', icon: Package });
-      navItems.push({ name: t('inventory'), path: '/inventory', icon: Archive });
+    const isSuperOrAdmin = ['super_admin', 'admin'].includes(user?.role || '');
+    const isSellerOrReseller = ['product_seller', 'service_seller', 'reseller'].includes(user?.role || '');
+    
+    // Helper to check if feature is allowed for seller, or if user is admin
+    const canAccess = (feature: string) => {
+      if (isSuperOrAdmin) return true;
+      if (isSellerOrReseller) return user?.allowedFeatures?.includes(feature);
+      return false;
+    };
+
+    if (canAccess('products') || canAccess('inventory')) {
+      if (canAccess('products')) navItems.push({ name: t('products'), path: '/products', icon: Package });
+      if (canAccess('inventory')) navItems.push({ name: t('inventory'), path: '/inventory', icon: Archive });
     }
-    if (['super_admin', 'admin', 'service_seller', 'reseller'].includes(user?.role || '')) {
+    if (canAccess('services')) {
       navItems.push({ name: t('services'), path: '/services', icon: Settings });
     }
-    navItems.push({ name: t('pos'), path: '/pos', icon: ShoppingCart });
-    navItems.push({ name: t('customers'), path: '/customers', icon: Users });
-    navItems.push({ name: 'Vendors', path: '/vendors', icon: Truck });
-    navItems.push({ name: 'Tasks', path: '/tasks', icon: ListTodo });
-    navItems.push({ name: 'Support', path: '/support', icon: MessageSquare });
-    navItems.push({ name: 'Purchase Orders', path: '/purchase-orders', icon: FileText });
-    navItems.push({ name: t('invoices'), path: '/invoices', icon: FileText });
-    navItems.push({ name: 'Delivery', path: '/delivery', icon: TruckDelivery });
-    navItems.push({ name: 'Quotations', path: '/quotations', icon: FileText });
-    navItems.push({ name: 'Returns', path: '/returns', icon: RotateCcw });
-    navItems.push({ name: 'Reports', path: '/reports', icon: BarChart3 });
-    navItems.push({ name: t('accounts'), path: '/accounts', icon: ArrowLeftRight });
+    if (canAccess('pos')) navItems.push({ name: t('pos'), path: '/pos', icon: ShoppingCart });
+    if (canAccess('customers')) navItems.push({ name: t('customers'), path: '/customers', icon: Users });
+    if (canAccess('vendors')) navItems.push({ name: 'Vendors', path: '/vendors', icon: Truck });
+    if (canAccess('tasks')) navItems.push({ name: 'Tasks', path: '/tasks', icon: ListTodo });
+    if (canAccess('support')) navItems.push({ name: 'Support', path: '/support', icon: MessageSquare });
+    if (canAccess('purchase_orders')) navItems.push({ name: 'Purchase Orders', path: '/purchase-orders', icon: FileText });
+    if (canAccess('invoices')) navItems.push({ name: t('invoices'), path: '/invoices', icon: FileText });
+    if (canAccess('delivery')) navItems.push({ name: 'Delivery', path: '/delivery', icon: TruckDelivery });
+    if (canAccess('quotations')) navItems.push({ name: 'Quotations', path: '/quotations', icon: FileText });
+    if (canAccess('returns')) navItems.push({ name: 'Returns', path: '/returns', icon: RotateCcw });
+    if (canAccess('reports')) navItems.push({ name: 'Reports', path: '/reports', icon: BarChart3 });
+    if (canAccess('accounts')) navItems.push({ name: t('accounts'), path: '/accounts', icon: ArrowLeftRight });
     
-    if (['super_admin', 'admin', 'product_seller', 'reseller'].includes(user?.role || '')) {
-      navItems.push({ name: t('warehouses'), path: '/warehouses', icon: Archive });
-      navItems.push({ name: 'Manufacturing', path: '/manufacturing', icon: Package });
-      navItems.push({ name: 'Expenses', path: '/expenses', icon: Coins });
-      navItems.push({ name: 'HR & Payroll', path: '/hr', icon: Briefcase });
-    }
+    if (canAccess('warehouses')) navItems.push({ name: t('warehouses'), path: '/warehouses', icon: Archive });
+    if (canAccess('manufacturing')) navItems.push({ name: 'Manufacturing', path: '/manufacturing', icon: Package });
+    if (canAccess('expenses')) navItems.push({ name: 'Expenses', path: '/expenses', icon: Coins });
+    if (canAccess('hr')) navItems.push({ name: 'HR & Payroll', path: '/hr', icon: Briefcase });
 
-    if (['super_admin', 'admin', 'product_seller', 'service_seller', 'reseller'].includes(user?.role || '')) {
-      navItems.push({ name: 'Marketing', path: '/marketing', icon: Megaphone });
-      navItems.push({ name: 'Offers/Promos', path: '/offers', icon: FileText });
-    }
+    if (canAccess('marketing')) navItems.push({ name: 'Marketing', path: '/marketing', icon: Megaphone });
+    if (canAccess('offers')) navItems.push({ name: 'Offers/Promos', path: '/offers', icon: FileText });
 
+    // Storefront configuration is generally for all sellers + admins
+    if (isSuperOrAdmin || isSellerOrReseller) {
+      navItems.push({ name: t('profile_store'), path: '/storefront-config', icon: Store });
+    }
     
-    navItems.push({ name: t('profile_store'), path: '/storefront-config', icon: Store });
-    
-    if (['super_admin', 'admin'].includes(user?.role || '')) {
+    if (isSuperOrAdmin) {
       navItems.push({ name: t('users'), path: '/users', icon: Shield });
       navItems.push({ name: t('audit_logs'), path: '/audit-logs', icon: Shield });
     }

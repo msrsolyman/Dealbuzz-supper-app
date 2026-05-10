@@ -1,5 +1,5 @@
 import express from 'express';
-import { register, login, getMe, updateMe, updatePassword } from '../controllers/authController.js';
+import { register, registerUser, login, getMe, updateMe, updatePassword } from '../controllers/authController.js';
 import { getProducts, createProduct, updateProduct, deleteProduct } from '../controllers/productController.js';
 import { authenticate } from '../middlewares/authMiddleware.js';
 import { authorize } from '../middlewares/roleMiddleware.js';
@@ -59,6 +59,7 @@ router.put('/sellers/:id', authenticate, auditLog('User'), async (req: any, res:
 });
 
 router.post('/auth/register', register);
+router.post('/auth/register-user', registerUser);
 router.post('/auth/login', auditLog('Users'), login);
 router.get('/auth/me', authenticate, getMe);
 router.put('/auth/me', authenticate, auditLog('User'), updateMe);
@@ -470,7 +471,7 @@ inventoryRouter.post('/', async (req: any, res: any) => {
 router.use('/inventory', inventoryRouter);
 
 // --- Users (Tenant specific) ---
-router.use('/users', generateCrud(User, 'User'));
+router.use('/users', authorize(['super_admin', 'admin']), generateCrud(User, 'User'));
 
 // --- Audit Logs ---
 router.get('/audit-logs', async (req: any, res: any) => {
