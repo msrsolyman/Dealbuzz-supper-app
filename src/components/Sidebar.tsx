@@ -22,7 +22,6 @@ import {
   Truck as TruckDelivery,
   MessageSquare,
   ListTodo,
-  TrendingUp,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useTranslation } from "react-i18next";
@@ -134,10 +133,8 @@ export default function Sidebar({
       });
     if (canAccess("returns"))
       navItems.push({ name: "Returns", path: "/returns", icon: RotateCcw });
-    if (canAccess("reports")) {
+    if (canAccess("reports"))
       navItems.push({ name: "Reports", path: "/reports", icon: BarChart3 });
-      navItems.push({ name: "Analytics", path: "/analytics", icon: TrendingUp });
-    }
     if (canAccess("accounts"))
       navItems.push({
         name: t("accounts"),

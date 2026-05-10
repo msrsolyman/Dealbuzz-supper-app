@@ -40,7 +40,6 @@ const Support = React.lazy(() => import("./pages/crm/Support"));
 const Tasks = React.lazy(() => import("./pages/hrm/Tasks"));
 const Delivery = React.lazy(() => import("./pages/inventory/Delivery"));
 const Settings = React.lazy(() => import("./pages/settings/Settings"));
-const AnalyticsDashboard = React.lazy(() => import("./pages/analytics/AnalyticsDashboard"));
 
 import { HelmetProvider } from "react-helmet-async";
 
@@ -113,7 +112,6 @@ export default function App() {
                 <Route path="/delivery" element={<Delivery />} />
                 <Route path="/support" element={<Support />} />
                 <Route path="/tasks" element={<Tasks />} />
-                <Route path="/analytics" element={<AnalyticsDashboard />} />
                 <Route path="/manufacturing" element={<Manufacturing />} />
                 <Route path="/warehouses" element={<Warehouses />} />
                 <Route path="/sellers" element={<SellersDirectory />} />

@@ -4,9 +4,6 @@ import { createServer as createViteServer } from 'vite';
 import path from 'path';
 import cors from 'cors';
 import compression from 'compression';
-import cookieParser from 'cookie-parser';
-import helmet from 'helmet';
-import rateLimit from 'express-rate-limit';
 import { connectDB } from './server/utils/db.ts';
 import apiRoutes from './server/routes/index.ts';
 import Invoice from './server/models/Invoice.ts';
@@ -16,32 +13,10 @@ async function startServer() {
   const PORT = 3000;
 
   // Middlewares
-  app.use(helmet({
-    contentSecurityPolicy: false, // Disabled for Vite dev server and images
-    crossOriginEmbedderPolicy: false,
-  }));
-  app.use(cors({ 
-    origin: true, 
-    credentials: true 
-  }));
+  app.use(cors());
   app.use(compression());
-  app.use(cookieParser());
   app.use(express.json({ limit: '50mb' }));
   app.use(express.urlencoded({ limit: '50mb', extended: true }));
-
-  // Trust proxy for rate limiting behind load balancers/reverse proxies
-  app.set('trust proxy', 1);
-
-  // Global Rate Limiting
-  const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 1000, // limit each IP to 1000 requests per windowMs
-    standardHeaders: true,
-    legacyHeaders: false,
-    validate: { xForwardedForHeader: false },
-    message: { error: 'Too many requests, please try again later.' }
-  });
-  app.use('/api', limiter);
 
   // Connect to Database
   await connectDB();

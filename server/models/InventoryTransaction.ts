@@ -15,9 +15,9 @@ export interface IInventoryTransaction extends Document {
 
 const InventoryTransactionSchema = new Schema<IInventoryTransaction>(
   {
-    tenantId: { type: Schema.Types.ObjectId, ref: 'Tenant', required: true },
-    warehouseId: { type: Schema.Types.ObjectId, ref: 'Warehouse' },
-    productId: { type: Schema.Types.ObjectId, ref: 'Product', required: true },
+    tenantId: { type: Schema.Types.ObjectId, ref: 'Tenant', required: true, index: true },
+    warehouseId: { type: Schema.Types.ObjectId, ref: 'Warehouse', index: true },
+    productId: { type: Schema.Types.ObjectId, ref: 'Product', required: true, index: true },
     type: { type: String, enum: ['IN', 'OUT', 'ADJUSTMENT', 'TRANSFER'], required: true },
     quantity: { type: Number, required: true },
     unitCost: { type: Number, required: true, min: 0 },
@@ -27,9 +27,5 @@ const InventoryTransactionSchema = new Schema<IInventoryTransaction>(
   },
   { timestamps: { createdAt: true, updatedAt: false } }
 );
-
-InventoryTransactionSchema.index({ tenantId: 1, productId: 1, createdAt: -1 });
-InventoryTransactionSchema.index({ tenantId: 1, warehouseId: 1, createdAt: -1 });
-InventoryTransactionSchema.index({ tenantId: 1, type: 1 });
 
 export default mongoose.models.InventoryTransaction || mongoose.model<IInventoryTransaction>('InventoryTransaction', InventoryTransactionSchema);

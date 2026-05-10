@@ -1,5 +1,5 @@
 import express from 'express';
-import { register, registerUser, login, getMe, updateMe, updatePassword, refreshToken, logout, generate2FA, verify2FA, disable2FA } from '../controllers/authController.ts';
+import { register, registerUser, login, getMe, updateMe, updatePassword } from '../controllers/authController.ts';
 import { getProducts, createProduct, updateProduct, deleteProduct } from '../controllers/productController.ts';
 import { authenticate } from '../middlewares/authMiddleware.ts';
 import { authorize } from '../middlewares/roleMiddleware.ts';
@@ -36,11 +36,7 @@ import Task from '../models/Task.ts';
 
 import { cacheMiddleware, clearCache } from '../middleware/cache.ts';
 
-import { getDashboardAnalytics } from '../controllers/analyticsController.ts';
-
 const router = express.Router();
-
-router.get('/analytics/dashboard', authenticate, getDashboardAnalytics);
 
 // --- Custom auth-related routes ---
 // Move sellers under authenticate
@@ -67,14 +63,9 @@ router.put('/sellers/:id', authenticate, auditLog('User'), async (req: any, res:
 router.post('/auth/register', register);
 router.post('/auth/register-user', registerUser);
 router.post('/auth/login', auditLog('Users'), login);
-router.post('/auth/refresh', refreshToken);
-router.post('/auth/logout', logout);
 router.get('/auth/me', authenticate, getMe);
 router.put('/auth/me', authenticate, auditLog('User'), updateMe);
 router.put('/auth/password', authenticate, auditLog('User'), updatePassword);
-router.get('/auth/2fa/generate', authenticate, generate2FA);
-router.post('/auth/2fa/verify', authenticate, verify2FA);
-router.post('/auth/2fa/disable', authenticate, disable2FA);
 
 // Add Google OAuth
 const getRedirectUri = (req: any) => {

@@ -1,5 +1,4 @@
 import mongoose, { Document, Schema } from 'mongoose';
-import { multiTenantPlugin } from '../utils/mongoosePlugins.ts';
 
 export interface IInvoiceItem {
   itemType: 'Product' | 'Service';
@@ -45,9 +44,9 @@ const InvoiceItemSchema = new Schema<IInvoiceItem>({
 
 const InvoiceSchema = new Schema<IInvoice>(
   {
-    tenantId: { type: Schema.Types.ObjectId, ref: 'Tenant', required: true },
-    customerId: { type: Schema.Types.ObjectId, ref: 'User' },
-    sellerId: { type: Schema.Types.ObjectId, ref: 'User' },
+    tenantId: { type: Schema.Types.ObjectId, ref: 'Tenant', required: true, index: true },
+    customerId: { type: Schema.Types.ObjectId, ref: 'User', index: true },
+    sellerId: { type: Schema.Types.ObjectId, ref: 'User', index: true },
     invoiceNumber: { type: String, required: true },
     items: [InvoiceItemSchema],
     subtotal: { type: Number, required: true, min: 0 },
@@ -66,12 +65,5 @@ const InvoiceSchema = new Schema<IInvoice>(
   },
   { timestamps: true }
 );
-
-InvoiceSchema.index({ tenantId: 1, invoiceNumber: 1 }, { unique: true });
-InvoiceSchema.index({ tenantId: 1, customerId: 1 });
-InvoiceSchema.index({ tenantId: 1, status: 1 });
-InvoiceSchema.index({ tenantId: 1, deliveryStatus: 1 });
-
-InvoiceSchema.plugin(multiTenantPlugin);
 
 export default mongoose.models.Invoice || mongoose.model<IInvoice>('Invoice', InvoiceSchema);

@@ -60,24 +60,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.setItem("user", JSON.stringify(newUser));
   };
 
-  const logout = async () => {
-    try {
-      if (token) {
-        // Send logout request to backend
-        const API_URL = (import.meta as any).env.VITE_API_URL || "/api";
-        await fetch(`${API_URL}/auth/logout`, {
-          method: 'POST',
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-      }
-    } catch(e) {
-      // ignore
-    } finally {
-      setToken(null);
-      setUser(null);
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
-    }
+  const logout = () => {
+    setToken(null);
+    setUser(null);
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
   };
 
   const setRole = (role: string) => {

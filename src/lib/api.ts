@@ -2,18 +2,6 @@ const API_URL = (import.meta as any).env.VITE_API_URL || "/api";
 
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-let isRefreshing = false;
-let refreshSubscribers: ((token: string) => void)[] = [];
-
-const subscribeTokenRefresh = (cb: (token: string) => void) => {
-  refreshSubscribers.push(cb);
-};
-
-const onRefreshed = (token: string) => {
-  refreshSubscribers.map((cb) => cb(token));
-  refreshSubscribers = [];
-};
-
 export const fetchWithAuth = async (
   endpoint: string,
   options: RequestInit = {},
@@ -27,45 +15,17 @@ export const fetchWithAuth = async (
   };
 
   try {
-    const defaultOptions = { ...options, headers };
-    let response = await fetch(`${API_URL}${endpoint}`, defaultOptions);
-
-    if (response.status === 401 && endpoint !== '/auth/login' && endpoint !== '/auth/refresh') {
-      if (!isRefreshing) {
-        isRefreshing = true;
-        try {
-          const refreshRes = await fetch(`${API_URL}/auth/refresh`, { method: 'POST' });
-          if (!refreshRes.ok) throw new Error('Refresh failed');
-          const refreshData = await refreshRes.json();
-          localStorage.setItem('token', refreshData.token);
-          isRefreshing = false;
-          onRefreshed(refreshData.token);
-          
-          // Retry original request 
-          defaultOptions.headers = { ...defaultOptions.headers, Authorization: `Bearer ${refreshData.token}` };
-          response = await fetch(`${API_URL}${endpoint}`, defaultOptions);
-        } catch (refreshErr) {
-          isRefreshing = false;
-          localStorage.removeItem("token");
-          localStorage.removeItem("user");
-          window.dispatchEvent(new Event("auth:unauthorized"));
-          await wait(100);
-          throw new Error('Session expired. Please log in again.');
-        }
-      } else {
-        // Wait for refresh to complete
-        const newToken = await new Promise<string>(resolve => subscribeTokenRefresh(resolve));
-        defaultOptions.headers = { ...defaultOptions.headers, Authorization: `Bearer ${newToken}` };
-        response = await fetch(`${API_URL}${endpoint}`, defaultOptions);
-      }
-    }
+    const response = await fetch(`${API_URL}${endpoint}`, {
+      ...options,
+      headers,
+    });
 
     if (!response.ok) {
-      if (response.status === 401 && endpoint !== '/auth/refresh') {
+      if (response.status === 401) {
         localStorage.removeItem("token");
         localStorage.removeItem("user");
         window.dispatchEvent(new Event("auth:unauthorized"));
-        await wait(100);
+        await wait(100); // prevent throwing error to avoid toasts before redirect
       }
 
       let errorMsg = "An unexpected error occurred. Please try again.";
@@ -74,6 +34,8 @@ export const fetchWithAuth = async (
         errorMsg = errData.error || errData.message || errorMsg;
       } catch {}
       
+      // If error is a Server Error (5xx), we could throw immediately or we will retry below if it's a catch block.
+      // Actually, let's retry 5xx errors and network errors.
       if (response.status >= 500 && retries > 0) {
         throw new Error(`RETRY: ${errorMsg}`);
       }
@@ -83,13 +45,16 @@ export const fetchWithAuth = async (
 
     return await response.json();
   } catch (error: any) {
+    // Check if network error (fetch throws TypeError on network failure) or retryable 5xx
     const isNetworkError = error instanceof TypeError || error.message.startsWith('RETRY:');
     
     if (isNetworkError && retries > 0) {
+      // Exponential backoff
       await wait(Math.pow(2, 3 - retries) * 1000); 
       return fetchWithAuth(endpoint, options, retries - 1);
     }
     
+    // Clean up retry prefix if present
     const finalMsg = error.message.replace('RETRY: ', '');
     throw new Error(finalMsg || "Network request failed. Please check your connection.");
   }
