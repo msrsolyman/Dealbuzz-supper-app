@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import StorefrontAIChat from "./StorefrontAIChat";
+import SEO from "../../components/SEO";
 
 export default function Storefront() {
   const { formatAmount } = useSettings();
@@ -181,6 +182,17 @@ export default function Storefront() {
 
   return (
     <div className="max-w-7xl mx-auto space-y-6 md:space-y-8 pb-32 md:pb-12 px-4 md:px-0 text-[13px]">
+      <SEO 
+        title="Dealbuzz | Premium Multivendor Ecosystem" 
+        description="Discover the ultimate B2B/B2C storefront for exclusive products & services." 
+        ogType="website"
+        schemaMarkup={{
+          "@context": "https://schema.org",
+          "@type": "WebSite",
+          "name": "Dealbuzz",
+          "url": "https://dealbuzz.app"
+        }}
+      />
       {/* Top Navbar Header */}
       <div className="flex justify-between items-center bg-white rounded-[2rem] p-4 lg:p-6 shadow-sm border border-slate-100 mt-4 md:mt-0 sticky top-4 z-50 backdrop-blur-xl bg-white/90">
         <div className="flex items-center gap-3">
@@ -197,37 +209,37 @@ export default function Storefront() {
           </div>
         </div>
 
-        <div className="flex items-center gap-4 hidden md:flex">
+        <div className="flex items-center gap-2 md:gap-4">
           {!user ? (
-            <div className="flex items-center gap-3 mr-2">
+            <div className="flex items-center gap-2 md:gap-3 mr-1 md:mr-2">
               <Link
                 to="/login"
-                className="text-sm font-bold text-slate-600 hover:text-indigo-600 px-4 py-2 hover:bg-slate-50 border border-transparent rounded-xl transition-all"
+                className="text-xs md:text-sm font-bold text-slate-600 hover:text-indigo-600 px-2 md:px-4 py-2 hover:bg-slate-50 border border-transparent rounded-xl transition-all"
               >
                 Login
               </Link>
               <Link
                 to="/register"
-                className="text-sm font-bold bg-slate-900 text-white px-5 py-2 hover:bg-indigo-600 rounded-xl transition-all shadow-sm"
+                className="text-xs md:text-sm font-bold bg-slate-900 text-white px-3 md:px-5 py-2 hover:bg-indigo-600 rounded-xl transition-all shadow-sm whitespace-nowrap"
               >
                 Sign Up
               </Link>
             </div>
           ) : (
-            <div className="flex items-center gap-3 mr-2">
+            <div className="flex items-center gap-3 mr-1 md:mr-2">
               <Link
                 to="/dashboard"
-                className="text-sm font-bold bg-indigo-50 text-indigo-700 px-5 py-2 hover:bg-indigo-100 rounded-xl transition-all shadow-sm"
+                className="text-xs md:text-sm whitespace-nowrap font-bold bg-indigo-50 text-indigo-700 px-3 md:px-5 py-2 hover:bg-indigo-100 rounded-xl transition-all shadow-sm"
               >
-                Go to Dashboard
+                Dashboard
               </Link>
             </div>
           )}
           <button
             onClick={() => setIsCartOpen(true)}
-            className="relative bg-slate-50 hover:bg-slate-100 p-4 rounded-2xl transition-colors"
+            className="relative bg-slate-50 hover:bg-slate-100 p-3 md:p-4 rounded-xl md:rounded-2xl transition-colors"
           >
-            <ShoppingCart className="w-6 h-6 text-slate-700" />
+            <ShoppingCart className="w-5 h-5 md:w-6 md:h-6 text-slate-700" />
             {cart.length > 0 && (
               <span className="absolute -top-2 -right-2 bg-rose-500 text-white text-[10px] font-black w-6 h-6 flex items-center justify-center rounded-full shadow-lg border-2 border-white">
                 {cart.reduce((s, i) => s + i.qty, 0)}
@@ -243,7 +255,7 @@ export default function Storefront() {
           activeTab === "all" ||
           o.type.toLowerCase() === activeTab.replace(/s$/, ""),
       ).length > 0 ? (
-        <div className="relative overflow-hidden rounded-[2.5rem] shadow-2xl h-[400px]">
+        <div className="relative overflow-hidden rounded-3xl md:rounded-[2.5rem] shadow-2xl h-[300px] md:h-[400px]">
           {offers
             .filter(
               (o) =>
@@ -318,7 +330,7 @@ export default function Storefront() {
         </div>
       ) : (
         <div
-          className={`relative overflow-hidden rounded-[2.5rem] text-white shadow-2xl transition-colors duration-500 ${
+          className={`relative overflow-hidden rounded-3xl md:rounded-[2.5rem] text-white shadow-2xl transition-colors duration-500 ${
             activeTab === "services"
               ? "bg-fuchsia-900"
               : activeTab === "products"
@@ -483,7 +495,7 @@ export default function Storefront() {
           <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-indigo-600"></div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 md:grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {filtered.map((item) => (
             <motion.div
               layout

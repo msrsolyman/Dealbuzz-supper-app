@@ -135,7 +135,7 @@ export default function Users() {
       </div>
 
       <div className="flex-1 overflow-auto custom-scrollbar">
-        <table className="w-full text-sm text-left">
+        <table className="w-full min-w-[800px] text-sm text-left">
           <thead className="bg-slate-50 text-slate-500 uppercase text-[10px] tracking-widest border-b border-slate-100 sticky top-0 z-10">
             <tr>
               <th className="px-6 py-4 font-bold">Name</th>
@@ -273,7 +273,7 @@ export default function Users() {
 
               <div className="p-6 overflow-y-auto space-y-6">
                 {addingUser && (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">
                         Name
@@ -338,7 +338,7 @@ export default function Users() {
                   </div>
                 )}
 
-                <div className="grid grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 flex items-center gap-1.5">
                       <Activity className="w-3 h-3 text-emerald-500" /> Account
@@ -390,7 +390,7 @@ export default function Users() {
                       <Check className="w-3 h-3 text-indigo-500" /> Allowed
                       Modules & Features
                     </h3>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    <div className="grid grid-cols-1 md:grid-cols-2 sm:grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                       {AVAILABLE_FEATURES.map((f) => (
                         <label
                           key={f.id}

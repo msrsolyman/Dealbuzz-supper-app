@@ -251,7 +251,7 @@ export default function Services() {
       </div>
 
       <div className="flex-1 overflow-auto custom-scrollbar">
-        <table className="w-full text-sm text-left">
+        <table className="w-full min-w-[800px] text-sm text-left">
           <thead className="bg-slate-50 text-slate-500 uppercase text-[10px] tracking-widest border-b border-slate-100 sticky top-0 z-10">
             <tr>
               <th className="px-6 py-4 font-bold">Image</th>
@@ -377,9 +377,9 @@ export default function Services() {
               </div>
             </div>
 
-            <div className="flex flex-1 overflow-hidden">
+            <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
               {/* Sidebar Tabs */}
-              <div className="w-48 bg-slate-50 border-r border-slate-200 overflow-y-auto shrink-0 p-2 space-y-1">
+              <div className="w-full md:w-48 bg-slate-50 border-b md:border-b-0 md:border-r border-slate-200 overflow-x-auto md:overflow-y-auto shrink-0 p-2 space-x-2 md:space-x-0 md:space-y-1 flex md:flex-col">
                 {TABS.map((tab) => {
                   const Icon = tab.icon;
                   return (
@@ -387,7 +387,7 @@ export default function Services() {
                       key={tab.id}
                       type="button"
                       onClick={() => setActiveTab(tab.id)}
-                      className={`w-full flex items-center gap-2 px-3 py-2 text-xs font-bold rounded-md transition-colors ${activeTab === tab.id ? "bg-fuchsia-100 text-fuchsia-700" : "text-slate-600 hover:bg-slate-200/50 hover:text-slate-900"}`}
+                      className={`w-auto md:w-full flex shrink-0 whitespace-nowrap items-center gap-2 px-3 py-2 text-xs font-bold rounded-md transition-colors ${activeTab === tab.id ? "bg-fuchsia-100 text-fuchsia-700" : "text-slate-600 hover:bg-slate-200/50 hover:text-slate-900"}`}
                     >
                       <Icon className="w-3.5 h-3.5" />
                       {tab.label}
@@ -419,7 +419,7 @@ export default function Services() {
                           placeholder="e.g. Home AC Repair"
                         />
                       </div>
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                           <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
                             Category <span className="text-rose-500">*</span>
@@ -473,7 +473,7 @@ export default function Services() {
 
                   {activeTab === "pricing" && (
                     <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                           <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
                             Pricing Model
@@ -543,7 +543,7 @@ export default function Services() {
                           placeholder="Detailed explanation of the service..."
                         ></textarea>
                       </div>
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                           <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
                             What's Included (One per line)
@@ -589,7 +589,7 @@ export default function Services() {
 
                   {activeTab === "location" && (
                     <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                           <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
                             Service Delivery Method
@@ -639,7 +639,7 @@ export default function Services() {
 
                   {activeTab === "booking" && (
                     <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                           <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
                             Booking Type
@@ -757,7 +757,7 @@ export default function Services() {
 
                   {activeTab === "provider" && (
                     <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                           <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
                             Provider Experience
@@ -785,7 +785,7 @@ export default function Services() {
                           />
                         </div>
                       </div>
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                           <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
                             Warranty / Guarantee

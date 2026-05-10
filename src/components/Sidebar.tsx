@@ -22,6 +22,7 @@ import {
   Truck as TruckDelivery,
   MessageSquare,
   ListTodo,
+  TrendingUp,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useTranslation } from "react-i18next";
@@ -133,8 +134,10 @@ export default function Sidebar({
       });
     if (canAccess("returns"))
       navItems.push({ name: "Returns", path: "/returns", icon: RotateCcw });
-    if (canAccess("reports"))
+    if (canAccess("reports")) {
       navItems.push({ name: "Reports", path: "/reports", icon: BarChart3 });
+      navItems.push({ name: "Analytics", path: "/analytics", icon: TrendingUp });
+    }
     if (canAccess("accounts"))
       navItems.push({
         name: t("accounts"),
@@ -188,24 +191,19 @@ export default function Sidebar({
 
   return (
     <aside
-      className={`w-64 bg-[#0B1120] h-screen flex flex-col text-slate-300 fixed top-0 left-0 border-r border-[#1e293b] z-50 transition-transform duration-300 md:translate-x-0 ${isOpen ? "translate-x-0" : "-translate-x-full"}`}
+      className={`w-64 bg-slate-50 h-screen flex flex-col text-slate-600 fixed top-0 left-0 border-r border-slate-200 z-50 transition-transform duration-300 md:translate-x-0 ${isOpen ? "translate-x-0" : "-translate-x-full"}`}
     >
-      <div className="p-6 border-b border-slate-800/60 flex justify-between items-start bg-[#0e1526]">
-        <div>
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 bg-gradient-to-br from-indigo-500 to-fuchsia-500 rounded-xl flex items-center justify-center font-bold text-white shrink-0 shadow-lg shadow-indigo-500/20 shadow-inner">
-              <span className="font-display">DB</span>
-            </div>
-            <span className="text-white font-display font-bold tracking-tight text-xl leading-none">
-              DEALBUZZ
-            </span>
+      <div className="h-16 px-6 border-b border-slate-200 flex justify-between items-center bg-transparent shrink-0">
+        <div className="flex items-center gap-3">
+          <div className="w-6 h-6 bg-slate-900 rounded-md flex items-center justify-center font-semibold text-white shrink-0">
+            <span className="text-[10px]">DB</span>
           </div>
-          <div className="text-[9px] text-fuchsia-400 mt-2 uppercase tracking-[0.2em] font-bold">
-            Enterprise ERP v2.4
-          </div>
+          <span className="text-slate-900 font-semibold tracking-tight text-sm">
+            Dealbuzz
+          </span>
         </div>
         <button
-          className="md:hidden text-slate-400 hover:text-white mt-1"
+          className="md:hidden text-slate-400 hover:text-slate-900"
           onClick={() => setIsOpen(false)}
         >
           <X className="w-5 h-5" />
@@ -213,8 +211,8 @@ export default function Sidebar({
       </div>
 
       <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto custom-scrollbar">
-        <div className="text-[9px] text-slate-500 font-bold px-3 mb-2 uppercase tracking-wider mt-2">
-          Core Modules
+        <div className="text-[10px] text-slate-400 font-medium px-3 mb-2 mt-2">
+          Overview
         </div>
         {navItems.map((item) => {
           const Icon = item.icon;
@@ -223,14 +221,12 @@ export default function Sidebar({
 
           let isActive = pathname === pathOnly;
           if (isActive && searchParamsExtracted) {
-            // Need to check if current window.location.search includes the params provided in the item.path
             isActive = window.location.search.includes(searchParamsExtracted);
           } else if (
             isActive &&
             !searchParamsExtracted &&
             window.location.search.includes("tab=")
           ) {
-            // If it's the base /storefront but there is a tab specified, don't mark base shop online as active (or do, up to preference. we will disable it here so only the specific tab is highlighted)
             isActive = false;
           }
 
@@ -238,17 +234,17 @@ export default function Sidebar({
             <Link
               key={item.path}
               to={item.path}
-              className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] font-medium transition-all duration-200 group relative ${
+              onClick={() => {
+                if (window.innerWidth < 768) setIsOpen(false);
+              }}
+              className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-all duration-150 group relative ${
                 isActive
-                  ? "text-white bg-indigo-500/10 shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]"
-                  : "text-slate-400 hover:text-white hover:bg-slate-800/50"
+                  ? "text-slate-900 bg-slate-200/50"
+                  : "text-slate-600 hover:text-slate-900 hover:bg-slate-100/50"
               }`}
             >
-              {isActive && (
-                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-4 bg-indigo-500 rounded-r-full" />
-              )}
               <Icon
-                className={`w-3.5 h-3.5 shrink-0 transition-colors ${isActive ? "text-indigo-400" : "group-hover:text-fuchsia-400"}`}
+                className={`w-4 h-4 shrink-0 ${isActive ? "text-slate-900" : "text-slate-400 group-hover:text-slate-600"}`}
               />
               <span>{item.name}</span>
             </Link>
@@ -256,10 +252,10 @@ export default function Sidebar({
         })}
       </nav>
 
-      <div className="p-5 border-t border-slate-800/80 flex flex-col gap-3 bg-[#0B1120]">
+      <div className="p-4 border-t border-slate-200 flex flex-col gap-3 bg-slate-50">
         {user?.role === "super_admin" && (
-          <div className="bg-slate-800/40 p-3.5 rounded-xl border border-slate-700/50">
-            <div className="text-[10px] text-indigo-400 uppercase font-bold mb-2 tracking-wider flex items-center gap-1.5">
+          <div className="bg-slate-100 p-3 rounded-md border border-slate-200">
+            <div className="text-[10px] text-slate-500 uppercase font-bold mb-2 tracking-wide flex items-center gap-1.5">
               <Shield className="w-3 h-3" /> Dev Tools
             </div>
             <select
@@ -269,7 +265,7 @@ export default function Sidebar({
                   setRole(e.target.value);
                 }
               }}
-              className="w-full bg-[#0B1120] border border-slate-700 text-slate-200 text-xs rounded-lg px-2.5 py-2 outline-none focus:border-indigo-500 transition-colors cursor-pointer"
+              className="w-full bg-white border border-slate-200 text-slate-700 text-xs rounded-md px-2.5 py-1.5 outline-none focus:border-slate-400 transition-colors cursor-pointer"
             >
               <option value="super_admin">Super Admin</option>
               <option value="product_seller">Product Seller</option>
@@ -282,49 +278,11 @@ export default function Sidebar({
 
         <button
           onClick={logout}
-          className="flex items-center gap-2.5 px-3 py-2 text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg text-[13px] font-medium transition-colors"
+          className="flex items-center gap-3 px-3 py-2 text-slate-600 hover:text-rose-600 hover:bg-rose-50 rounded-md text-sm font-medium transition-colors"
         >
-          <LogOut className="w-3.5 h-3.5 shrink-0" />
+          <LogOut className="w-4 h-4 shrink-0 text-slate-400" />
           <span>{t("logout")}</span>
         </button>
-
-        <div className="grid grid-cols-2 gap-2 mt-2">
-          <div className="relative group">
-            <Globe className="w-3 h-3 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500" />
-            <select
-              value={language}
-              onChange={(e) => setLanguage(e.target.value)}
-              className="w-full bg-slate-800/40 border border-slate-700/50 text-slate-300 text-[10px] rounded-lg pl-7 pr-2 py-2 outline-none focus:border-indigo-500 transition-colors cursor-pointer appearance-none"
-            >
-              <option value="en">English</option>
-              <option value="bn">বাংলা</option>
-            </select>
-          </div>
-          <div className="relative group">
-            <Coins className="w-3 h-3 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500" />
-            <select
-              value={currency.code}
-              onChange={(e) => setCurrency(e.target.value)}
-              className="w-full bg-slate-800/40 border border-slate-700/50 text-slate-300 text-[10px] rounded-lg pl-7 pr-2 py-2 outline-none focus:border-indigo-500 transition-colors cursor-pointer appearance-none"
-            >
-              {availableCurrencies.map((c) => (
-                <option key={c.code} value={c.code}>
-                  {c.code}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-      </div>
-
-      <div className="px-5 py-4 bg-[#060a13] flex items-center justify-between border-t border-[#1e293b]">
-        <span className="text-[9px] text-slate-500 uppercase tracking-widest font-bold">
-          Node DB:
-        </span>
-        <span className="text-[10px] text-emerald-400 uppercase tracking-wider font-bold flex items-center gap-1.5">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-          Cluster-01
-        </span>
       </div>
     </aside>
   );

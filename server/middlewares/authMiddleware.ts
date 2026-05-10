@@ -52,16 +52,22 @@ export const authenticate = async (
     }
 
     const user = await (User as any).findById(decoded.id);
-    if (!user || user.status === "inactive") {
+    if (!user || user.status === "inactive" || user.status === "locked") {
       return res
         .status(401)
-        .json({ error: "Unauthorized: User not found or inactive" });
+        .json({ error: "Unauthorized: User not found, inactive or locked" });
     }
 
     req.user = user;
     if (user.tenantId) {
       req.tenantId = user.tenantId.toString();
     }
+    
+    // Update last active asynchronously (debounce/throttle could be used in high scale system)
+    if (!user.lastActiveAt || Date.now() - new Date(user.lastActiveAt).getTime() > 5 * 60 * 1000) {
+      (User as any).findByIdAndUpdate(user._id, { lastActiveAt: new Date() }).exec().catch(() => {});
+    }
+
     next();
   } catch (error: any) {
     if (
@@ -80,8 +86,7 @@ export const authenticate = async (
     return res
       .status(500)
       .json({
-        error:
-          "Database connection failed. Please check MONGODB_URI in settings, ensure you replaced <password> with your actual database password.",
+        error: "Authentication service encountered an unexpected error.",
         details: error.message,
       });
   }

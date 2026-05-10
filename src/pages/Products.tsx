@@ -284,19 +284,19 @@ export default function Products() {
   };
 
   return (
-    <div className="bg-white border border-slate-200/60 rounded-3xl shadow-sm flex flex-col h-full overflow-hidden font-sans">
-      <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50 shrink-0">
-        <div className="flex items-center gap-3 text-slate-800 font-bold">
-          <div className="w-10 h-10 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 shadow-sm">
-            <Box className="w-5 h-5" />
+    <div className="bg-white border border-slate-200 rounded-xl shadow-sm flex flex-col h-full overflow-hidden font-sans">
+      <div className="px-6 py-4 border-b border-slate-200 flex justify-between items-center bg-slate-50 shrink-0">
+        <div className="flex items-center gap-3 text-slate-800">
+          <div className="w-8 h-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-600 shadow-sm">
+            <Box className="w-4 h-4" />
           </div>
-          <h2 className="text-2xl font-display font-bold tracking-tight">
+          <h2 className="text-xl font-semibold tracking-tight">
             {t("product_inventory")}
           </h2>
         </div>
         <button
           onClick={handleOpenModal}
-          className="text-sm font-bold text-white uppercase bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded-xl flex items-center gap-2 shadow-sm shadow-indigo-500/20 transition-all active:scale-95"
+          className="text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded-lg flex items-center gap-2 shadow-sm transition-all active:scale-95"
         >
           <Plus className="w-4 h-4" />{" "}
           <span className="hidden sm:inline">{t("add_product")}</span>
@@ -304,17 +304,15 @@ export default function Products() {
       </div>
 
       <div className="flex-1 overflow-auto custom-scrollbar">
-        <table className="w-full text-sm text-left">
-          <thead className="bg-slate-50 text-slate-500 uppercase text-[10px] tracking-widest border-b border-slate-100 sticky top-0 z-10">
+        <table className="w-full min-w-[800px] text-sm text-left">
+          <thead className="bg-[#FAFAFA] text-slate-500 text-[11px] uppercase tracking-widest font-semibold border-b border-slate-200 sticky top-0 z-10">
             <tr>
-              <th className="px-6 py-4 font-bold">{t("main_image")}</th>
-              <th className="px-6 py-4 font-bold">{t("name_category")}</th>
-              <th className="px-6 py-4 font-bold">SKU</th>
-              <th className="px-6 py-4 font-bold text-right">
-                {t("rate")} (Disc %)
-              </th>
-              <th className="px-6 py-4 font-bold text-right">{t("stock")}</th>
-              <th className="px-6 py-4 font-bold text-right">{t("actions")}</th>
+              <th className="px-6 py-3">{t("main_image")}</th>
+              <th className="px-6 py-3">{t("name_category")}</th>
+              <th className="px-6 py-3">SKU</th>
+              <th className="px-6 py-3 text-right">{t("rate")} (Disc %)</th>
+              <th className="px-6 py-3 text-right">{t("stock")}</th>
+              <th className="px-6 py-3 text-right">{t("actions")}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
@@ -417,16 +415,16 @@ export default function Products() {
 
       <AnimatePresence>
         {isModalOpen && (
-          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
             <motion.div
-              initial={{ scale: 0.95, opacity: 0, y: 20 }}
+              initial={{ scale: 0.95, opacity: 0, y: 10 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 10 }}
-              className="bg-white rounded-3xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden border border-slate-200"
+              className="bg-white rounded-xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-xl overflow-hidden border border-slate-200"
             >
-              <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-                <h2 className="text-sm font-bold uppercase tracking-wider text-slate-900 flex items-center gap-2">
-                  <Box className="w-4 h-4 text-indigo-500" />{" "}
+              <div className="px-5 py-3 border-b border-slate-200 flex justify-between items-center bg-slate-50">
+                <h2 className="text-base font-semibold text-slate-900 flex items-center gap-2">
+                  <Box className="w-4 h-4 text-slate-500" />{" "}
                   {editingId ? t("edit_product") : t("setup_new_product")}
                 </h2>
                 <div className="flex items-center gap-4">
@@ -434,7 +432,7 @@ export default function Products() {
                     type="button"
                     onClick={handleAIGenerate}
                     disabled={isGenerating}
-                    className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-fuchsia-100 to-indigo-100 text-indigo-700 hover:from-fuchsia-200 hover:to-indigo-200 text-xs font-bold rounded-lg transition-all shadow-sm border border-indigo-200 disabled:opacity-50"
+                    className="flex items-center gap-2 px-3 py-1.5 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 text-xs font-medium rounded-md transition-colors border border-indigo-200 disabled:opacity-50"
                     title="Auto-generate description, features, meta tags based on name and category"
                   >
                     <Sparkles className="w-3.5 h-3.5" />
@@ -445,14 +443,14 @@ export default function Products() {
                     onClick={() => setIsModalOpen(false)}
                     className="text-slate-400 hover:text-slate-700 p-1"
                   >
-                    <X className="w-4 h-4" />
+                    <X className="w-5 h-5" />
                   </button>
                 </div>
               </div>
 
-              <div className="flex flex-1 overflow-hidden">
+              <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
                 {/* Sidebar Tabs */}
-                <div className="w-48 bg-slate-50 border-r border-slate-200 overflow-y-auto shrink-0 p-2 space-y-1">
+                <div className="w-full md:w-48 bg-slate-50 border-b md:border-b-0 md:border-r border-slate-200 overflow-x-auto md:overflow-y-auto shrink-0 p-3 space-x-2 md:space-x-0 md:space-y-1 flex md:flex-col">
                   {[
                     { id: "basic", label: t("basic_info"), icon: FileText },
                     { id: "pricing", label: t("pricing_stock"), icon: Tags },
@@ -475,9 +473,9 @@ export default function Products() {
                       <button
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id)}
-                        className={`w-full flex items-center gap-2 px-3 py-2 text-xs font-bold rounded-md transition-colors ${activeTab === tab.id ? "bg-indigo-100 text-indigo-700" : "text-slate-600 hover:bg-slate-200/50 hover:text-slate-900"}`}
+                        className={`w-auto md:w-full flex shrink-0 whitespace-nowrap items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors ${activeTab === tab.id ? "bg-white text-indigo-600 border border-slate-200 shadow-sm" : "text-slate-600 hover:bg-slate-200/50 hover:text-slate-900 border border-transparent"}`}
                       >
-                        <Icon className="w-3.5 h-3.5" />
+                        <Icon className="w-4 h-4" />
                         {tab.label}
                       </button>
                     );
@@ -508,7 +506,7 @@ export default function Products() {
                             placeholder="e.g. Vintage Leather Jacket"
                           />
                         </div>
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
                             <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
                               Category <span className="text-rose-500">*</span>
@@ -544,7 +542,7 @@ export default function Products() {
                             />
                           </div>
                         </div>
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
                             <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
                               SKU
@@ -589,7 +587,7 @@ export default function Products() {
 
                     {activeTab === "pricing" && (
                       <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
                             <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
                               Selling Price{" "}
@@ -631,7 +629,7 @@ export default function Products() {
                             </div>
                           </div>
                         </div>
-                        <div className="grid grid-cols-3 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                           <div>
                             <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
                               Discount (%)
@@ -782,7 +780,7 @@ export default function Products() {
                             placeholder="Full comprehensive description..."
                           ></textarea>
                         </div>
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
                             <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
                               Features (One per line)
@@ -828,7 +826,7 @@ export default function Products() {
 
                     {activeTab === "shipping" && (
                       <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
                             <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
                               Delivery Charge
@@ -937,7 +935,7 @@ export default function Products() {
 
                     {activeTab === "advanced" && (
                       <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
                             <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
                               Barcode (UPC/EAN)
@@ -964,7 +962,7 @@ export default function Products() {
                             />
                           </div>
                         </div>
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
                             <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
                               Warranty Info

@@ -202,7 +202,7 @@ export default function HR() {
         ) : (
           <div className="overflow-x-auto">
             {activeTab === "attendance" && (
-              <table className="w-full text-sm text-left">
+              <table className="w-full min-w-[800px] text-sm text-left">
                 <thead className="bg-slate-50/50 text-[10px] uppercase font-black tracking-widest text-slate-400 border-b border-slate-100">
                   <tr>
                     <th className="px-6 py-4">Employee</th>
@@ -281,7 +281,7 @@ export default function HR() {
             )}
 
             {activeTab === "leaves" && (
-              <table className="w-full text-sm text-left">
+              <table className="w-full min-w-[800px] text-sm text-left">
                 <thead className="bg-slate-50/50 text-[10px] uppercase font-black tracking-widest text-slate-400 border-b border-slate-100">
                   <tr>
                     <th className="px-6 py-4">Employee</th>
@@ -358,7 +358,7 @@ export default function HR() {
             )}
 
             {activeTab === "payroll" && (
-              <table className="w-full text-sm text-left">
+              <table className="w-full min-w-[800px] text-sm text-left">
                 <thead className="bg-slate-50/50 text-[10px] uppercase font-black tracking-widest text-slate-400 border-b border-slate-100">
                   <tr>
                     <th className="px-6 py-4">Employee</th>
@@ -510,7 +510,7 @@ export default function HR() {
 
                 {activeTab === "leaves" && (
                   <>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">
                           Start Date *
@@ -581,7 +581,7 @@ export default function HR() {
 
                 {activeTab === "payroll" && (
                   <>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">
                           Month *
@@ -619,7 +619,7 @@ export default function HR() {
                         />
                       </div>
                     </div>
-                    <div className="grid grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                       <div className="col-span-3 lg:col-span-1">
                         <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">
                           Base Salary

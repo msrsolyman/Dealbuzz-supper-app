@@ -160,7 +160,7 @@ export default function StorefrontProfile() {
             </div>
           </div>
 
-          <div className="mt-14 grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="mt-14 grid grid-cols-1 md:grid-cols-1 md:grid-cols-2 gap-8">
             {/* Left Column */}
             <div className="space-y-6">
               <div>
@@ -213,7 +213,7 @@ export default function StorefrontProfile() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 flex items-center gap-1.5 ml-1">
                     <Phone className="w-3.5 h-3.5" /> Contact Phone

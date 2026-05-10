@@ -93,7 +93,7 @@ export default function Accounts() {
       </div>
 
       {canViewBalances && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
           <div className="bg-white p-6 rounded-3xl border border-slate-200/60 shadow-sm relative overflow-hidden group">
             <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity">
               <FileText className="w-16 h-16" />
@@ -153,7 +153,7 @@ export default function Accounts() {
           </div>
         ) : (
           <div className="overflow-x-auto w-full custom-scrollbar">
-            <table className="w-full text-left border-collapse text-sm">
+            <table className="w-full min-w-[800px] text-left border-collapse text-sm">
               <thead>
                 <tr className="border-b border-slate-100 bg-slate-50/50 text-[10px] uppercase tracking-widest text-slate-500 font-bold">
                   <th className="py-4 px-6 font-bold">Date</th>

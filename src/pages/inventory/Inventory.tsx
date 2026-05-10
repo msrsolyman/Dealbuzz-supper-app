@@ -93,7 +93,7 @@ export default function Inventory() {
       </div>
 
       <div className="flex-1 overflow-auto custom-scrollbar">
-        <table className="w-full text-sm text-left">
+        <table className="w-full min-w-[800px] text-sm text-left">
           <thead className="bg-slate-50 text-slate-500 uppercase text-[10px] tracking-widest border-b border-slate-100 sticky top-0 z-10">
             <tr>
               <th className="px-6 py-4 font-bold">Product Name</th>
@@ -209,7 +209,7 @@ export default function Inventory() {
                   ))}
                 </select>
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
                     Warehouse
@@ -264,7 +264,7 @@ export default function Inventory() {
                   className="w-full border border-slate-200 rounded px-2 py-1.5 text-xs outline-none focus:border-indigo-500"
                 />
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
                     Unit Cost

@@ -237,7 +237,7 @@ export default function SellerProfile() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
         {/* Left Column - Info */}
         <div className="md:col-span-1 space-y-8">
           <div className="bg-white p-7 rounded-3xl border border-slate-200/60 shadow-sm relative overflow-hidden group">

@@ -467,7 +467,7 @@ export default function POS() {
           ) : (
             <motion.div
               layout
-              className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-5"
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 2xl:grid-cols-5 gap-5"
             >
               <AnimatePresence>
                 {filteredCatalog.map((item, idx) => (
@@ -694,7 +694,7 @@ export default function POS() {
         </div>
 
         <div className="border-t border-slate-100 p-8 bg-white space-y-6">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 col-span-2">
               <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">
                 Coupon Code
@@ -785,7 +785,7 @@ export default function POS() {
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
             <button
               disabled={cart.length === 0 || loading}
               onClick={handleCheckout}

@@ -166,7 +166,7 @@ export default function Offers() {
       </div>
 
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-        <table className="w-full text-left">
+        <table className="w-full min-w-[800px] text-left">
           <thead className="bg-slate-50 border-b border-slate-100">
             <tr>
               <th className="p-4 font-semibold text-slate-600">Title</th>
@@ -344,7 +344,7 @@ export default function Offers() {
                   className="w-full border border-slate-200 rounded-xl p-2"
                 />
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium mb-1">
                     Target Type
@@ -405,7 +405,7 @@ export default function Offers() {
                   </div>
                 )}
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium mb-1">
                     Start Date

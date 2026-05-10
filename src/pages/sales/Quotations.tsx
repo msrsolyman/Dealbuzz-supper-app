@@ -123,7 +123,7 @@ export default function Quotations() {
 
       <div className="bg-white border border-slate-200/60 shadow-sm rounded-3xl overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-sm text-left">
+          <table className="w-full min-w-[800px] text-sm text-left">
             <thead className="bg-slate-50/50 text-[10px] uppercase font-black tracking-widest text-slate-400 border-b border-slate-100">
               <tr>
                 <th className="px-6 py-4">Quote Number</th>

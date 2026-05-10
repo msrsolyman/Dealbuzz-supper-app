@@ -50,7 +50,7 @@ export default function SellerRegister() {
             <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">
               I am applying as a...
             </label>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
               {[
                 { id: "product_seller", label: "Product Seller", icon: Store },
                 {

@@ -150,7 +150,7 @@ export default function PurchaseOrders() {
 
       <div className="bg-white border border-slate-200/60 rounded-3xl overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
+          <table className="w-full min-w-[800px] text-left text-sm">
             <thead className="bg-slate-50/50 text-[10px] uppercase font-black tracking-widest text-slate-400 border-b border-slate-100">
               <tr>
                 <th className="px-6 py-4">PO Number</th>
@@ -251,7 +251,7 @@ export default function PurchaseOrders() {
             </div>
 
             <div className="flex-1 overflow-y-auto p-6 space-y-8">
-              <div className="grid grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">
                     Vendor

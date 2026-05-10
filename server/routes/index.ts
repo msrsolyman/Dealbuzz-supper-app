@@ -1,5 +1,5 @@
 import express from 'express';
-import { register, registerUser, login, getMe, updateMe, updatePassword } from '../controllers/authController.ts';
+import { register, registerUser, login, getMe, updateMe, updatePassword, refreshToken, logout, generate2FA, verify2FA, disable2FA } from '../controllers/authController.ts';
 import { getProducts, createProduct, updateProduct, deleteProduct } from '../controllers/productController.ts';
 import { authenticate } from '../middlewares/authMiddleware.ts';
 import { authorize } from '../middlewares/roleMiddleware.ts';
@@ -34,17 +34,27 @@ import Offer from '../models/Offer.ts';
 import Ticket from '../models/Ticket.ts';
 import Task from '../models/Task.ts';
 
+import { cacheMiddleware, clearCache } from '../middleware/cache.ts';
+
+import { getDashboardAnalytics } from '../controllers/analyticsController.ts';
+import { getNotifications, markAsRead } from '../controllers/notificationController.ts';
+import { sendOrderAlert, sendStockAlert, sendPaymentAlert } from '../services/notificationService.ts';
+
 const router = express.Router();
+
+router.get('/analytics/dashboard', authenticate, getDashboardAnalytics);
+router.get('/notifications', authenticate, getNotifications);
+router.put('/notifications/:id/read', authenticate, markAsRead);
 
 // --- Custom auth-related routes ---
 // Move sellers under authenticate
-router.get('/sellers', authenticate, async (req: any, res: any) => {
+router.get('/sellers', authenticate, cacheMiddleware(300), async (req: any, res: any) => {
   try {
     const sellers = await (User as any).find({ 
       tenantId: req.tenantId, 
       role: { $in: ['product_seller', 'service_seller', 'reseller'] },
       isDeleted: false 
-    }).select('-password');
+    }).select('-password').lean();
     res.json({ data: sellers });
   } catch (e: any) { res.status(500).json({ error: e.message }); }
 });
@@ -61,9 +71,14 @@ router.put('/sellers/:id', authenticate, auditLog('User'), async (req: any, res:
 router.post('/auth/register', register);
 router.post('/auth/register-user', registerUser);
 router.post('/auth/login', auditLog('Users'), login);
+router.post('/auth/refresh', refreshToken);
+router.post('/auth/logout', logout);
 router.get('/auth/me', authenticate, getMe);
 router.put('/auth/me', authenticate, auditLog('User'), updateMe);
 router.put('/auth/password', authenticate, auditLog('User'), updatePassword);
+router.get('/auth/2fa/generate', authenticate, generate2FA);
+router.post('/auth/2fa/verify', authenticate, verify2FA);
+router.post('/auth/2fa/disable', authenticate, disable2FA);
 
 // Add Google OAuth
 const getRedirectUri = (req: any) => {
@@ -301,7 +316,7 @@ const generateCrud = (model: any, collectionName: string) => {
   const r = express.Router();
   r.use(auditLog(collectionName));
   
-  r.get('/', async (req: any, res: any) => {
+  r.get('/', cacheMiddleware(120), async (req: any, res: any) => {
     try {
       const { page = 1, limit = 10, search, ...filters } = req.query;
       const query: any = { tenantId: req.tenantId, ...filters };
@@ -311,7 +326,7 @@ const generateCrud = (model: any, collectionName: string) => {
       if (model.schema.paths.isDeleted) query.isDeleted = false;
       if (search && model.schema.paths.name) query.name = { $regex: search, $options: 'i' };
       
-      let queryBuilder = (model as any).find(query);
+      let queryBuilder = (model as any).find(query).lean();
       
       // Auto-populate some useful fields if they exist on the model
       if (model.schema.paths.customerId && model.modelName === 'Review') {
@@ -455,18 +470,15 @@ router.use('/tasks', generateCrud(Task, 'Task'));
 // --- Invoice with special logic ---
 const invoiceRouter = express.Router();
 invoiceRouter.use(auditLog('Invoice'));
-invoiceRouter.get('/', async (req: any, res: any) => {
+invoiceRouter.get('/', cacheMiddleware(120), async (req: any, res: any) => {
   try {
     const query: any = { tenantId: req.tenantId, isDeleted: false };
     if (req.user?.role === 'customer') {
       query.customerId = req.user._id;
     } else if (['product_seller', 'service_seller', 'reseller'].includes(req.user?.role)) {
-       // Sellers only see invoices related to their sellerId
-       // Add sellerId to invoice model if needed, but for now assuming it has sellerId or we query items
-       // Let's rely on sellerId if it exists on the schema, else they might not see them correctly.
        query.sellerId = req.user._id;
     }
-    const invoices = await (Invoice as any).find(query).populate('customerId');
+    const invoices = await (Invoice as any).find(query).populate('customerId').lean();
     res.json({ data: invoices });
   } catch (e: any) { 
     console.error("INV ERROR:", e);
@@ -503,6 +515,10 @@ invoiceRouter.post('/', async (req: any, res: any) => {
             }
           }
           await product.save();
+
+          if (product.stockCount < 10) {
+            await sendStockAlert(req.tenantId.toString(), product.name, product.stockCount);
+          }
           
           // Add inventory transaction record
           await (InventoryTransaction as any).create({
@@ -520,12 +536,22 @@ invoiceRouter.post('/', async (req: any, res: any) => {
       }
     }
     
+    // Order alert
+    await sendOrderAlert(req.tenantId.toString(), doc._id.toString(), doc.totalAmount || doc.subtotal, sellerId?.toString() || req.user._id.toString());
+
     res.status(201).json(doc);
   } catch (e: any) { res.status(400).json({ error: e.message }); }
 });
 invoiceRouter.put('/:id', async (req: any, res: any) => {
   try {
-    const doc = await (Invoice as any).findOneAndUpdate({ _id: req.params.id, tenantId: req.tenantId }, req.body, { new: true });
+    const oldDoc = await (Invoice as any).findOne({ _id: req.params.id, tenantId: req.tenantId });
+    const doc = await (Invoice as any).findOneAndUpdate({ _id: req.params.id, tenantId: req.tenantId }, req.body, { new: true }).populate('customerId');
+    
+    if (oldDoc && doc.status === 'PAID' && oldDoc.status !== 'PAID') {
+      const customerName = doc.customerId?.name || 'Customer';
+      await sendPaymentAlert(req.tenantId.toString(), customerName, doc.totalAmount || doc.subtotal);
+    }
+    
     res.json(doc);
   } catch (e: any) { res.status(400).json({ error: e.message }); }
 });
@@ -534,9 +560,9 @@ router.use('/invoices', invoiceRouter);
 // --- Inventory with Stock update ---
 const inventoryRouter = express.Router();
 inventoryRouter.use(auditLog('InventoryTransaction'));
-inventoryRouter.get('/', async (req: any, res: any) => {
+inventoryRouter.get('/', cacheMiddleware(60), async (req: any, res: any) => {
   try {
-    const tx = await (InventoryTransaction as any).find({ tenantId: req.tenantId }).populate('productId');
+    const tx = await (InventoryTransaction as any).find({ tenantId: req.tenantId }).populate('productId').lean();
     res.json({ data: tx });
   } catch (e: any) { 
     console.error("INV_TX ERROR:", e);
@@ -577,6 +603,10 @@ inventoryRouter.post('/', async (req: any, res: any) => {
       }
 
       await product.save();
+
+      if (type === 'OUT' && product.stockCount < 10) {
+        await sendStockAlert(req.tenantId.toString(), product.name, product.stockCount);
+      }
     }
 
     res.status(201).json(doc);

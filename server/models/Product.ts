@@ -1,4 +1,5 @@
 import mongoose, { Document, Schema } from 'mongoose';
+import { multiTenantPlugin } from '../utils/mongoosePlugins.ts';
 
 export interface IProduct extends Document {
   tenantId: mongoose.Types.ObjectId;
@@ -51,8 +52,8 @@ export interface IProduct extends Document {
 
 const ProductSchema = new Schema<IProduct>(
   {
-    tenantId: { type: Schema.Types.ObjectId, ref: 'Tenant', required: true, index: true },
-    sellerId: { type: Schema.Types.ObjectId, ref: 'User', index: true },
+    tenantId: { type: Schema.Types.ObjectId, ref: 'Tenant', required: true },
+    sellerId: { type: Schema.Types.ObjectId, ref: 'User' },
     name: { type: String, required: [true, 'Product name is required'] },
     category: { type: String, required: true },
     brand: { type: String },
@@ -68,8 +69,8 @@ const ProductSchema = new Schema<IProduct>(
       warehouseId: { type: Schema.Types.ObjectId, ref: 'Warehouse' },
       stockCount: { type: Number, default: 0 }
     }],
-    sku: { type: String, required: true, unique: true },
-    barcode: { type: String, index: true },
+    sku: { type: String, required: true },
+    barcode: { type: String },
 
     mainImage: { type: String },
     galleryImages: [{ type: String }],
@@ -101,9 +102,18 @@ const ProductSchema = new Schema<IProduct>(
 
     approvalStatus: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'pending' },
 
-    isDeleted: { type: Boolean, default: false, index: true }
+    isDeleted: { type: Boolean, default: false }
   },
   { timestamps: true }
 );
+
+// High-cardinality multi-tenant indexes
+ProductSchema.index({ tenantId: 1, sku: 1 }, { unique: true });
+ProductSchema.index({ tenantId: 1, category: 1 });
+ProductSchema.index({ tenantId: 1, approvalStatus: 1 });
+ProductSchema.index({ tenantId: 1, name: 'text', tags: 'text' }); // Search optimization
+
+// Apply soft delete & tenant indexing plugin
+ProductSchema.plugin(multiTenantPlugin);
 
 export default mongoose.models.Product || mongoose.model<IProduct>('Product', ProductSchema);

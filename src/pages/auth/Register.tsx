@@ -1,21 +1,36 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import { useNavigate, Link } from "react-router";
 import { fetchWithAuth } from "../../lib/api";
 import { toast } from "sonner";
 import { Store } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+
+const registerSchema = z.object({
+  name: z.string().min(2, "Name must be at least 2 characters"),
+  email: z.string().email("Please enter a valid email address"),
+  password: z.string().min(8, "Password must be at least 8 characters"),
+  role: z.string().optional(),
+});
+
+type RegisterFormValues = z.infer<typeof registerSchema>;
 
 export default function Register() {
-  const [userForm, setUserForm] = useState({
-    name: "",
-    email: "",
-    password: "",
-    role: "customer",
-  });
-
-  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuth();
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<RegisterFormValues>({
+    resolver: zodResolver(registerSchema),
+    defaultValues: {
+      role: "customer",
+    },
+  });
 
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
@@ -65,20 +80,16 @@ export default function Register() {
     }
   };
 
-  const handleUserSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
+  const onSubmit = async (data: RegisterFormValues) => {
     try {
       await fetchWithAuth("/auth/register-user", {
         method: "POST",
-        body: JSON.stringify(userForm),
+        body: JSON.stringify(data),
       });
       toast.success("Registration successful. You can now login.");
       navigate("/login");
     } catch (error: any) {
       toast.error(error.message);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -95,21 +106,22 @@ export default function Register() {
           Join the Ecosystem
         </p>
 
-        <form onSubmit={handleUserSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="pt-2">
             <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
               Full Name
             </label>
             <input
               type="text"
-              value={userForm.name}
-              onChange={(e) =>
-                setUserForm({ ...userForm, name: e.target.value })
-              }
-              className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all font-medium"
+              {...register("name")}
+              className={`w-full border rounded-xl px-3 py-2 text-sm outline-none focus:ring-4 focus:ring-indigo-500/10 transition-all font-medium ${
+                errors.name ? "border-red-500 focus:border-red-500" : "border-slate-200 focus:border-indigo-500"
+              }`}
               placeholder="John Doe"
-              required
             />
+            {errors.name && (
+              <p className="text-red-500 text-xs mt-1">{errors.name.message}</p>
+            )}
           </div>
           <div>
             <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
@@ -117,14 +129,15 @@ export default function Register() {
             </label>
             <input
               type="email"
-              value={userForm.email}
-              onChange={(e) =>
-                setUserForm({ ...userForm, email: e.target.value })
-              }
-              className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all font-mono"
+              {...register("email")}
+              className={`w-full border rounded-xl px-3 py-2 text-sm outline-none focus:ring-4 focus:ring-indigo-500/10 transition-all font-mono ${
+                errors.email ? "border-red-500 focus:border-red-500" : "border-slate-200 focus:border-indigo-500"
+              }`}
               placeholder="john@example.com"
-              required
             />
+            {errors.email && (
+              <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>
+            )}
           </div>
           <div>
             <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
@@ -132,22 +145,29 @@ export default function Register() {
             </label>
             <input
               type="password"
-              value={userForm.password}
-              onChange={(e) =>
-                setUserForm({ ...userForm, password: e.target.value })
-              }
-              className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all font-medium"
+              {...register("password")}
+              className={`w-full border rounded-xl px-3 py-2 text-sm outline-none focus:ring-4 focus:ring-indigo-500/10 transition-all font-medium ${
+                errors.password ? "border-red-500 focus:border-red-500" : "border-slate-200 focus:border-indigo-500"
+              }`}
               placeholder="••••••••"
-              required
             />
+            {errors.password && (
+              <p className="text-red-500 text-xs mt-1">{errors.password.message}</p>
+            )}
           </div>
 
           <button
             type="submit"
-            disabled={loading}
-            className="w-full bg-slate-900 text-white text-xs font-bold uppercase tracking-widest py-3 rounded-xl hover:bg-slate-800 transition-all disabled:opacity-50 mt-6 shadow-xl shadow-slate-900/20 active:scale-[0.98]"
+            disabled={isSubmitting}
+            className="w-full bg-slate-900 text-white text-xs font-bold uppercase tracking-widest py-3 rounded-xl hover:bg-slate-800 transition-all disabled:opacity-50 mt-6 shadow-xl shadow-slate-900/20 active:scale-[0.98] flex items-center justify-center gap-2"
           >
-            {loading ? "Creating Account..." : "Continue"}
+            {isSubmitting && (
+              <svg className="animate-spin h-3 w-3 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+            )}
+            {isSubmitting ? "Creating Account..." : "Continue"}
           </button>
         </form>
 

@@ -62,6 +62,7 @@ export default function Dashboard() {
     quickAccess: true,
     revenueChart: true,
     recentActivities: true,
+    demandForecast: true,
   });
 
   useEffect(() => {
@@ -133,104 +134,75 @@ export default function Dashboard() {
 
   if (user?.role === "customer") {
     return (
-      <div className="flex flex-col gap-8 w-full max-w-7xl mx-auto min-h-full pb-10">
-        {/* Futuristic Hero Section */}
-        <div className="relative rounded-2xl bg-slate-900 border border-slate-800 p-8 overflow-hidden shadow-2xl flex flex-col justify-center">
-          {/* Abstract background graphics */}
-          <div className="absolute top-0 right-0 p-12 opacity-20 pointer-events-none">
-            <div className="w-64 h-64 bg-indigo-500 rounded-full blur-3xl mix-blend-screen transform translate-x-1/2 -translate-y-1/2"></div>
-            <div className="w-64 h-64 bg-fuchsia-500 rounded-full blur-3xl mix-blend-screen transform -translate-x-1/4 translate-y-1/3"></div>
-          </div>
-
-          <div className="relative z-10 max-w-2xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-bold uppercase tracking-widest mb-6">
-              <Sparkles className="w-3.5 h-3.5" /> Welcome to the Future
-            </div>
-            <h1 className="text-4xl md:text-6xl font-display font-bold text-white tracking-tight leading-[1.1] mb-5">
-              Next-Gen{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-fuchsia-400 to-sky-400">
-                Digital Commerce
-              </span>
+      <div className="flex flex-col gap-8 w-full min-h-full pb-10">
+        <div className="bg-white border text-center border-slate-200 rounded-xl p-8 lg:p-12 shadow-sm flex flex-col justify-center items-center">
+          <div className="max-w-2xl mx-auto">
+            <h1 className="text-3xl md:text-5xl font-semibold text-slate-900 tracking-tight mb-4">
+              Explore Our Catalog
             </h1>
-            <p className="text-slate-300 text-base md:text-lg mb-8 max-w-xl leading-relaxed">
-              Explore our curated selection of premium products and advanced
-              services tailored for the modern enterprise ecosystem.
+            <p className="text-slate-500 text-base md:text-lg mb-8">
+              Discover premium products and customized services designed for modern enterprises.
             </p>
-            <div className="flex gap-4 items-center">
-              <div className="relative bg-slate-900/50 backdrop-blur border border-slate-700/50 rounded-xl flex items-center px-4 py-3.5 w-full max-w-md focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-500/20 transition-all shadow-xl">
-                <Search className="w-5 h-5 text-slate-400 mr-3 shrink-0" />
-                <input
-                  type="text"
-                  placeholder="Search products & services..."
-                  className="bg-transparent border-none outline-none text-white placeholder-slate-500 w-full text-sm font-medium"
-                />
-              </div>
+            <div className="relative flex items-center w-full max-w-lg mx-auto">
+              <Search className="absolute left-3 w-5 h-5 text-slate-400 shrink-0" />
+              <input
+                type="text"
+                placeholder="Search products & services..."
+                className="w-full bg-[#FAFAFA] border border-slate-200 rounded-lg py-3 pl-10 pr-4 text-sm font-medium text-slate-900 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+              />
             </div>
           </div>
         </div>
 
-        {/* Tab-like sections for Products & Services */}
-        <div className="flex flex-col gap-12">
-          {/* Products Section */}
+        <div className="flex flex-col gap-10">
           <section>
-            <div className="flex items-center justify-between mb-8">
-              <h2 className="text-3xl font-display font-bold tracking-tight text-slate-800 flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 border border-indigo-100 shadow-sm">
-                  <Package className="w-5 h-5" />
-                </div>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-semibold tracking-tight text-slate-900 flex items-center gap-2">
+                <Package className="w-5 h-5 text-indigo-500" />
                 Featured Products
               </h2>
-              <button className="text-sm font-bold text-indigo-600 hover:text-indigo-800 flex items-center transition-colors">
+              <button className="text-sm font-medium text-indigo-600 hover:text-indigo-700 flex items-center transition-colors">
                 View All <ArrowRight className="w-4 h-4 ml-1" />
               </button>
             </div>
 
             {catalog.products.length === 0 ? (
-              <div className="p-16 bg-white border border-slate-200 border-dashed rounded-3xl text-center text-slate-500 shadow-sm">
+              <div className="p-12 bg-white border border-slate-200 border-dashed rounded-xl text-center text-slate-500 shadow-sm text-sm">
                 No products available at the moment.
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 {catalog.products.map((product) => (
                   <div
                     key={product._id}
-                    className="group relative bg-white border border-slate-200/60 rounded-3xl overflow-hidden hover:shadow-xl hover:-translate-y-1 hover:border-indigo-300 transition-all duration-300"
+                    className="group bg-white border border-slate-200 rounded-xl overflow-hidden hover:border-slate-300 transition-all duration-200 shadow-sm hover:shadow-md flex flex-col"
                   >
-                    <div className="aspect-[4/3] bg-slate-50/50 border-b border-slate-100 p-6 flex flex-col items-center justify-center relative overflow-hidden">
-                      {/* Decorative elements */}
-                      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-indigo-100 to-transparent opacity-0 rounded-bl-[100px] pointer-events-none transition-opacity duration-300 group-hover:opacity-100"></div>
-                      <Package
-                        className="w-16 h-16 text-slate-300 group-hover:text-indigo-400 transition-colors duration-300 drop-shadow-sm relative z-10"
-                        strokeWidth={1}
-                      />
+                    <div className="aspect-[4/3] bg-[#FAFAFA] border-b border-slate-100 p-6 flex items-center justify-center relative">
+                      <Package className="w-12 h-12 text-slate-300 group-hover:text-indigo-400 transition-colors duration-200" strokeWidth={1.5} />
                     </div>
-                    <div className="p-6">
-                      <div className="flex justify-between items-start mb-3">
-                        <h3
-                          className="font-display font-bold text-slate-800 text-lg leading-tight line-clamp-1"
-                          title={product.name}
-                        >
+                    <div className="p-5 flex flex-col flex-1">
+                      <div className="flex justify-between items-start mb-2 gap-2">
+                        <h3 className="font-semibold text-slate-900 text-base leading-tight line-clamp-1" title={product.name}>
                           {product.name}
                         </h3>
-                        <span className="inline-flex items-center px-2 py-1 bg-slate-100 text-slate-600 font-mono text-[10px] rounded-md border border-slate-200 shrink-0 uppercase tracking-widest font-bold">
+                        <span className="inline-flex items-center px-1.5 py-0.5 bg-slate-100 text-slate-600 font-mono text-[10px] rounded border border-slate-200 shrink-0 font-medium">
                           {product.sku || "N/A"}
                         </span>
                       </div>
-                      <p className="text-sm text-slate-500 line-clamp-2 h-10 mb-6 leading-relaxed">
-                        {product.description ||
-                          "Premium commercial product for enterprise needs."}
+                      <p className="text-sm text-slate-500 line-clamp-2 mb-4 leading-relaxed flex-1">
+                        {product.description || "Premium commercial product for enterprise needs."}
                       </p>
                       <div className="flex items-center justify-between mt-auto">
                         <div className="flex flex-col">
-                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">
+                          <span className="text-[10px] font-medium text-slate-500 uppercase tracking-widest mb-0.5">
                             {t("rate")}
                           </span>
-                          <span className="text-2xl font-display font-bold text-slate-900">
+                          <span className="text-lg font-semibold text-slate-900">
                             {formatAmount(product.price)}
                           </span>
                         </div>
-                        <button className="w-12 h-12 rounded-2xl bg-slate-900 text-white flex items-center justify-center hover:bg-indigo-600 transition-colors shadow-lg group-hover:shadow-indigo-500/25 shrink-0">
-                          <ShoppingCart className="w-5 h-5" />
+                        <button className="w-9 h-9 rounded-md bg-white border border-slate-200 text-slate-700 flex items-center justify-center hover:bg-slate-50 hover:text-indigo-600 transition-colors shadow-sm shrink-0">
+                          <ShoppingCart className="w-4 h-4" />
                         </button>
                       </div>
                     </div>
@@ -240,22 +212,19 @@ export default function Dashboard() {
             )}
           </section>
 
-          {/* Services Section */}
           <section>
-            <div className="flex items-center justify-between mb-8">
-              <h2 className="text-3xl font-display font-bold tracking-tight text-slate-800 flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-fuchsia-50 flex items-center justify-center text-fuchsia-600 border border-fuchsia-100 shadow-sm">
-                  <Zap className="w-5 h-5" />
-                </div>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-semibold tracking-tight text-slate-900 flex items-center gap-2">
+                <Zap className="w-5 h-5 text-indigo-500" />
                 Available Services
               </h2>
-              <button className="text-sm font-bold text-fuchsia-600 hover:text-fuchsia-800 flex items-center transition-colors">
+              <button className="text-sm font-medium text-indigo-600 hover:text-indigo-700 flex items-center transition-colors">
                 View All <ArrowRight className="w-4 h-4 ml-1" />
               </button>
             </div>
 
             {catalog.services.length === 0 ? (
-              <div className="p-16 bg-white border border-slate-200 border-dashed rounded-3xl text-center text-slate-500 shadow-sm">
+              <div className="p-12 bg-white border border-slate-200 border-dashed rounded-xl text-center text-slate-500 shadow-sm text-sm">
                 No services available at the moment.
               </div>
             ) : (
@@ -263,51 +232,45 @@ export default function Dashboard() {
                 {catalog.services.map((service) => (
                   <div
                     key={service._id}
-                    className="group relative bg-white border border-slate-200/60 rounded-3xl p-6 md:p-8 hover:shadow-xl hover:-translate-y-1 hover:border-fuchsia-300 transition-all duration-300 overflow-hidden"
+                    className="group bg-white border border-slate-200 rounded-xl p-6 hover:border-slate-300 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col"
                   >
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-fuchsia-50 to-transparent opacity-0 group-hover:opacity-100 rounded-bl-[100px] pointer-events-none transition-opacity duration-300"></div>
-                    <div className="w-14 h-14 bg-fuchsia-50 rounded-2xl border border-fuchsia-100 flex items-center justify-center mb-6 group-hover:scale-110 group-hover:rotate-3 transition-transform relative z-10">
+                    <div className="w-12 h-12 bg-[#FAFAFA] rounded-xl border border-slate-200 flex items-center justify-center mb-5 shrink-0 group-hover:scale-105 transition-transform">
                       {service.mainImage ? (
                         <img
                           src={service.mainImage}
                           alt={service.name}
-                          className="w-14 h-14 object-cover rounded-2xl"
+                          className="w-12 h-12 object-cover rounded-xl"
                         />
                       ) : (
-                        <Zap className="w-6 h-6 text-fuchsia-500" />
+                        <Zap className="w-5 h-5 text-indigo-400" />
                       )}
                     </div>
-                    <h3
-                      className="font-display font-bold text-xl text-slate-800 mb-3 truncate relative z-10"
-                      title={service.name}
-                    >
+                    <h3 className="font-semibold text-lg text-slate-900 mb-2 line-clamp-1" title={service.name}>
                       {service.name}
                     </h3>
-                    <p className="text-sm text-slate-500 mb-8 h-10 line-clamp-2 leading-relaxed relative z-10">
-                      {service.shortDescription ||
-                        service.description ||
-                        "Professional corporate service ensuring optimal outcome and efficiency."}
+                    <p className="text-sm text-slate-500 mb-6 line-clamp-2 leading-relaxed flex-1">
+                      {service.shortDescription || service.description || "Professional corporate service ensuring optimal outcome and efficiency."}
                     </p>
-                    <div className="flex items-center justify-between bg-slate-50/50 p-4 rounded-2xl border border-slate-100 mb-6 relative z-10">
+                    <div className="flex items-center justify-between bg-[#FAFAFA] p-3.5 rounded-lg border border-slate-200 mb-5">
                       <div>
-                        <span className="block text-[10px] uppercase font-bold text-slate-400 tracking-widest mb-1">
+                        <span className="block text-[10px] font-medium text-slate-500 uppercase tracking-widest mb-0.5">
                           Type
                         </span>
-                        <span className="text-sm font-semibold text-slate-700 capitalize">
+                        <span className="text-sm font-semibold text-slate-800 capitalize">
                           {service.priceType?.replace("_", " ") || "Fixed"}
                         </span>
                       </div>
                       <div className="text-right">
-                        <span className="block text-[10px] uppercase font-bold text-slate-400 tracking-widest mb-1">
+                        <span className="block text-[10px] font-medium text-slate-500 uppercase tracking-widest mb-0.5">
                           {t("rate")}
                         </span>
-                        <span className="text-lg font-display font-bold text-slate-900">
+                        <span className="text-sm font-semibold text-slate-900">
                           {formatAmount(service.rate || 0)}
                         </span>
                       </div>
                     </div>
-                    <button className="w-full py-3.5 rounded-xl bg-white border-2 border-slate-900 text-slate-900 font-bold text-sm hover:bg-slate-900 hover:text-white transition-colors uppercase tracking-widest relative z-10">
-                      Request / Book
+                    <button className="w-full py-2.5 rounded-lg bg-white border border-slate-300 text-slate-800 font-medium text-sm hover:bg-slate-50 hover:border-slate-400 transition-colors mt-auto">
+                      Request
                     </button>
                   </div>
                 ))}
@@ -321,31 +284,28 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6 overflow-hidden font-sans">
-      <div className="flex justify-between items-center bg-white p-4 rounded-2xl border border-slate-200/60 shadow-sm relative z-20">
+      <div className="flex justify-between items-end border-b border-slate-200 pb-6 mb-6 relative z-20">
         <div>
-          <h1
-            className="text-2xl font-display font-bold text-slate-900"
-            style={{ letterSpacing: "-0.02em" }}
-          >
+          <h1 className="text-2xl font-semibold tracking-tight text-slate-900 mb-1">
             {t("dashboard")}
           </h1>
-          <p className="text-sm text-slate-500 font-medium">
+          <p className="text-sm text-slate-500 font-medium tracking-tight">
             {t("welcome_back")}, {user?.name}
           </p>
         </div>
         <div className="relative">
           <button
             onClick={() => setShowSettings(!showSettings)}
-            className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-sm font-bold transition-colors"
+            className="flex items-center gap-2 px-3 py-2 bg-white border border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-slate-700 rounded-md text-sm font-medium transition-colors shadow-sm"
           >
             <Settings className="w-4 h-4" />
-            Customize Widgets
+            Customize Layout
           </button>
 
           {showSettings && (
-            <div className="absolute right-0 top-full mt-2 w-64 bg-white border border-slate-200 rounded-2xl shadow-xl z-50 p-4">
+            <div className="absolute right-0 top-full mt-2 w-64 bg-white border border-slate-200 rounded-xl shadow-xl z-50 p-4">
               <div className="flex justify-between items-center mb-4">
-                <h3 className="font-bold text-slate-800 text-sm flex items-center gap-2">
+                <h3 className="font-semibold text-slate-800 text-sm flex items-center gap-2">
                   <LayoutGrid className="w-4 h-4" /> Layout Settings
                 </h3>
                 <button
@@ -361,6 +321,7 @@ export default function Dashboard() {
                   quickAccess: "Quick Access",
                   revenueChart: "Revenue Overview",
                   recentActivities: "Recent Activities",
+                  demandForecast: "AI Demand Forecast",
                 }).map(([key, label]) => (
                   <label
                     key={key}
@@ -371,7 +332,7 @@ export default function Dashboard() {
                     </span>
                     <div
                       onClick={() => toggleWidget(key as keyof typeof widgets)}
-                      className={`w-10 h-6 rounded-full flex items-center transition-colors p-1 ${widgets[key as keyof typeof widgets] ? "bg-indigo-500" : "bg-slate-200"}`}
+                      className={`w-9 h-5 rounded-full flex items-center transition-colors p-[2px] ${widgets[key as keyof typeof widgets] ? "bg-emerald-500" : "bg-slate-200"}`}
                     >
                       <div
                         className={`w-4 h-4 bg-white rounded-full transition-transform ${widgets[key as keyof typeof widgets] ? "translate-x-4" : "translate-x-0"}`}
@@ -387,174 +348,169 @@ export default function Dashboard() {
 
       {widgets.financialMetrics && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-          <div className="bg-white p-6 md:p-8 border border-slate-200/60 rounded-[2rem] shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 relative overflow-hidden group">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-indigo-50 to-transparent opacity-0 group-hover:opacity-100 rounded-bl-[100px] pointer-events-none transition-opacity duration-300"></div>
-            <div className="absolute top-6 right-6 opacity-20 group-hover:opacity-40 group-hover:scale-110 transition-all">
-              <Package
-                className="w-12 h-12 text-indigo-500"
-                strokeWidth={1.5}
-              />
+          <div className="bg-white p-5 border border-slate-200 rounded-xl shadow-sm flex flex-col justify-between">
+            <div className="flex justify-between items-start mb-4">
+              <div className="text-sm font-medium text-slate-500">
+                {t("total_products")}
+              </div>
+              <div className="w-8 h-8 rounded-md bg-slate-50 border border-slate-100 flex items-center justify-center">
+                <Package className="w-4 h-4 text-slate-600" />
+              </div>
             </div>
-            <div className="text-[10px] text-slate-400 uppercase font-black tracking-[0.2em] mb-4 relative z-10">
-              {t("total_products")}
-            </div>
-            <div className="text-5xl font-display font-black text-slate-900 mb-2 relative z-10 tracking-tighter">
-              {stats.products}
-            </div>
-            <div className="text-[10px] text-emerald-600 font-bold uppercase tracking-widest relative z-10 bg-emerald-50 inline-block px-2 py-1 rounded">
-              +15 added
-            </div>
-          </div>
-
-          <div className="bg-white p-6 md:p-8 border border-slate-200/60 rounded-[2rem] shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 relative overflow-hidden group">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-fuchsia-50 to-transparent opacity-0 group-hover:opacity-100 rounded-bl-[100px] pointer-events-none transition-opacity duration-300"></div>
-            <div className="absolute top-6 right-6 opacity-20 group-hover:opacity-40 group-hover:scale-110 transition-all">
-              <FileText
-                className="w-12 h-12 text-fuchsia-500"
-                strokeWidth={1.5}
-              />
-            </div>
-            <div className="text-[10px] text-slate-400 uppercase font-black tracking-[0.2em] mb-4 relative z-10">
-              {t("total_invoices")}
-            </div>
-            <div className="text-5xl font-display font-black text-slate-900 mb-2 relative z-10 tracking-tighter">
-              {stats.invoices}
-            </div>
-            <div className="text-[10px] text-fuchsia-600 font-bold uppercase tracking-widest relative z-10 bg-fuchsia-50 inline-block px-2 py-1 rounded">
-              Processing
+            <div>
+              <div className="text-3xl font-mono font-medium text-slate-900 tracking-tight">
+                {stats.products}
+              </div>
+              <div className="text-xs text-emerald-600 font-medium mt-1">
+                +15 added this month
+              </div>
             </div>
           </div>
 
-          <div className="bg-[#0f172a] p-6 md:p-8 border border-slate-800 rounded-[2rem] shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 relative overflow-hidden group">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-amber-500/20 to-transparent opacity-0 group-hover:opacity-100 rounded-bl-[100px] pointer-events-none transition-opacity duration-300"></div>
-            <div className="absolute top-6 right-6 opacity-20 group-hover:opacity-40 group-hover:scale-110 transition-all">
-              <Zap className="w-12 h-12 text-amber-500" strokeWidth={1.5} />
+          <div className="bg-white p-5 border border-slate-200 rounded-xl shadow-sm flex flex-col justify-between">
+            <div className="flex justify-between items-start mb-4">
+              <div className="text-sm font-medium text-slate-500">
+                {t("total_invoices")}
+              </div>
+              <div className="w-8 h-8 rounded-md bg-slate-50 border border-slate-100 flex items-center justify-center">
+                <FileText className="w-4 h-4 text-slate-600" />
+              </div>
             </div>
-            <div className="text-[10px] text-slate-400 uppercase font-black tracking-[0.2em] mb-4 relative z-10">
-              {t("inventory")} (FIFO)
-            </div>
-            <div className="text-5xl font-display font-black text-white mb-2 relative z-10 tracking-tighter">
-              {stats.lowStockCount}
-            </div>
-            <div className="text-[10px] text-amber-400 font-bold uppercase tracking-widest relative z-10 bg-amber-500/10 border border-amber-500/20 inline-block px-2 py-1 rounded">
-              Items low stock
+            <div>
+              <div className="text-3xl font-mono font-medium text-slate-900 tracking-tight">
+                {stats.invoices}
+              </div>
+              <div className="text-xs text-emerald-600 font-medium mt-1">
+                3 processing
+              </div>
             </div>
           </div>
 
-          <div className="bg-white p-6 md:p-8 border border-slate-200/60 rounded-[2rem] shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 relative overflow-hidden group">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-sky-50 to-transparent opacity-0 group-hover:opacity-100 rounded-bl-[100px] pointer-events-none transition-opacity duration-300"></div>
-            <div className="absolute top-6 right-6 opacity-20 group-hover:opacity-40 group-hover:scale-110 transition-all">
-              <Users className="w-12 h-12 text-sky-500" strokeWidth={1.5} />
+          <div className="bg-slate-900 p-5 border border-slate-800 rounded-xl shadow-sm flex flex-col justify-between text-white">
+            <div className="flex justify-between items-start mb-4">
+              <div className="text-sm font-medium text-slate-400">
+                Low Stock (FIFO)
+              </div>
+              <div className="w-8 h-8 rounded-md bg-slate-800 border border-slate-700 flex items-center justify-center">
+                <Zap className="w-4 h-4 text-amber-400" />
+              </div>
             </div>
-            <div className="text-[10px] text-slate-400 uppercase font-black tracking-[0.2em] mb-4 relative z-10">
-              {t("active_users")}
+            <div>
+              <div className="text-3xl font-mono font-medium text-white tracking-tight">
+                {stats.lowStockCount}
+              </div>
+              <div className="text-xs text-amber-400 font-medium mt-1">
+                Needs attention
+              </div>
             </div>
-            <div className="text-5xl font-display font-black text-slate-900 mb-2 relative z-10 tracking-tighter">
-              1
+          </div>
+
+          <div className="bg-white p-5 border border-slate-200 rounded-xl shadow-sm flex flex-col justify-between">
+            <div className="flex justify-between items-start mb-4">
+              <div className="text-sm font-medium text-slate-500">
+                {t("active_users")}
+              </div>
+              <div className="w-8 h-8 rounded-md bg-slate-50 border border-slate-100 flex items-center justify-center">
+                <Users className="w-4 h-4 text-slate-600" />
+              </div>
             </div>
-            <div className="text-[10px] text-sky-600 font-bold uppercase tracking-widest relative z-10 bg-sky-50 inline-block px-2 py-1 rounded">
-              System Online
+            <div>
+              <div className="text-3xl font-mono font-medium text-slate-900 tracking-tight">
+                1
+              </div>
+              <div className="text-xs text-emerald-600 font-medium mt-1 flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> System Online
+              </div>
             </div>
           </div>
         </div>
       )}
 
       {widgets.quickAccess && (
-        <div className="bg-white border border-slate-200/60 rounded-[2rem] p-8 shadow-sm">
-          <div className="flex items-center gap-3 mb-8">
-            <div className="w-10 h-10 rounded-2xl bg-slate-50 flex items-center justify-center border border-slate-100">
-              <Zap className="w-5 h-5 text-amber-500" />
-            </div>
-            <div>
-              <h3 className="font-display font-black text-slate-900 uppercase tracking-tight">
-                {t("quick_access")}
-              </h3>
-              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.2em]">
-                Fast Navigation
-              </p>
-            </div>
+        <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+          <div className="flex items-center gap-3 mb-6">
+            <h3 className="font-semibold text-slate-800">
+              {t("quick_access")}
+            </h3>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <Link
               to="/invoices"
-              className="flex items-center gap-4 p-4 rounded-2xl border border-slate-100 bg-slate-50 hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-700 transition-all hover:shadow-md group"
+              className="flex items-center gap-4 p-4 rounded-lg border border-slate-200 bg-[#FAFAFA] hover:bg-slate-50 hover:border-slate-300 transition-all"
             >
-              <div className="w-12 h-12 rounded-xl bg-white border border-slate-200 flex items-center justify-center shrink-0 group-hover:border-indigo-300 group-hover:scale-110 transition-transform">
-                <PlusCircle className="w-5 h-5 text-slate-400 group-hover:text-indigo-500" />
+              <div className="w-10 h-10 rounded-md bg-white border border-slate-200 flex items-center justify-center shrink-0">
+                <PlusCircle className="w-5 h-5 text-slate-500" />
               </div>
-              <span className="text-sm font-bold leading-tight">
-                {t("new_invoice")}
-              </span>
+              <div>
+                <span className="block text-sm font-semibold text-slate-900">{t("new_invoice")}</span>
+                <span className="block text-xs text-slate-500 mt-0.5">Create billing</span>
+              </div>
             </Link>
             <Link
               to="/products"
-              className="flex items-center gap-4 p-4 rounded-2xl border border-slate-100 bg-slate-50 hover:bg-fuchsia-50 hover:border-fuchsia-200 hover:text-fuchsia-700 transition-all hover:shadow-md group"
+              className="flex items-center gap-4 p-4 rounded-lg border border-slate-200 bg-[#FAFAFA] hover:bg-slate-50 hover:border-slate-300 transition-all"
             >
-              <div className="w-12 h-12 rounded-xl bg-white border border-slate-200 flex items-center justify-center shrink-0 group-hover:border-fuchsia-300 group-hover:scale-110 transition-transform">
-                <Package className="w-5 h-5 text-slate-400 group-hover:text-fuchsia-500" />
+              <div className="w-10 h-10 rounded-md bg-white border border-slate-200 flex items-center justify-center shrink-0">
+                <Package className="w-5 h-5 text-slate-500" />
               </div>
-              <span className="text-sm font-bold leading-tight">
-                {t("add_product")}
-              </span>
+              <div>
+                <span className="block text-sm font-semibold text-slate-900">{t("add_product")}</span>
+                <span className="block text-xs text-slate-500 mt-0.5">Manage inventory</span>
+              </div>
             </Link>
             <Link
               to="/pos"
-              className="flex items-center gap-4 p-4 rounded-2xl border border-slate-100 bg-slate-50 hover:bg-emerald-50 hover:border-emerald-200 hover:text-emerald-700 transition-all hover:shadow-md group"
+              className="flex items-center gap-4 p-4 rounded-lg border border-slate-200 bg-[#FAFAFA] hover:bg-slate-50 hover:border-slate-300 transition-all"
             >
-              <div className="w-12 h-12 rounded-xl bg-white border border-slate-200 flex items-center justify-center shrink-0 group-hover:border-emerald-300 group-hover:scale-110 transition-transform">
-                <ShoppingCart className="w-5 h-5 text-slate-400 group-hover:text-emerald-500" />
+              <div className="w-10 h-10 rounded-md bg-white border border-slate-200 flex items-center justify-center shrink-0">
+                <ShoppingCart className="w-5 h-5 text-slate-500" />
               </div>
-              <span className="text-sm font-bold leading-tight">
-                {t("launch_pos")}
-              </span>
+              <div>
+                <span className="block text-sm font-semibold text-slate-900">{t("launch_pos")}</span>
+                <span className="block text-xs text-slate-500 mt-0.5">Point of Sale</span>
+              </div>
             </Link>
             <Link
               to="/services"
-              className="flex items-center gap-4 p-4 rounded-2xl border border-slate-100 bg-slate-50 hover:bg-amber-50 hover:border-amber-200 hover:text-amber-700 transition-all hover:shadow-md group"
+              className="flex items-center gap-4 p-4 rounded-lg border border-slate-200 bg-[#FAFAFA] hover:bg-slate-50 hover:border-slate-300 transition-all"
             >
-              <div className="w-12 h-12 rounded-xl bg-white border border-slate-200 flex items-center justify-center shrink-0 group-hover:border-amber-300 group-hover:scale-110 transition-transform">
-                <Tag className="w-5 h-5 text-slate-400 group-hover:text-amber-500" />
+              <div className="w-10 h-10 rounded-md bg-white border border-slate-200 flex items-center justify-center shrink-0">
+                <Tag className="w-5 h-5 text-slate-500" />
               </div>
-              <span className="text-sm font-bold leading-tight">
-                {t("manage_services")}
-              </span>
+              <div>
+                <span className="block text-sm font-semibold text-slate-900">{t("manage_services")}</span>
+                <span className="block text-xs text-slate-500 mt-0.5">Service catalog</span>
+              </div>
             </Link>
           </div>
         </div>
       )}
 
       {stats.lowStockItems && stats.lowStockItems.length > 0 && (
-        <div className="bg-amber-50 border border-amber-200/60 rounded-3xl p-6 shadow-sm">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 bg-amber-100 text-amber-600 rounded-xl flex items-center justify-center">
-              <AlertTriangle className="w-5 h-5" />
-            </div>
-            <div>
-              <h3 className="text-sm font-black text-amber-900 uppercase tracking-tight">
-                Low Stock Alert
-              </h3>
-              <p className="text-xs font-bold text-amber-700/70 uppercase tracking-widest">
-                {stats.lowStockItems.length} items need restock
-              </p>
-            </div>
+        <div className="bg-amber-50/50 border border-amber-200 rounded-xl p-5 shadow-sm">
+          <div className="flex items-center gap-2 mb-3">
+            <AlertTriangle className="w-4 h-4 text-amber-600" />
+            <h3 className="text-sm font-semibold text-amber-900">
+              Low Stock Alert ({stats.lowStockItems.length} items)
+            </h3>
           </div>
           <div className="flex flex-wrap gap-2">
             {stats.lowStockItems.slice(0, 5).map((item: any) => (
               <div
                 key={item._id}
-                className="px-3 py-2 bg-white border border-amber-200 rounded-lg flex items-center gap-3 shadow-sm"
+                className="px-3 py-1.5 bg-white border border-amber-200 rounded-md flex items-center gap-3 shadow-sm"
               >
-                <span className="text-xs font-bold text-slate-700">
+                <span className="text-sm font-medium text-slate-700">
                   {item.name}
                 </span>
-                <span className="text-[10px] font-black bg-rose-100 text-rose-600 px-2 py-0.5 rounded">
+                <span className="text-[10px] font-mono font-medium bg-rose-50 text-rose-600 px-1.5 py-0.5 rounded border border-rose-100">
                   QTY: {item.stockCount}
                 </span>
               </div>
             ))}
             {stats.lowStockItems.length > 5 && (
-              <div className="px-3 py-2 bg-amber-100/50 border border-amber-200/50 rounded-lg flex items-center">
-                <span className="text-xs font-bold text-amber-700">
+              <div className="px-3 py-1.5 bg-amber-100/50 border border-amber-200/50 rounded-md flex items-center">
+                <span className="text-xs font-medium text-amber-800">
                   +{stats.lowStockItems.length - 5} more
                 </span>
               </div>
@@ -563,27 +519,71 @@ export default function Dashboard() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:h-[450px]">
+      {widgets.demandForecast && (
+        <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm relative overflow-hidden flex flex-col md:flex-row gap-6 items-start">
+          <div className="w-12 h-12 bg-slate-50 border border-slate-200 rounded-lg flex items-center justify-center shrink-0">
+            <Sparkles className="w-5 h-5 text-indigo-500" />
+          </div>
+          <div className="flex-1 w-full">
+            <h3 className="font-semibold text-slate-900 text-lg tracking-tight mb-1">AI Demand Forecast</h3>
+            <p className="text-slate-500 text-sm mb-6">Predictions based on historical sales trends</p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="bg-[#FAFAFA] rounded-md p-4 border border-slate-200 hover:border-slate-300 transition-colors">
+                <p className="text-[11px] text-slate-500 uppercase tracking-widest font-semibold flex items-center gap-1.5 mb-2">
+                  <TrendingUp className="w-3 h-3 text-emerald-500" /> High Demand
+                </p>
+                <p className="font-medium text-slate-800 text-sm">Premium Wireless Headphones</p>
+                <div className="mt-2 text-emerald-600 text-[11px] font-mono font-medium">
+                  +25% Next Week
+                </div>
+              </div>
+              
+              <div className="bg-[#FAFAFA] rounded-md p-4 border border-slate-200 hover:border-slate-300 transition-colors">
+                <p className="text-[11px] text-slate-500 uppercase tracking-widest font-semibold flex items-center gap-1.5 mb-2">
+                  <TrendingUp className="w-3 h-3 text-emerald-500" /> Trending Up
+                </p>
+                <p className="font-medium text-slate-800 text-sm">Smart Watch Series 5</p>
+                <div className="mt-2 text-emerald-600 text-[11px] font-mono font-medium">
+                  +18% Next Week
+                </div>
+              </div>
+
+              <div className="bg-[#FAFAFA] rounded-md p-4 border border-slate-200 hover:border-slate-300 transition-colors hidden sm:block">
+                <p className="text-[11px] text-slate-500 uppercase tracking-widest font-semibold flex items-center gap-1.5 mb-2">
+                  <Target className="w-3 h-3 text-rose-500" /> Falling Demand
+                </p>
+                <p className="font-medium text-slate-800 text-sm">Basic Wired Earphones</p>
+                <div className="mt-2 text-rose-600 text-[11px] font-mono font-medium">
+                  -10% Next Week
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:h-[400px]">
         {widgets.revenueChart && (
           <div
-            className={`${widgets.recentActivities ? "lg:col-span-2" : "lg:col-span-3"} bg-white border border-slate-200/60 rounded-[2.5rem] flex flex-col shadow-sm overflow-hidden`}
+            className={`${widgets.recentActivities ? "lg:col-span-2" : "lg:col-span-3"} bg-white border border-slate-200 rounded-xl flex flex-col shadow-sm overflow-hidden`}
           >
-            <div className="p-8 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
+            <div className="px-6 py-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
               <div>
-                <h3 className="font-display font-black text-slate-900 uppercase tracking-tight">
+                <h3 className="font-semibold text-slate-900 tracking-tight">
                   {t("revenue_overview")}
                 </h3>
-                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.2em] mt-1">
+                <p className="text-xs text-slate-500 font-medium mt-0.5">
                   Monthly Analytics
                 </p>
               </div>
-              <button className="text-[10px] font-black text-indigo-600 uppercase border border-indigo-200 hover:bg-indigo-50 px-4 py-2 rounded-xl transition-all shadow-sm">
-                Export PDF
+              <button className="text-xs font-medium text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 px-3 py-1.5 rounded-md transition-colors shadow-sm">
+                Export
               </button>
             </div>
-            <div className="flex-1 p-8">
+            <div className="flex-1 p-6">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={data}>
+                <BarChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                   <CartesianGrid
                     strokeDasharray="3 3"
                     vertical={false}
@@ -593,35 +593,29 @@ export default function Dashboard() {
                     dataKey="name"
                     axisLine={false}
                     tickLine={false}
-                    textAnchor="middle"
-                    style={{
-                      fontSize: "12px",
-                      fill: "#64748b",
-                      fontWeight: 600,
-                    }}
+                    tick={{ fill: "#64748b", fontSize: 12, fontWeight: 500 }}
+                    dy={10}
                   />
                   <YAxis
                     axisLine={false}
                     tickLine={false}
-                    style={{
-                      fontSize: "12px",
-                      fill: "#64748b",
-                      fontWeight: 600,
-                    }}
+                    tick={{ fill: "#64748b", fontSize: 12, fontWeight: 500 }}
                   />
                   <Tooltip
                     cursor={{ fill: "#f8fafc" }}
                     contentStyle={{
-                      borderRadius: "12px",
+                      borderRadius: "8px",
                       border: "1px solid #e2e8f0",
                       boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+                      fontSize: "12px",
+                      fontWeight: 500,
                     }}
                   />
                   <Bar
                     dataKey="revenue"
-                    fill="#6366f1"
-                    radius={[6, 6, 0, 0]}
-                    barSize={48}
+                    fill="#3b82f6"
+                    radius={[4, 4, 0, 0]}
+                    barSize={40}
                   />
                 </BarChart>
               </ResponsiveContainer>
@@ -631,62 +625,63 @@ export default function Dashboard() {
 
         {widgets.recentActivities && (
           <div
-            className={`${widgets.revenueChart ? "lg:col-span-1" : "lg:col-span-3"} bg-white border border-slate-200/60 rounded-[2.5rem] flex flex-col shadow-sm overflow-hidden`}
+            className={`${widgets.revenueChart ? "lg:col-span-1" : "lg:col-span-3"} bg-white border border-slate-200 rounded-xl flex flex-col shadow-sm overflow-hidden`}
           >
-            <div className="p-8 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
+            <div className="px-6 py-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
               <div>
-                <h3 className="font-display font-black text-slate-900 flex items-center gap-2 uppercase tracking-tight">
-                  <Activity className="w-5 h-5 text-indigo-500" />
+                <h3 className="font-semibold text-slate-900 tracking-tight flex items-center gap-2">
+                  <Activity className="w-4 h-4 text-emerald-500" />
                   {t("recent_activities")}
                 </h3>
-                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">
-                  Live Audit Feed
+                <p className="text-xs text-slate-500 font-medium mt-0.5">
+                  Audit Feed
                 </p>
               </div>
               <Link
                 to="/audit-logs"
-                className="w-10 h-10 rounded-2xl bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:text-indigo-600 transition-all shadow-sm"
+                className="p-1.5 rounded-md hover:bg-slate-200 text-slate-400 hover:text-slate-600 transition-colors"
+                title="View All"
               >
-                <ArrowRight className="w-5 h-5" />
+                <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
-            <div className="flex-1 p-8 space-y-8 overflow-auto custom-scrollbar relative">
-              <div className="absolute left-[45px] top-10 bottom-10 w-0.5 bg-slate-100" />
+            <div className="flex-1 p-6 space-y-6 overflow-auto custom-scrollbar relative">
+              <div className="absolute left-[31px] top-8 bottom-8 w-px bg-slate-200" />
               {stats.logs.map((log: any, index: number) => {
                 return (
                   <motion.div
-                    initial={{ opacity: 0, x: -10 }}
+                    initial={{ opacity: 0, x: -5 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: index * 0.1 }}
                     key={log._id}
-                    className="flex gap-6 relative group"
+                    className="flex gap-4 relative group"
                   >
-                    <div className="w-10 h-10 rounded-2xl bg-white border-2 border-slate-100 flex items-center justify-center shrink-0 shadow-sm relative z-10 group-hover:border-indigo-400 transition-colors">
-                      <Clock className="w-4 h-4 text-slate-400 group-hover:text-indigo-600 transition-colors" />
+                    <div className="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center shrink-0 relative z-10">
+                      <Clock className="w-3.5 h-3.5 text-slate-400" />
                     </div>
                     <div className="flex flex-col justify-start pt-1">
-                      <div className="flex items-center gap-3 mb-1">
-                        <span className="text-[11px] font-black text-slate-900 uppercase tracking-tight">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-xs font-semibold text-slate-800 capitalize">
                           {log.action.replace("_", " ")}
                         </span>
-                        <span className="text-[9px] font-black px-1.5 py-0.5 bg-slate-100 text-slate-500 rounded uppercase tracking-widest">
+                        <span className="text-[10px] font-mono text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">
                           {log.collectionName}
                         </span>
                       </div>
-                      <p className="text-xs text-slate-500 font-medium leading-relaxed italic line-clamp-2">
-                        By: {log.user?.email || "System"}
+                      <p className="text-xs text-slate-500 line-clamp-1">
+                        By {log.user?.email || "System"}
                       </p>
-                      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-2 block">
-                        {format(new Date(log.createdAt), "h:mm a, MMM d")}
+                      <span className="text-[10px] text-slate-400 mt-1 block">
+                        {format(new Date(log.createdAt), "MMM d, h:mm a")}
                       </span>
                     </div>
                   </motion.div>
                 );
               })}
               {stats.logs.length === 0 && (
-                <div className="flex flex-col items-center justify-center h-full text-slate-300 py-20">
-                  <Shield className="w-16 h-16 mb-4 opacity-10" />
-                  <p className="text-[10px] font-black uppercase tracking-[0.2em]">
+                <div className="flex flex-col items-center justify-center h-full text-slate-400 pb-10">
+                  <Shield className="w-8 h-8 mb-3 opacity-20" />
+                  <p className="text-xs font-medium text-slate-500">
                     {t("no_recent_activity")}
                   </p>
                 </div>
@@ -694,61 +689,6 @@ export default function Dashboard() {
             </div>
           </div>
         )}
-      </div>
-
-      <div className="bg-gradient-to-r from-slate-900 via-indigo-900 to-slate-900 rounded-[2.5rem] p-8 md:p-12 text-white shadow-2xl relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-12 border border-slate-800">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-fuchsia-500/20 blur-[100px] rounded-full mix-blend-screen pointer-events-none"></div>
-        <div className="absolute bottom-0 left-0 w-96 h-96 bg-indigo-500/20 blur-[100px] rounded-full mix-blend-screen pointer-events-none"></div>
-
-        <div className="relative z-10 flex-1">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 text-[10px] font-black uppercase tracking-widest mb-6">
-            <Sparkles className="w-3.5 h-3.5" /> AI Prophet Engine Active
-          </div>
-          <h3 className="text-3xl md:text-5xl font-display font-black tracking-tighter mb-4 leading-tight">
-            Demand Forecasting
-          </h3>
-          <p className="text-indigo-200 text-sm leading-relaxed max-w-lg font-medium mb-8">
-            Our neural network analyzed your last 30 days of transactions. Based
-            on historical velocity and seasonal patterns, here is your restock
-            priority.
-          </p>
-          <div className="flex gap-4">
-            {stats.lowStockItems.slice(0, 2).map((item: any) => (
-              <div
-                key={item._id}
-                className="bg-white/10 backdrop-blur-md border border-white/10 rounded-2xl p-4 flex-1"
-              >
-                <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center mb-3 text-white">
-                  <TrendingUp className="w-4 h-4" />
-                </div>
-                <p className="text-xs text-white/60 uppercase font-black tracking-widest mb-1">
-                  High Probability
-                </p>
-                <p className="font-bold text-white truncate" title={item.name}>
-                  {item.name}
-                </p>
-                <p className="text-[10px] text-fuchsia-300 font-bold mt-2">
-                  Restock +50 units
-                </p>
-              </div>
-            ))}
-            {stats.lowStockItems.length === 0 && (
-              <p className="text-white">
-                Not enough data to calculate precise forecasting.
-              </p>
-            )}
-          </div>
-        </div>
-        <div className="w-full md:w-auto relative z-10">
-          <div className="w-48 h-48 border-[16px] border-indigo-500/30 border-t-fuchsia-500 rounded-full animate-[spin_10s_linear_infinite] flex items-center justify-center relative shadow-[0_0_50px_rgba(139,92,246,0.3)]">
-            <div className="absolute inset-0 m-auto w-32 h-32 bg-slate-900 rounded-full flex flex-col items-center justify-center border-4 border-slate-800">
-              <Target className="w-8 h-8 text-indigo-400 mb-1" />
-              <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 text-center">
-                92% Acc
-              </span>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );

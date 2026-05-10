@@ -190,7 +190,7 @@ export default function Dashboard() {
                 No products available at the moment.
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 {catalog.products.map((product) => (
                   <div
                     key={product._id}
@@ -259,7 +259,7 @@ export default function Dashboard() {
                 No services available at the moment.
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-1 md:grid-cols-2 lg:grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
                 {catalog.services.map((service) => (
                   <div
                     key={service._id}
@@ -386,7 +386,7 @@ export default function Dashboard() {
       </div>
 
       {widgets.financialMetrics && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
           <div className="bg-white p-5 md:p-6 border border-slate-200/60 rounded-[1.5rem] shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 relative overflow-hidden group">
             <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-indigo-50 to-transparent opacity-0 group-hover:opacity-100 rounded-bl-[100px] pointer-events-none transition-opacity duration-300"></div>
             <div className="absolute top-5 right-5 opacity-20 group-hover:opacity-40 group-hover:scale-110 transition-all">
@@ -474,7 +474,7 @@ export default function Dashboard() {
               </p>
             </div>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 md:grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             <Link
               to="/invoices"
               className="flex items-center gap-4 p-4 rounded-2xl border border-slate-100 bg-slate-50 hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-700 transition-all hover:shadow-md group"
@@ -563,7 +563,7 @@ export default function Dashboard() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:h-[450px]">
+      <div className="grid grid-cols-1 lg:grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 lg:h-[450px]">
         {widgets.revenueChart && (
           <div
             className={`${widgets.recentActivities ? "lg:col-span-2" : "lg:col-span-3"} bg-white border border-slate-200/60 rounded-[2.5rem] flex flex-col shadow-sm overflow-hidden`}

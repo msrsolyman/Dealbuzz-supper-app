@@ -3,14 +3,29 @@ import { useNavigate, Link } from "react-router";
 import { useAuth } from "../../context/AuthContext";
 import { fetchWithAuth } from "../../lib/api";
 import { toast } from "sonner";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+
+const loginSchema = z.object({
+  email: z.string().email("Please enter a valid email address"),
+  password: z.string().min(1, "Password is required"),
+});
+
+type LoginFormValues = z.infer<typeof loginSchema>;
 
 export default function Login() {
   const [loginType, setLoginType] = useState<"customer" | "seller">("customer");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<LoginFormValues>({
+    resolver: zodResolver(loginSchema),
+  });
 
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
@@ -60,18 +75,14 @@ export default function Login() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
+  const onSubmit = async (data: LoginFormValues) => {
     try {
-      const data = await fetchWithAuth("/auth/login", {
+      const response = await fetchWithAuth("/auth/login", {
         method: "POST",
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify(data),
       });
 
-      // We could add client side role check if necessary, but all users login through same endpoint
-      // We can warn if they login to the wrong portal
-      const role = data.user.role;
+      const role = response.user.role;
       if (
         loginType === "customer" &&
         !["customer", "super_admin", "admin"].includes(role)
@@ -85,12 +96,10 @@ export default function Login() {
         );
       }
 
-      login(data.token, data.user);
+      login(response.token, response.user);
       navigate("/dashboard");
     } catch (error: any) {
       toast.error(error.message);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -106,23 +115,26 @@ export default function Login() {
             : "Seller Login Panel"}
         </p>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div>
             <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
               Email
             </label>
             <input
               type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-indigo-500 font-mono"
+              {...register("email")}
+              className={`w-full border rounded-xl px-3 py-2 text-sm outline-none font-mono ${
+                errors.email ? "border-red-500 focus:border-red-500" : "border-slate-200 focus:border-indigo-500"
+              }`}
               placeholder={
                 loginType === "customer"
                   ? "customer@example.com"
                   : "seller@example.com"
               }
-              required
             />
+            {errors.email && (
+              <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>
+            )}
           </div>
           <div>
             <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
@@ -130,23 +142,30 @@ export default function Login() {
             </label>
             <input
               type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-indigo-500"
+              {...register("password")}
+              className={`w-full border rounded-xl px-3 py-2 text-sm outline-none ${
+                errors.password ? "border-red-500 focus:border-red-500" : "border-slate-200 focus:border-indigo-500"
+              }`}
               placeholder="••••••••"
-              required
             />
+            {errors.password && (
+              <p className="text-red-500 text-xs mt-1">{errors.password.message}</p>
+            )}
           </div>
           <button
             type="submit"
-            disabled={loading}
-            className="w-full bg-indigo-600 text-white text-[10px] font-bold uppercase py-3 rounded-xl hover:bg-indigo-700 transition-colors disabled:opacity-50 tracking-widest mt-2 shadow-sm"
+            disabled={isSubmitting}
+            className="w-full bg-indigo-600 text-white text-[10px] font-bold uppercase py-3 rounded-xl hover:bg-indigo-700 transition-colors disabled:opacity-50 tracking-widest mt-2 shadow-sm flex justify-center items-center gap-2"
           >
-            {loading
-              ? "Authenticating..."
-              : loginType === "customer"
-                ? "Customer Login"
-                : "Secure Seller Login"}
+            {isSubmitting && (
+              <svg className="animate-spin h-3 w-3 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+            )}
+            {loginType === "customer"
+              ? "Customer Login"
+              : "Secure Seller Login"}
           </button>
         </form>
 

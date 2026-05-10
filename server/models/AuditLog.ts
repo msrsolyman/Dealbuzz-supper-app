@@ -15,8 +15,8 @@ export interface IAuditLog extends Document {
 
 const AuditLogSchema = new Schema<IAuditLog>(
   {
-    tenantId: { type: Schema.Types.ObjectId, ref: 'Tenant', index: true },
-    userId: { type: Schema.Types.Mixed, index: true }, // Mixed because it could be string (like "system" for anon logins)
+    tenantId: { type: Schema.Types.ObjectId, ref: 'Tenant' },
+    userId: { type: Schema.Types.Mixed }, // Mixed because it could be string (like "system" for anon logins)
     action: { type: String, enum: ['CREATE', 'UPDATE', 'DELETE', 'LOGIN'], required: true },
     collectionName: { type: String, required: true },
     documentId: { type: String },
@@ -27,6 +27,10 @@ const AuditLogSchema = new Schema<IAuditLog>(
   },
   { timestamps: { createdAt: true, updatedAt: false } }
 );
+
+AuditLogSchema.index({ tenantId: 1, createdAt: -1 });
+AuditLogSchema.index({ tenantId: 1, action: 1 });
+AuditLogSchema.index({ collectionName: 1, documentId: 1 });
 
 // @ts-ignore
 export default mongoose.models.AuditLog || mongoose.model<IAuditLog>('AuditLog', AuditLogSchema);

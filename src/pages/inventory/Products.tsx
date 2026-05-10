@@ -262,7 +262,7 @@ export default function Products() {
       </div>
 
       <div className="flex-1 overflow-auto custom-scrollbar">
-        <table className="w-full text-sm text-left">
+        <table className="w-full min-w-[800px] text-sm text-left">
           <thead className="bg-slate-50 text-slate-500 uppercase text-[10px] tracking-widest border-b border-slate-100 sticky top-0 z-10">
             <tr>
               <th className="px-6 py-4 font-bold">{t("main_image")}</th>
@@ -410,9 +410,9 @@ export default function Products() {
                 </button>
               </div>
 
-              <div className="flex flex-1 overflow-hidden">
+              <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
                 {/* Sidebar Tabs */}
-                <div className="w-48 bg-slate-50 border-r border-slate-200 overflow-y-auto shrink-0 p-2 space-y-1">
+                <div className="w-full md:w-48 bg-slate-50 border-b md:border-b-0 md:border-r border-slate-200 overflow-x-auto md:overflow-y-auto shrink-0 p-2 space-x-2 md:space-x-0 md:space-y-1 flex md:flex-col">
                   {[
                     { id: "basic", label: t("basic_info"), icon: FileText },
                     { id: "pricing", label: t("pricing_stock"), icon: Tags },
@@ -435,7 +435,7 @@ export default function Products() {
                       <button
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id)}
-                        className={`w-full flex items-center gap-2 px-3 py-2 text-xs font-bold rounded-md transition-colors ${activeTab === tab.id ? "bg-indigo-100 text-indigo-700" : "text-slate-600 hover:bg-slate-200/50 hover:text-slate-900"}`}
+                        className={`w-auto md:w-full flex shrink-0 whitespace-nowrap items-center gap-2 px-3 py-2 text-xs font-bold rounded-md transition-colors ${activeTab === tab.id ? "bg-indigo-100 text-indigo-700" : "text-slate-600 hover:bg-slate-200/50 hover:text-slate-900"}`}
                       >
                         <Icon className="w-3.5 h-3.5" />
                         {tab.label}
@@ -468,7 +468,7 @@ export default function Products() {
                             placeholder="e.g. Vintage Leather Jacket"
                           />
                         </div>
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
                             <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
                               Category <span className="text-rose-500">*</span>
@@ -504,7 +504,7 @@ export default function Products() {
                             />
                           </div>
                         </div>
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
                             <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
                               SKU
@@ -549,7 +549,7 @@ export default function Products() {
 
                     {activeTab === "pricing" && (
                       <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
                             <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
                               Selling Price{" "}
@@ -591,7 +591,7 @@ export default function Products() {
                             </div>
                           </div>
                         </div>
-                        <div className="grid grid-cols-3 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                           <div>
                             <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
                               Discount (%)
@@ -775,7 +775,7 @@ export default function Products() {
                             className="w-full border border-slate-200 rounded px-3 py-2 text-sm outline-none focus:border-indigo-500 resize-none"
                             placeholder="Full comprehensive description..."
                           ></textarea>
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
                             <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
                               Features (One per line)
@@ -821,7 +821,7 @@ export default function Products() {
 
                     {activeTab === "shipping" && (
                       <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
                             <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
                               Delivery Charge
@@ -930,7 +930,7 @@ export default function Products() {
 
                     {activeTab === "advanced" && (
                       <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
                             <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
                               Barcode (UPC/EAN)
@@ -957,7 +957,7 @@ export default function Products() {
                             />
                           </div>
                         </div>
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
                             <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
                               Warranty Info

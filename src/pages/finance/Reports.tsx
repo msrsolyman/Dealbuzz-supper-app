@@ -229,7 +229,7 @@ export default function Reports() {
         <div className="space-y-6">
           {reportType === "sales" && (
             <>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="bg-white border border-slate-200/60 rounded-[2rem] p-8 shadow-sm">
                   <div className="mb-6 flex justify-between items-end">
                     <div>
@@ -358,7 +358,7 @@ export default function Reports() {
 
           {reportType === "inventory" && (
             <>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+              <div className="grid grid-cols-1 md:grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mb-6">
                 <div className="bg-gradient-to-br from-indigo-500 to-fuchsia-600 rounded-[2rem] p-8 shadow-xl text-white relative overflow-hidden">
                   <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-bl-[100px] pointer-events-none" />
                   <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-100 mb-2">
@@ -552,7 +552,7 @@ export default function Reports() {
                   </h3>
                 </div>
                 <div className="overflow-x-auto">
-                  <table className="w-full">
+                  <table className="w-full min-w-[800px]">
                     <thead>
                       <tr className="bg-slate-50 text-[9px] font-black uppercase tracking-[0.2em] text-slate-500">
                         <th className="py-4 px-6 text-left border-b border-slate-100">
@@ -609,7 +609,7 @@ export default function Reports() {
           )}
 
           {reportType === "balanceSheet" && data.balanceSheet && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-1 md:grid-cols-2 gap-6">
               {/* Assets & Liabilities */}
               <div className="space-y-6">
                 <div className="bg-white border border-slate-200/60 rounded-[2rem] overflow-hidden shadow-sm">

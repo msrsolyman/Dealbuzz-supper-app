@@ -335,7 +335,7 @@ export default function Invoices() {
       </div>
 
       <div className="flex-1 overflow-auto custom-scrollbar">
-        <table className="w-full text-sm text-left border-collapse">
+        <table className="w-full min-w-[800px] text-sm text-left border-collapse">
           <thead className="bg-slate-50/80 backdrop-blur-sm text-slate-400 uppercase text-[10px] tracking-[0.1em] border-b border-slate-100 sticky top-0 z-10">
             <tr>
               <th className="px-6 py-4 font-bold">{t("invoice_number")}</th>
@@ -511,7 +511,7 @@ export default function Invoices() {
                 className="flex-1 flex flex-col overflow-hidden"
               >
                 <div className="flex-1 overflow-y-auto custom-scrollbar p-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                  <div className="grid grid-cols-1 md:grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                     {/* Customer Selection */}
                     <div className="space-y-3">
                       <div className="flex items-center gap-2 mb-1">
@@ -634,7 +634,7 @@ export default function Invoices() {
                         </h4>
                       </div>
 
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                           <label className="block text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1.5 ml-1">
                             Invoice Number
@@ -1019,7 +1019,7 @@ export default function Invoices() {
                   </div>
 
                   {/* Client Info Grid */}
-                  <div className="grid grid-cols-2 gap-16 mb-16">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-16 mb-16">
                     <div>
                       <h4 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">
                         Bill To
@@ -1071,7 +1071,7 @@ export default function Invoices() {
 
                   {/* Table */}
                   <div className="mb-16">
-                    <table className="w-full">
+                    <table className="w-full min-w-[800px]">
                       <thead>
                         <tr className="border-b-2 border-slate-900 text-[10px] font-black text-slate-900 uppercase tracking-[0.2em]">
                           <th className="py-4 text-left px-4">Description</th>
