@@ -65,6 +65,95 @@ router.get('/auth/me', authenticate, getMe);
 router.put('/auth/me', authenticate, auditLog('User'), updateMe);
 router.put('/auth/password', authenticate, auditLog('User'), updatePassword);
 
+// Add Google OAuth
+const getRedirectUri = (req: any) => {
+  const proto = req.headers['x-forwarded-proto'] || req.protocol;
+  const host = req.headers['x-forwarded-host'] || req.get('host');
+  return `${proto}://${host}/api/auth/google/callback`;
+};
+
+router.get('/auth/google/url', (req: any, res: any) => {
+  const redirectUri = getRedirectUri(req);
+  const params = new URLSearchParams({
+    client_id: process.env.GOOGLE_CLIENT_ID || '',
+    redirect_uri: redirectUri,
+    response_type: 'code',
+    scope: 'email profile',
+  });
+  const url = `https://accounts.google.com/o/oauth2/v2/auth?${params}`;
+  res.json({ url });
+});
+
+router.get('/auth/google/callback', async (req: any, res: any) => {
+  try {
+    const { code } = req.query;
+    const redirectUri = getRedirectUri(req);
+    
+    if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
+      return res.send('Google OAuth not configured properly.');
+    }
+
+    const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        code,
+        client_id: process.env.GOOGLE_CLIENT_ID!,
+        client_secret: process.env.GOOGLE_CLIENT_SECRET!,
+        redirect_uri: redirectUri,
+        grant_type: 'authorization_code'
+      }).toString() // Use .toString()
+    });
+    
+    const tokenData = await tokenRes.json();
+    if (tokenData.error) {
+      return res.send(`<script>alert("OAuth Error: ${tokenData.error}"); window.close();</script>`);
+    }
+    
+    const userRes = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
+      headers: { Authorization: `Bearer ${tokenData.access_token}` }
+    });
+    const userData = await userRes.json();
+    
+    let user = await (User as any).findOne({ email: userData.email });
+    if (!user) {
+       const primaryTenant = await Tenant.findOne();
+       user = await (User as any).create({
+         tenantId: primaryTenant?._id,
+         name: userData.name,
+         email: userData.email,
+         password: Math.random().toString(36).slice(-8),
+         role: 'customer',
+         approvalStatus: 'approved'
+       });
+    }
+    
+    const jwt = await import('jsonwebtoken');
+    const token = jwt.default.sign(
+      { id: user._id, tenantId: user.tenantId, role: user.role }, 
+      process.env.JWT_SECRET || 'supersecret'
+    );
+    
+    res.send(`
+      <html>
+        <body>
+          <script>
+            if (window.opener) {
+              window.opener.postMessage({ type: 'OAUTH_AUTH_SUCCESS', token: '${token}', user: ${JSON.stringify(user)} }, '*');
+              window.close();
+            } else {
+              window.location.href = '/';
+            }
+          </script>
+          <p>Authentication successful. This window should close automatically.</p>
+        </body>
+      </html>
+    `);
+  } catch (err: any) {
+    res.send('Server Error: ' + err.message);
+  }
+});
+
 import { GoogleGenAI } from '@google/genai';
 
 router.post('/ai/generate-description', async (req: any, res: any) => {
