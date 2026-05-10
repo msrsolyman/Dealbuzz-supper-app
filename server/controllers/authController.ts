@@ -57,7 +57,8 @@ export const registerUser = async (req: Request, res: Response) => {
       name,
       email,
       password, // Pre-save hook hashes
-      role
+      role,
+      approvalStatus: role === 'customer' ? 'approved' : 'pending'
     });
 
     res.status(201).json({ message: 'Registration successful' });
