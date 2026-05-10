@@ -64,7 +64,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       if (token) {
         // Send logout request to backend
-        const API_URL = (import.meta as any).env.VITE_API_URL || "/api";
+        const API_URL = import.meta.env.VITE_API_URL || "/api";
         await fetch(`${API_URL}/auth/logout`, {
           method: 'POST',
           headers: { 'Authorization': `Bearer ${token}` }

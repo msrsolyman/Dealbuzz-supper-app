@@ -12,6 +12,20 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <title>Dealbuzz | Omni-channel ERP</title>
+    <script>
+      window.addEventListener('error', function(e) {
+        var root = document.getElementById('root');
+        if (root && root.innerHTML === '') {
+          root.innerHTML = '<div style="padding: 20px; color: red; font-family: monospace;"><h3>Startup Error</h3><p>' + e.message + '</p><pre>' + (e.error ? e.error.stack : '') + '</pre></div>';
+        }
+      });
+      window.addEventListener('unhandledrejection', function(e) {
+        var root = document.getElementById('root');
+        if (root && root.innerHTML === '') {
+          root.innerHTML = '<div style="padding: 20px; color: red; font-family: monospace;"><h3>Unhandled Promise Rejection</h3><p>' + (e.reason ? e.reason.message || e.reason : 'Unknown') + '</p></div>';
+        }
+      });
+    </script>
   </head>
   <body>
     <div id="root"></div>

@@ -5,10 +5,15 @@ import App from "./App.tsx";
 import "./index.css";
 
 // Unregister any leftover service workers from PWA feature to fix white screen
+let shouldReload = false;
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.getRegistrations().then((registrations) => {
     for (let registration of registrations) {
       registration.unregister();
+      shouldReload = true;
+    }
+    if (shouldReload) {
+      window.location.reload();
     }
   }).catch(err => console.log('Service Worker unregistration failed: ', err));
 }
