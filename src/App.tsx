@@ -49,7 +49,6 @@ const NotFound = React.lazy(() => import("./pages/NotFound"));
 import { toast } from 'sonner';
 
 import { NotificationProvider } from './context/NotificationContext';
-import { ThemeProvider } from './context/ThemeContext';
 
 function LoadingSkeleton() {
   return (
@@ -81,7 +80,6 @@ export default function App() {
 
   return (
     <HelmetProvider>
-      <ThemeProvider defaultTheme="system" storageKey="dealbuzz-theme">
       <AuthProvider>
         <NotificationProvider>
           <SettingsProvider>
@@ -140,8 +138,7 @@ export default function App() {
         <Toaster position="top-right" richColors />
       </SettingsProvider>
         </NotificationProvider>
-      </AuthProvider>
-      </ThemeProvider>
+    </AuthProvider>
     </HelmetProvider>
   );
 }

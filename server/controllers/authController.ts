@@ -127,8 +127,8 @@ export const login = async (req: Request, res: Response) => {
 
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
-      secure: true,
-      sameSite: 'none',
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
       maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
     });
 
@@ -151,17 +151,13 @@ export const login = async (req: Request, res: Response) => {
 
 export const refreshToken = async (req: Request, res: Response) => {
   const token = req.cookies.refreshToken;
-  if (!token) {
-    console.error('[Refresh Token] No refreshToken cookie found in request.');
-    return res.status(401).json({ error: 'Refresh token required' });
-  }
+  if (!token) return res.status(401).json({ error: 'Refresh token required' });
 
   try {
     const decoded: any = jwt.verify(token, process.env.JWT_REFRESH_SECRET || 'fallback_refresh_secret');
     const user = await ((User as any).findById(decoded.id) as any).select('+refreshTokens');
     
-    if (!user || (!user.refreshTokens?.includes(token) && user.refreshTokens?.length)) {
-      console.error(`[Refresh Token] Token not in DB array for user ${decoded.id}`);
+    if (!user || !user.refreshTokens?.includes(token)) {
       return res.status(403).json({ error: 'Invalid refresh token' });
     }
 
@@ -172,8 +168,7 @@ export const refreshToken = async (req: Request, res: Response) => {
     );
 
     res.json({ token: newAccessToken });
-  } catch (err: any) {
-    console.error(`[Refresh Token] Verification failed:`, err.message);
+  } catch (err) {
     res.status(403).json({ error: 'Invalid or expired refresh token' });
   }
 };

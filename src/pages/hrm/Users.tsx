@@ -7,7 +7,7 @@ import {
   Users as UsersIcon,
   Edit,
   Shield,
-  Activity as ActivityIcon,
+  Activity,
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { toast } from "sonner";
@@ -341,7 +341,7 @@ export default function Users() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 flex items-center gap-1.5">
-                      <ActivityIcon className="w-3 h-3 text-emerald-500" /> Account
+                      <Activity className="w-3 h-3 text-emerald-500" /> Account
                       Status
                     </label>
                     <select

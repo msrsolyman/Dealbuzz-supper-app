@@ -3,7 +3,6 @@ import express from 'express';
 import { createServer as createHttpServer } from 'http';
 import { createServer as createViteServer } from 'vite';
 import path from 'path';
-import fs from 'fs';
 import cors from 'cors';
 import compression from 'compression';
 import cookieParser from 'cookie-parser';
@@ -16,8 +15,7 @@ import { initSocket } from './server/services/socketService.ts';
 
 async function startServer() {
   const app = express();
-  // Support both AI Studio (requires 3000) and Render/Heroku (requires process.env.PORT)
-  const PORT = process.env.APPLET_ID ? 3000 : (Number(process.env.PORT) || 3000);
+  const PORT = 3000;
   const httpServer = createHttpServer(app);
 
   // Middlewares
@@ -126,17 +124,6 @@ Sitemap: https://${req.get('host')}/sitemap.xml`);
     }
   });
 
-  // Health check endpoint
-  app.get('/api/health', (req, res) => {
-    res.json({
-      status: 'ok',
-      uptime: process.uptime(),
-      timestamp: new Date().toISOString(),
-      env: process.env.NODE_ENV,
-      port: PORT
-    });
-  });
-
   // API Routes
   app.use('/api', apiRoutes);
 
@@ -159,16 +146,12 @@ Sitemap: https://${req.get('host')}/sitemap.xml`);
     app.use(vite.middlewares);
   } else {
     const distPath = path.join(process.cwd(), 'dist');
+    const fs = await import('fs');
     app.use(express.static(distPath, { index: false }));
     
     // For Express v4, use '*'
     app.get('*', (req, res) => {
-      const indexPath = path.join(distPath, 'index.html');
-      if (!fs.existsSync(indexPath)) {
-        return res.status(404).send('Build files not found. Please run npm run build.');
-      }
-      
-      let indexHtml = fs.readFileSync(indexPath, 'utf-8');
+      let indexHtml = fs.readFileSync(path.join(distPath, 'index.html'), 'utf-8');
       
       const title = 'Dealbuzz | Premium Multivendor Ecosystem';
       const description = 'Discover the ultimate B2B/B2C storefront for exclusive products & services.';

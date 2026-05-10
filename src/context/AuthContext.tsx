@@ -36,22 +36,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const storedToken = localStorage.getItem("token");
     const storedUser = localStorage.getItem("user");
 
-    if (storedToken && storedUser && storedUser !== "undefined" && storedUser !== "null") {
-      try {
-        const parsedUser = JSON.parse(storedUser);
-        setToken(storedToken);
-        setUser(parsedUser);
-      } catch(e) {
-        setToken(null);
-        setUser(null);
-        localStorage.removeItem("user");
-        localStorage.removeItem("token");
-      }
-    } else {
-      setToken(null);
-      setUser(null);
-      localStorage.removeItem("user");
-      localStorage.removeItem("token");
+    if (storedToken && storedUser) {
+      setToken(storedToken);
+      setUser(JSON.parse(storedUser));
     }
     setLoading(false);
 
@@ -77,7 +64,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       if (token) {
         // Send logout request to backend
-        const API_URL = import.meta.env.VITE_API_URL || "/api";
+        const API_URL = (import.meta as any).env.VITE_API_URL || "/api";
         await fetch(`${API_URL}/auth/logout`, {
           method: 'POST',
           headers: { 'Authorization': `Bearer ${token}` }

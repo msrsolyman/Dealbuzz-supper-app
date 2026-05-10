@@ -6,7 +6,6 @@ import { Toaster } from "sonner";
 import { Menu } from "lucide-react";
 import SellerAIAssistant from "./SellerAIAssistant";
 import NotificationDropdown from "./NotificationDropdown";
-import { ThemeToggle } from "./ThemeToggle";
 
 export default function Layout() {
   const { user, loading } = useAuth();
@@ -61,8 +60,7 @@ export default function Layout() {
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-2 sm:gap-4">
-            <ThemeToggle />
+          <div className="flex items-center gap-4">
             <NotificationDropdown />
             <div className="hidden sm:flex flex-col items-end">
               <span className="text-sm font-medium text-slate-700">

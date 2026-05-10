@@ -1,4 +1,4 @@
-const API_URL = import.meta.env.VITE_API_URL || "/api";
+const API_URL = (import.meta as any).env.VITE_API_URL || "/api";
 
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -34,24 +34,16 @@ export const fetchWithAuth = async (
       if (!isRefreshing) {
         isRefreshing = true;
         try {
-          const refreshRes = await fetch(`${API_URL}/auth/refresh`, { 
-            method: 'POST',
-            credentials: 'include' // Crucial to send refreshToken cookie
-          });
-          
-          if (!refreshRes.ok) {
-            const errBody = await refreshRes.text();
-            console.error(`[Refresh] Failed with status ${refreshRes.status}: ${errBody}`);
-            throw new Error('Refresh failed');
-          }
+          const refreshRes = await fetch(`${API_URL}/auth/refresh`, { method: 'POST' });
+          if (!refreshRes.ok) throw new Error('Refresh failed');
           const refreshData = await refreshRes.json();
           localStorage.setItem('token', refreshData.token);
           isRefreshing = false;
           onRefreshed(refreshData.token);
           
           // Retry original request 
-          const newHeaders = { ...defaultOptions.headers, Authorization: `Bearer ${refreshData.token}` };
-          response = await fetch(`${API_URL}${endpoint}`, { ...defaultOptions, headers: newHeaders });
+          defaultOptions.headers = { ...defaultOptions.headers, Authorization: `Bearer ${refreshData.token}` };
+          response = await fetch(`${API_URL}${endpoint}`, defaultOptions);
         } catch (refreshErr) {
           isRefreshing = false;
           localStorage.removeItem("token");
