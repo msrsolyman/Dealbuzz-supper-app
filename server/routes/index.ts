@@ -138,14 +138,26 @@ router.get('/auth/google/callback', async (req: any, res: any) => {
       <html>
         <body>
           <script>
-            if (window.opener) {
-              window.opener.postMessage({ type: 'OAUTH_AUTH_SUCCESS', token: '${token}', user: ${JSON.stringify(user)} }, '*');
+            try {
+              // Always write to localStorage in case opener postMessage fails
+              localStorage.setItem('token', '${token}');
+              localStorage.setItem('user', JSON.stringify(${JSON.stringify(user)}));
+              
+              if (window.opener) {
+                window.opener.postMessage({ type: 'OAUTH_AUTH_SUCCESS', token: '${token}', user: ${JSON.stringify(user)} }, '*');
+              }
+              
               window.close();
-            } else {
-              window.location.href = '/';
+              
+              // Fallback if window doesn't close
+              setTimeout(() => { window.location.href = '/'; }, 2000);
+            } catch (err) {
+               document.write("Error: " + err.message);
+               // Still try to redirect as fallback
+               setTimeout(() => { window.location.href = '/'; }, 2000);
             }
           </script>
-          <p>Authentication successful. This window should close automatically.</p>
+          <p>Authentication successful. You can close this window now.</p>
         </body>
       </html>
     `);

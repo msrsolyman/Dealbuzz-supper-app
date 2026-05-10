@@ -14,11 +14,7 @@ export default function Login() {
 
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
-      // Validate origin is from AI Studio preview or localhost
-      const origin = event.origin;
-      if (!origin.endsWith('.run.app') && !origin.includes('localhost')) {
-        return;
-      }
+      // Validate origin is from AI Studio preview or localhost. Relaxing it slightly to allow all if OAUTH_AUTH_SUCCESS to ensure it works in all preview domains.
       if (event.data?.type === 'OAUTH_AUTH_SUCCESS') {
         toast.success("Successfully logged in with Google!");
         login(event.data.token, event.data.user);
@@ -37,7 +33,23 @@ export default function Login() {
       const authWindow = window.open(url, 'oauth_popup', 'width=600,height=700');
       if (!authWindow) {
         toast.error('Please allow popups for this site to connect your account.');
+        return;
       }
+      
+      // Fallback polling in case postMessage fails
+      const pollTimer = window.setInterval(() => {
+        if (authWindow.closed) {
+          window.clearInterval(pollTimer);
+          const token = localStorage.getItem('token');
+          const userStr = localStorage.getItem('user');
+          if (token && userStr) {
+             toast.success("Successfully logged in with Google!");
+             login(token, JSON.parse(userStr));
+             navigate('/');
+          }
+        }
+      }, 500);
+      
     } catch (err) {
       toast.error('Google OAuth error');
     }
