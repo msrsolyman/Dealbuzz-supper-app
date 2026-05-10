@@ -37,14 +37,10 @@ import Task from '../models/Task.ts';
 import { cacheMiddleware, clearCache } from '../middleware/cache.ts';
 
 import { getDashboardAnalytics } from '../controllers/analyticsController.ts';
-import { getNotifications, markAsRead } from '../controllers/notificationController.ts';
-import { sendOrderAlert, sendStockAlert, sendPaymentAlert } from '../services/notificationService.ts';
 
 const router = express.Router();
 
 router.get('/analytics/dashboard', authenticate, getDashboardAnalytics);
-router.get('/notifications', authenticate, getNotifications);
-router.put('/notifications/:id/read', authenticate, markAsRead);
 
 // --- Custom auth-related routes ---
 // Move sellers under authenticate
@@ -515,10 +511,6 @@ invoiceRouter.post('/', async (req: any, res: any) => {
             }
           }
           await product.save();
-
-          if (product.stockCount < 10) {
-            await sendStockAlert(req.tenantId.toString(), product.name, product.stockCount);
-          }
           
           // Add inventory transaction record
           await (InventoryTransaction as any).create({
@@ -536,22 +528,12 @@ invoiceRouter.post('/', async (req: any, res: any) => {
       }
     }
     
-    // Order alert
-    await sendOrderAlert(req.tenantId.toString(), doc._id.toString(), doc.totalAmount || doc.subtotal, sellerId?.toString() || req.user._id.toString());
-
     res.status(201).json(doc);
   } catch (e: any) { res.status(400).json({ error: e.message }); }
 });
 invoiceRouter.put('/:id', async (req: any, res: any) => {
   try {
-    const oldDoc = await (Invoice as any).findOne({ _id: req.params.id, tenantId: req.tenantId });
-    const doc = await (Invoice as any).findOneAndUpdate({ _id: req.params.id, tenantId: req.tenantId }, req.body, { new: true }).populate('customerId');
-    
-    if (oldDoc && doc.status === 'PAID' && oldDoc.status !== 'PAID') {
-      const customerName = doc.customerId?.name || 'Customer';
-      await sendPaymentAlert(req.tenantId.toString(), customerName, doc.totalAmount || doc.subtotal);
-    }
-    
+    const doc = await (Invoice as any).findOneAndUpdate({ _id: req.params.id, tenantId: req.tenantId }, req.body, { new: true });
     res.json(doc);
   } catch (e: any) { res.status(400).json({ error: e.message }); }
 });
@@ -603,10 +585,6 @@ inventoryRouter.post('/', async (req: any, res: any) => {
       }
 
       await product.save();
-
-      if (type === 'OUT' && product.stockCount < 10) {
-        await sendStockAlert(req.tenantId.toString(), product.name, product.stockCount);
-      }
     }
 
     res.status(201).json(doc);

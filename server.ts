@@ -1,6 +1,5 @@
 import 'dotenv/config';
 import express from 'express';
-import { createServer as createHttpServer } from 'http';
 import { createServer as createViteServer } from 'vite';
 import path from 'path';
 import cors from 'cors';
@@ -11,12 +10,10 @@ import rateLimit from 'express-rate-limit';
 import { connectDB } from './server/utils/db.ts';
 import apiRoutes from './server/routes/index.ts';
 import Invoice from './server/models/Invoice.ts';
-import { initSocket } from './server/services/socketService.ts';
 
 async function startServer() {
   const app = express();
   const PORT = 3000;
-  const httpServer = createHttpServer(app);
 
   // Middlewares
   app.use(helmet({
@@ -180,9 +177,7 @@ Sitemap: https://${req.get('host')}/sitemap.xml`);
     });
   }
 
-  initSocket(httpServer);
-
-  httpServer.listen(PORT, '0.0.0.0', () => {
+  app.listen(PORT, '0.0.0.0', () => {
     console.log(`Server running on http://localhost:${PORT}`);
   });
 }

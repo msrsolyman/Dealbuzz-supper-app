@@ -27,14 +27,14 @@ export const fetchWithAuth = async (
   };
 
   try {
-    const defaultOptions: RequestInit = { credentials: 'include', ...options, headers };
+    const defaultOptions = { ...options, headers };
     let response = await fetch(`${API_URL}${endpoint}`, defaultOptions);
 
     if (response.status === 401 && endpoint !== '/auth/login' && endpoint !== '/auth/refresh') {
       if (!isRefreshing) {
         isRefreshing = true;
         try {
-          const refreshRes = await fetch(`${API_URL}/auth/refresh`, { method: 'POST', credentials: 'include' });
+          const refreshRes = await fetch(`${API_URL}/auth/refresh`, { method: 'POST' });
           if (!refreshRes.ok) throw new Error('Refresh failed');
           const refreshData = await refreshRes.json();
           localStorage.setItem('token', refreshData.token);
@@ -46,11 +46,6 @@ export const fetchWithAuth = async (
           response = await fetch(`${API_URL}${endpoint}`, defaultOptions);
         } catch (refreshErr) {
           isRefreshing = false;
-          
-          // Reject to avoid hanging other queued requests
-          refreshSubscribers.forEach(cb => cb(''));
-          refreshSubscribers = [];
-
           localStorage.removeItem("token");
           localStorage.removeItem("user");
           window.dispatchEvent(new Event("auth:unauthorized"));
@@ -60,9 +55,6 @@ export const fetchWithAuth = async (
       } else {
         // Wait for refresh to complete
         const newToken = await new Promise<string>(resolve => subscribeTokenRefresh(resolve));
-        if (!newToken) {
-          throw new Error('Session expired. Please log in again.');
-        }
         defaultOptions.headers = { ...defaultOptions.headers, Authorization: `Bearer ${newToken}` };
         response = await fetch(`${API_URL}${endpoint}`, defaultOptions);
       }

@@ -3,7 +3,7 @@ import React, { Suspense } from "react";
 import { AuthProvider } from "./context/AuthContext";
 import { SettingsProvider } from "./context/SettingsContext";
 import Layout from "./components/Layout";
-import { Toaster, toast } from "sonner";
+import { Toaster } from "sonner";
 import { Loader2 } from "lucide-react";
 
 // Lazy Loaded Pages
@@ -47,8 +47,6 @@ import { HelmetProvider } from "react-helmet-async";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 const NotFound = React.lazy(() => import("./pages/NotFound"));
 
-import { NotificationProvider } from './context/NotificationContext';
-
 function LoadingSkeleton() {
   return (
     <div className="flex h-screen w-full items-center justify-center bg-slate-50">
@@ -80,9 +78,8 @@ export default function App() {
   return (
     <HelmetProvider>
       <AuthProvider>
-        <NotificationProvider>
-          <SettingsProvider>
-            <BrowserRouter>
+        <SettingsProvider>
+          <BrowserRouter>
             <Suspense fallback={<LoadingSkeleton />}>
               <ErrorBoundary>
                 <Routes>
@@ -136,7 +133,6 @@ export default function App() {
         </BrowserRouter>
         <Toaster position="top-right" richColors />
       </SettingsProvider>
-        </NotificationProvider>
     </AuthProvider>
     </HelmetProvider>
   );

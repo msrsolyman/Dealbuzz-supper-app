@@ -5,7 +5,6 @@ import { useAuth } from "../context/AuthContext";
 import { Toaster } from "sonner";
 import { Menu } from "lucide-react";
 import SellerAIAssistant from "./SellerAIAssistant";
-import NotificationDropdown from "./NotificationDropdown";
 
 export default function Layout() {
   const { user, loading } = useAuth();
@@ -61,7 +60,6 @@ export default function Layout() {
             </div>
           </div>
           <div className="flex items-center gap-4">
-            <NotificationDropdown />
             <div className="hidden sm:flex flex-col items-end">
               <span className="text-sm font-medium text-slate-700">
                 {user?.name}

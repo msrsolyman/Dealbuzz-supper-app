@@ -52,6 +52,7 @@ export const authenticate = async (
     }
 
     const user = await (User as any).findById(decoded.id);
+    
     if (!user || user.status === "inactive" || user.status === "locked") {
       return res
         .status(401)
@@ -86,7 +87,8 @@ export const authenticate = async (
     return res
       .status(500)
       .json({
-        error: "Authentication service encountered an unexpected error.",
+        error:
+          "Database connection failed. Please check MONGODB_URI in settings, ensure you replaced <password> with your actual database password.",
         details: error.message,
       });
   }
