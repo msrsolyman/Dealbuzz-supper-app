@@ -44,7 +44,7 @@ export const authenticate = async (
     try {
       decoded = jwt.verify(
         token,
-        process.env.JWT_SECRET || "supers3cr3tdealbuzzkey99",
+        process.env.JWT_SECRET || "fallback_secret",
       ) as any;
     } catch (err) {
       // try fallback if token was signed before .env was created

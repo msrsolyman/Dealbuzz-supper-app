@@ -34,7 +34,11 @@ export const fetchWithAuth = async (
       if (!isRefreshing) {
         isRefreshing = true;
         try {
-          const refreshRes = await fetch(`${API_URL}/auth/refresh`, { method: 'POST' });
+          const refreshRes = await fetch(`${API_URL}/auth/refresh`, { 
+            method: 'POST',
+            credentials: 'include' // Crucial to send refreshToken cookie
+          });
+          
           if (!refreshRes.ok) throw new Error('Refresh failed');
           const refreshData = await refreshRes.json();
           localStorage.setItem('token', refreshData.token);
@@ -42,8 +46,8 @@ export const fetchWithAuth = async (
           onRefreshed(refreshData.token);
           
           // Retry original request 
-          defaultOptions.headers = { ...defaultOptions.headers, Authorization: `Bearer ${refreshData.token}` };
-          response = await fetch(`${API_URL}${endpoint}`, defaultOptions);
+          const newHeaders = { ...defaultOptions.headers, Authorization: `Bearer ${refreshData.token}` };
+          response = await fetch(`${API_URL}${endpoint}`, { ...defaultOptions, headers: newHeaders });
         } catch (refreshErr) {
           isRefreshing = false;
           localStorage.removeItem("token");

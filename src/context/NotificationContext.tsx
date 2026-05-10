@@ -28,20 +28,21 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
   const [socket, setSocket] = useState<Socket | null>(null);
 
   useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
     // Fetch initial notifications
     const fetchNotifications = async () => {
       try {
         const data = await fetchWithAuth('/notifications');
         setNotifications(data);
       } catch (err) {
+        // Soft fail for silent notification loading
         console.error('Failed to fetch notifications:', err);
       }
     };
 
     fetchNotifications();
-
-    const token = localStorage.getItem('token');
-    if (!token) return;
 
     // Connect to Socket.IO
     const newSocket = io(window.location.origin, {
