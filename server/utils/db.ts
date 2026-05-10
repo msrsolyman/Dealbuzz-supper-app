@@ -7,6 +7,10 @@ export const connectDB = async () => {
   let MONGODB_URI = process.env.MONGODB_URI;
   
   if (!MONGODB_URI || MONGODB_URI.includes('<password>')) {
+    if (process.env.NODE_ENV === 'production') {
+       console.error('❌ MONGODB_URI is missing in production! Server will likely fail to perform DB operations.');
+       return;
+    }
     console.warn('⚠️ Invalid or missing MONGODB_URI environment variable.');
     console.warn('⚠️ Starting a local in-memory MongoDB server for testing...');
     if (!mongoServer) {
@@ -20,14 +24,17 @@ export const connectDB = async () => {
 
   try {
     mongoose.set('bufferCommands', false);
-    mongoose.set('bufferTimeoutMS', 2000);
+    mongoose.set('bufferTimeoutMS', 5000);
     
+    console.log(`Connecting to MongoDB at ${MONGODB_URI.split('@').pop()}...`);
     await mongoose.connect(MONGODB_URI, {
-      serverSelectionTimeoutMS: 5000,
-      socketTimeoutMS: 10000
+      serverSelectionTimeoutMS: 10000,
+      socketTimeoutMS: 45000
     });
-    console.log('MongoDB connected');
+    console.log('MongoDB connected successfully');
   } catch (error) {
-    console.error('MongoDB connection error:', error);
+    console.error('CRITICAL: MongoDB connection error:', error);
+    // In production, we might want to continue even if DB fails if the app can handle it,
+    // but usually Express apps need DB. We'll log it clearly.
   }
 };
