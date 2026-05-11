@@ -1,5 +1,5 @@
 import NodeCache from 'node-cache';
-import { Request, Response, NextFunction } from 'express';
+import type { Request, Response, NextFunction } from 'express';
 
 // Standard 5 minutes cache
 const cache = new NodeCache({ stdTTL: 300, checkperiod: 320 });
