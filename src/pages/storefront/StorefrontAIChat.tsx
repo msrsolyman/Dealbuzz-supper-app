@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Bot, X, Send, Sparkles, User as UserIcon } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
+import { GoogleGenAI } from "@google/genai";
 
 interface Message {
   id: string;
@@ -47,32 +48,43 @@ export default function StorefrontAIChat({ catalog }: { catalog: any[] }) {
         )
         .join("\n");
 
-      const response = await fetch("/api/ai/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          messages,
-          userMessage,
-          catalogContext,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
+      const apiKey = process.env.GEMINI_API_KEY;
+      if (!apiKey) {
+        throw new Error("Gemini API Key is not configured. Please check your environment settings.");
       }
 
-      const data = await response.json();
-      if (data.error) throw new Error(data.error);
+      const ai = new GoogleGenAI({ apiKey });
+      
+      const systemInstruction = `You are a helpful and expert AI assistant for Dealbuzz, a premium storefront.
+Your goal is to understand the customer's problem or needs and recommend appropriate products or services from our catalog.
+Be concise, friendly, and persuasive. If we don't have something that completely solves their problem, suggest the closest alternative.
+
+Here is our current catalog:
+${catalogContext}`;
+
+      const chatContents = messages.map((m: any) => ({
+          role: m.role,
+          parts: [{ text: m.content }]
+      }));
+      chatContents.push({ role: 'user', parts: [{ text: userMessage }]});
+
+      const response = await ai.models.generateContent({
+        model: 'gemini-3-flash-preview',
+        contents: chatContents,
+        config: {
+          systemInstruction,
+        }
+      });
 
       setMessages((prev) => [
         ...prev,
         {
           id: Date.now().toString(),
           role: "model",
-          content: data.text || "Sorry, I couldn't find a good answer.",
+          content: response.text || "Sorry, I couldn't find a good answer.",
         },
       ]);
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
       setMessages((prev) => [
         ...prev,
@@ -80,7 +92,9 @@ export default function StorefrontAIChat({ catalog }: { catalog: any[] }) {
           id: Date.now().toString(),
           role: "model",
           content:
-            "Apologies, I encountered an issue while trying to help you. Please try again later.",
+            e.message?.includes("API Key") 
+              ? "Gemini API Key is missing. Please inform the administrator."
+              : "Apologies, I encountered an issue while trying to help you. Please try again later.",
         },
       ]);
     } finally {

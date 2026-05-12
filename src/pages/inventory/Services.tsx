@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useSettings } from "../../context/SettingsContext";
+import { GoogleGenAI } from "@google/genai";
 
 const TABS = [
   { id: "basic", label: "Basic Info", icon: FileText },
@@ -482,15 +483,34 @@ export default function Services() {
                           onClick={async () => {
                              try {
                                 toast.loading("Generating description...", { id: "ai-gen" });
-                                const res = await fetchWithAuth("/ai/generate-description", {
-                                   method: "POST",
-                                   body: JSON.stringify({ 
-                                      name: formData.name, 
-                                      category: formData.category, 
-                                      brand: formData.providerName,
-                                      features: formData.whatsIncluded 
-                                   })
+                                
+                                const apiKey = process.env.GEMINI_API_KEY;
+                                if (!apiKey) throw new Error("API Key missing");
+
+                                const ai = new GoogleGenAI({ apiKey });
+
+                                const prompt = `Generate a compelling e-commerce service description for:
+Name: ${formData.name}
+Category: ${formData.category}
+Provider: ${formData.providerName}
+What's Included: ${formData.whatsIncluded}
+
+Return a valid JSON object with the following fields:
+shortDescription: string (snappy intro)
+description: string (full comprehensive description)
+metaTitle: string (SEO title)
+metaDescription: string (SEO description)`;
+
+                                const result = await ai.models.generateContent({
+                                  model: "gemini-3-flash-preview",
+                                  contents: [{ role: 'user', parts: [{ text: prompt }] }],
+                                  config: {
+                                    responseMimeType: "application/json",
+                                  }
                                 });
+
+                                const res = JSON.parse(result.text || "{}");
+
                                 if(res.description) {
                                    setFormData(prev => ({
                                       ...prev,
@@ -501,8 +521,9 @@ export default function Services() {
                                    }));
                                    toast.success("Description generated!", { id: "ai-gen" });
                                 } else { throw new Error("Format error"); }
-                             } catch (e) {
-                                toast.error("Failed to generate", { id: "ai-gen" });
+                             } catch (e: any) {
+                                console.error(e);
+                                toast.error(e.message || "Failed to generate", { id: "ai-gen" });
                              }
                           }}
                           className="bg-fuchsia-50 hover:bg-fuchsia-100 text-fuchsia-600 px-2 py-0.5 rounded text-[10px] font-bold tracking-widest uppercase flex items-center gap-1 transition-colors border border-fuchsia-200"

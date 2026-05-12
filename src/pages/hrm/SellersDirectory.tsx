@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { fetchWithAuth } from "../../lib/api";
 import { Store, Star, Search, ShieldCheck, ArrowRight } from "lucide-react";
-import { useNavigate } from "react-router";
+import { useNavigate } from "react-router-dom";
 
 export default function SellersDirectory() {
   const [sellers, setSellers] = useState<any[]>([]);

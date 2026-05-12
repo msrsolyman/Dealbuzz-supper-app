@@ -1,4 +1,4 @@
-import { Link, useLocation } from "react-router";
+import { Link, useLocation } from "react-router-dom";
 import {
   LayoutDashboard,
   Package,
@@ -9,6 +9,7 @@ import {
   ArrowLeftRight,
   Archive,
   Shield,
+  Target,
   X,
   Store,
   ShoppingCart,
@@ -119,6 +120,8 @@ export default function Sidebar({
       });
     if (canAccess("invoices"))
       navItems.push({ name: t("invoices"), path: "/invoices", icon: FileText });
+    if (canAccess("sales_targets"))
+      navItems.push({ name: "Sales Targets", path: "/sales-targets", icon: Target });
     if (canAccess("delivery"))
       navItems.push({
         name: "Delivery",

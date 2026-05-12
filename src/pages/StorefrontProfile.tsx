@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { fetchWithAuth } from "../lib/api";
-import { useNavigate } from "react-router";
+import { useNavigate } from "react-router-dom";
 
 export default function StorefrontProfile() {
   const { user, setUser } = useAuth();

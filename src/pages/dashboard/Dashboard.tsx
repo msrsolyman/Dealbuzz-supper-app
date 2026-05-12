@@ -36,7 +36,7 @@ import {
   Target,
 } from "lucide-react";
 import { format } from "date-fns";
-import { Link } from "react-router";
+import { Link } from "react-router-dom";
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -62,7 +62,10 @@ export default function Dashboard() {
     quickAccess: true,
     revenueChart: true,
     recentActivities: true,
+    salesTargets: true,
   });
+
+  const [salesTargets, setSalesTargets] = useState<any[]>([]);
 
   useEffect(() => {
     // Load widget preferences
@@ -83,10 +86,11 @@ export default function Dashboard() {
             services: servicesRes.data || [],
           });
         } else {
-          const [products, invoices, logs] = await Promise.all([
+          const [products, invoices, logs, targets] = await Promise.all([
             fetchWithAuth("/products"),
             fetchWithAuth("/invoices?limit=1"),
             fetchWithAuth("/audit-logs?limit=5"),
+            fetchWithAuth("/sales-targets"),
           ]);
 
           const rawProducts = products.data || [];
@@ -101,6 +105,7 @@ export default function Dashboard() {
             lowStockItems: lowStockItems,
             logs: logs.data || [],
           });
+          setSalesTargets(targets.data || []);
         }
       } catch (e: any) {
         console.error("Failed to load data", e);
@@ -360,6 +365,7 @@ export default function Dashboard() {
                   quickAccess: "Quick Access",
                   revenueChart: "Revenue Overview",
                   recentActivities: "Recent Activities",
+                  salesTargets: "Sales Targets",
                 }).map(([key, label]) => (
                   <label
                     key={key}
@@ -534,6 +540,53 @@ export default function Dashboard() {
                 <span className="text-sm text-slate-500 font-medium">Add service offerings</span>
               </div>
             </Link>
+          </div>
+        </div>
+      )}
+
+      {widgets.salesTargets && salesTargets.length > 0 && (
+        <div className="bg-white/50 backdrop-blur-md border border-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-[2.5rem] p-8 md:p-10">
+          <div className="flex items-center gap-4 mb-8">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-indigo-500 to-indigo-600 shadow-lg shadow-indigo-500/30 flex items-center justify-center">
+              <Target className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h3 className="font-display font-black text-slate-900 text-xl tracking-tight">Sales Goals Progress</h3>
+              <p className="text-sm text-slate-500 font-medium mt-1">Current team member target status</p>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {salesTargets.slice(0, 3).map((target) => {
+              const progress = Math.min(100, Math.round((target.achievedAmount / target.targetAmount) * 100));
+              return (
+                <div key={target._id} className="p-6 rounded-[2rem] border border-slate-100 bg-white shadow-sm hover:shadow-md transition-shadow">
+                  <div className="flex justify-between items-start mb-4">
+                    <div>
+                      <h4 className="font-bold text-slate-900 line-clamp-1">{target.userId?.name || 'Team Member'}</h4>
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                        {new Date(0, target.month).toLocaleString('default', { month: 'long' })} {target.year}
+                      </p>
+                    </div>
+                    <div className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider ${progress >= 100 ? 'bg-emerald-50 text-emerald-600' : 'bg-indigo-50 text-indigo-600'}`}>
+                      {progress}%
+                    </div>
+                  </div>
+                  <div className="space-y-3">
+                    <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+                      <motion.div 
+                        initial={{ width: 0 }}
+                        animate={{ width: `${progress}%` }}
+                        className={`h-full rounded-full ${progress >= 100 ? 'bg-emerald-500' : 'bg-indigo-500'}`}
+                      />
+                    </div>
+                    <div className="flex justify-between items-center text-xs">
+                      <span className="font-bold text-slate-500">{formatAmount(target.achievedAmount)} achieved</span>
+                      <span className="font-black text-slate-400 uppercase tracking-widest">{formatAmount(target.targetAmount)}</span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       )}

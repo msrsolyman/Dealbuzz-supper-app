@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import React, { Suspense } from "react";
 import { AuthProvider } from "./context/AuthContext";
 import { SettingsProvider } from "./context/SettingsContext";
@@ -13,6 +13,7 @@ const AdminLogin = React.lazy(() => import("./pages/auth/AdminLogin"));
 const SellerRegister = React.lazy(() => import("./pages/auth/SellerRegister"));
 const Dashboard = React.lazy(() => import("./pages/dashboard/Dashboard"));
 const Products = React.lazy(() => import("./pages/inventory/Products"));
+const SalesTargets = React.lazy(() => import("./pages/sales/SalesTargets"));
 const Invoices = React.lazy(() => import("./pages/sales/Invoices"));
 const AuditLogs = React.lazy(() => import("./pages/admin/AuditLogs"));
 const Services = React.lazy(() => import("./pages/inventory/Services"));
@@ -96,6 +97,7 @@ export default function App() {
                 <Route path="/services" element={<Services />} />
                 <Route path="/inventory" element={<Inventory />} />
                 <Route path="/invoices" element={<Invoices />} />
+                <Route path="/sales-targets" element={<SalesTargets />} />
                 <Route path="/reports" element={<Reports />} />
                 <Route path="/settings" element={<Settings />} />
                 <Route path="/accounts" element={<Accounts />} />

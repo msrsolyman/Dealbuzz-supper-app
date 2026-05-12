@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { Bot, X, Send, Sparkles, User as UserIcon } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useAuth } from "../context/AuthContext";
+import { GoogleGenAI } from "@google/genai";
 
 interface Message {
   id: string;
@@ -42,34 +43,40 @@ export default function SellerAIAssistant() {
     setIsTyping(true);
 
     try {
-      const response = await fetch("/api/ai/seller-chat", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify({
-          messages,
-          userMessage,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
+      const apiKey = process.env.GEMINI_API_KEY;
+      if (!apiKey) {
+        throw new Error("Gemini API Key is not configured. Please check your environment settings.");
       }
 
-      const data = await response.json();
-      if (data.error) throw new Error(data.error);
+      const ai = new GoogleGenAI({ apiKey });
+      
+      const systemInstruction = `You are an expert AI Business Advisor for Dealbuzz merchants.
+Your goal is to guide sellers and resellers on how to improve their business, increase sales, write better product descriptions, handle inventory, or resolve customer issues.
+Provide professional, accurate, and actionable advice tailored to e-commerce and retail success. Keep answers concise but highly valuable.`;
+
+      const chatContents = messages.map((m: any) => ({
+          role: m.role,
+          parts: [{ text: m.content }]
+      }));
+      chatContents.push({ role: 'user', parts: [{ text: userMessage }]});
+
+      const response = await ai.models.generateContent({
+        model: 'gemini-3-flash-preview',
+        contents: chatContents,
+        config: {
+          systemInstruction,
+        }
+      });
 
       setMessages((prev) => [
         ...prev,
         {
           id: Date.now().toString(),
           role: "model",
-          content: data.text || "Sorry, I couldn't find a good answer.",
+          content: response.text || "Sorry, I couldn't generate advice right now.",
         },
       ]);
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
       setMessages((prev) => [
         ...prev,
@@ -77,7 +84,9 @@ export default function SellerAIAssistant() {
           id: Date.now().toString(),
           role: "model",
           content:
-            "Apologies, I encountered an issue while trying to help you. Please try again later.",
+            e.message?.includes("API Key") 
+              ? "Gemini API Key is missing. Please inform the administrator."
+              : "Apologies, I encountered an issue while generating advice.",
         },
       ]);
     } finally {

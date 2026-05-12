@@ -20,6 +20,7 @@ import {
 import { useTranslation } from "react-i18next";
 import { useSettings } from "../context/SettingsContext";
 import { motion, AnimatePresence } from "motion/react";
+import { GoogleGenAI } from "@google/genai";
 
 export default function Products() {
   const { t } = useTranslation();
@@ -81,22 +82,34 @@ export default function Products() {
     setIsGenerating(true);
     const loadingToast = toast.loading("Generating AI marketing copy...");
     try {
-      const payload = {
-        name: formData.name,
-        category: formData.category,
-        brand: formData.brand,
-        features: formData.features,
-      };
+      const apiKey = process.env.GEMINI_API_KEY;
+      if (!apiKey) throw new Error("API Key missing");
 
-      const res = await fetchWithAuth("/ai/generate-description", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
+      const ai = new GoogleGenAI({ apiKey });
+
+      const prompt = `Generate a compelling e-commerce product description for:
+Name: ${formData.name}
+Category: ${formData.category}
+Brand: ${formData.brand}
+Features: ${formData.features}
+
+Return a valid JSON object with the following fields:
+shortDescription: string (snappy intro)
+description: string (full comprehensive description)
+benefits: string[] (array of benefits)
+metaTitle: string (SEO title)
+metaDescription: string (SEO description)`;
+
+      const result = await ai.models.generateContent({
+        model: "gemini-3-flash-preview",
+        contents: [{ role: 'user', parts: [{ text: prompt }] }],
+        config: {
+          responseMimeType: "application/json",
+        }
       });
 
-      const data = res;
+      const data = JSON.parse(result.text || "{}");
+
       setFormData((prev) => ({
         ...prev,
         shortDescription: data.shortDescription || prev.shortDescription,
@@ -111,6 +124,7 @@ export default function Products() {
         id: loadingToast,
       });
     } catch (e: any) {
+      console.error(e);
       toast.error(e.message || "AI Generation failed", { id: loadingToast });
     } finally {
       setIsGenerating(false);

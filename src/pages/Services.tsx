@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useSettings } from "../context/SettingsContext";
+import { GoogleGenAI } from "@google/genai";
 
 const TABS = [
   { id: "basic", label: "Basic Info", icon: FileText },
@@ -84,20 +85,33 @@ export default function Services() {
     setIsGenerating(true);
     const loadingToast = toast.loading("Generating AI marketing copy...");
     try {
-      const payload = {
-        name: formData.name,
-        category: formData.category,
-        brand: formData.providerName,
-        features: formData.whatsIncluded,
-      };
+      const apiKey = process.env.GEMINI_API_KEY;
+      if (!apiKey) throw new Error("API Key missing");
 
-      const res = await fetchWithAuth("/ai/generate-description", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
+      const ai = new GoogleGenAI({ apiKey });
+
+      const prompt = `Generate a compelling e-commerce service description for:
+Name: ${formData.name}
+Category: ${formData.category}
+Provider: ${formData.providerName}
+Features: ${formData.whatsIncluded}
+
+Return a valid JSON object with the following fields:
+shortDescription: string (snappy intro)
+description: string (full comprehensive description)
+benefits: string[] (array of benefits/included items)
+metaTitle: string (SEO title)
+metaDescription: string (SEO description)`;
+
+      const result = await ai.models.generateContent({
+        model: "gemini-3-flash-preview",
+        contents: [{ role: 'user', parts: [{ text: prompt }] }],
+        config: {
+          responseMimeType: "application/json",
+        }
       });
+
+      const res = JSON.parse(result.text || "{}");
 
       setFormData((prev) => ({
         ...prev,
@@ -105,7 +119,7 @@ export default function Services() {
         description: res.description || prev.description,
         whatsIncluded: Array.isArray(res.benefits)
           ? res.benefits.join("\n")
-          : res.benefits || prev.whatsIncluded, // using benefits as whatsIncluded
+          : res.benefits || prev.whatsIncluded,
         metaTitle: res.metaTitle || prev.metaTitle,
         metaDescription: res.metaDescription || prev.metaDescription,
       }));
@@ -113,6 +127,7 @@ export default function Services() {
         id: loadingToast,
       });
     } catch (e: any) {
+      console.error(e);
       toast.error(e.message || "AI Generation failed", { id: loadingToast });
     } finally {
       setIsGenerating(false);

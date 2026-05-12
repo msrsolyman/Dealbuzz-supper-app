@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { fetchWithAuth } from "../../lib/api";
-import { useSearchParams, Link } from "react-router";
+import { useSearchParams, Link } from "react-router-dom";
 import { useSettings } from "../../context/SettingsContext";
 import { useAuth } from "../../context/AuthContext";
 import { toast } from "sonner";

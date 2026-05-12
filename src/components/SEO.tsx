@@ -24,7 +24,7 @@ export default function SEO({
   twitterHandle = '@dealbuzz',
   schemaMarkup,
 }: SEOProps) {
-  const absoluteUrl = canonicalUrl || typeof window !== 'undefined' ? window.location.href : '';
+  const absoluteUrl = canonicalUrl || (typeof window !== 'undefined' ? window.location.href : '');
 
   return (
     <Helmet>

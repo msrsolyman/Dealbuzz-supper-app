@@ -1,6 +1,7 @@
 import express from 'express';
 import { register, registerUser, login, getMe, updateMe, updatePassword } from '../controllers/authController.ts';
 import { getProducts, createProduct, updateProduct, deleteProduct } from '../controllers/productController.ts';
+import { getSalesTargets, createSalesTarget, updateSalesTarget, deleteSalesTarget } from '../controllers/salesTargetController.ts';
 import { authenticate } from '../middlewares/authMiddleware.ts';
 import { authorize } from '../middlewares/roleMiddleware.ts';
 import { auditLog } from '../middlewares/auditMiddleware.ts';
@@ -450,7 +451,11 @@ router.use('/manufacturing-orders', generateCrud(ManufacturingOrder, 'Manufactur
 router.use('/campaigns', generateCrud(Campaign, 'Campaign'));
 router.use('/offers', generateCrud(Offer, 'Offer'));
 
-router.use('/sales-targets', generateCrud(SalesTarget, 'SalesTarget'));
+router.get('/sales-targets', getSalesTargets as any);
+router.post('/sales-targets', auditLog('SalesTarget'), createSalesTarget as any);
+router.put('/sales-targets/:id', auditLog('SalesTarget'), updateSalesTarget as any);
+router.delete('/sales-targets/:id', auditLog('SalesTarget'), deleteSalesTarget as any);
+
 router.use('/tickets', generateCrud(Ticket, 'Ticket'));
 router.use('/tasks', generateCrud(Task, 'Task'));
 

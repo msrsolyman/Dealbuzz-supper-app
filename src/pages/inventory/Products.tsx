@@ -21,6 +21,7 @@ import { useTranslation } from "react-i18next";
 import { useSettings } from "../../context/SettingsContext";
 import { motion, AnimatePresence } from "motion/react";
 import { useAuth } from "../../context/AuthContext";
+import { GoogleGenAI } from "@google/genai";
 
 export default function Products() {
   const { user } = useAuth();
@@ -738,15 +739,35 @@ export default function Products() {
                             onClick={async () => {
                                try {
                                   toast.loading("Generating description...", { id: "ai-gen" });
-                                  const res = await fetchWithAuth("/ai/generate-description", {
-                                     method: "POST",
-                                     body: JSON.stringify({ 
-                                        name: formData.name, 
-                                        category: formData.category, 
-                                        brand: formData.brand, 
-                                        features: formData.features 
-                                     })
+                                  
+                                  const apiKey = process.env.GEMINI_API_KEY;
+                                  if (!apiKey) throw new Error("API Key missing");
+
+                                  const ai = new GoogleGenAI({ apiKey });
+
+                                  const prompt = `Generate a compelling e-commerce product description for:
+Name: ${formData.name}
+Category: ${formData.category}
+Brand: ${formData.brand}
+Features: ${formData.features}
+
+Return a valid JSON object with the following fields:
+shortDescription: string (snappy intro)
+description: string (full comprehensive description)
+benefits: string[] (array of benefits)
+metaTitle: string (SEO title)
+metaDescription: string (SEO description)`;
+
+                                  const result = await ai.models.generateContent({
+                                    model: "gemini-3-flash-preview",
+                                    contents: [{ role: 'user', parts: [{ text: prompt }] }],
+                                    config: {
+                                      responseMimeType: "application/json",
+                                    }
                                   });
+
+                                  const res = JSON.parse(result.text || "{}");
+
                                   if(res.description) {
                                      setFormData(prev => ({
                                         ...prev,
@@ -758,8 +779,9 @@ export default function Products() {
                                      }));
                                      toast.success("Description generated!", { id: "ai-gen" });
                                   } else { throw new Error("Format error"); }
-                               } catch (e) {
-                                  toast.error("Failed to generate", { id: "ai-gen" });
+                               } catch (e: any) {
+                                  console.error(e);
+                                  toast.error(e.message || "Failed to generate", { id: "ai-gen" });
                                }
                             }}
                             className="bg-indigo-50 hover:bg-indigo-100 text-indigo-600 px-2 py-0.5 rounded text-[10px] font-bold tracking-widest uppercase flex items-center gap-1 transition-colors border border-indigo-200"

@@ -3,6 +3,7 @@ import express from 'express';
 import { createServer as createViteServer } from 'vite';
 import path from 'path';
 import cors from 'cors';
+import mongoose from 'mongoose';
 import compression from 'compression';
 import { connectDB } from './server/utils/db.ts';
 import apiRoutes from './server/routes/index.ts';
@@ -10,7 +11,7 @@ import Invoice from './server/models/Invoice.ts';
 
 async function startServer() {
   const app = express();
-  const PORT = 3000;
+  const PORT = Number(process.env.PORT) || 3000;
 
   // Middlewares
   app.use(cors());
@@ -21,9 +22,10 @@ async function startServer() {
   // Connect to Database
   await connectDB();
 
-  // Simulated Auto-reminder Cron Job (runs every minute in dev)
+  // Simulated Auto-reminder Cron Job (runs every 5 minutes)
   setInterval(async () => {
     try {
+       if (mongoose.connection.readyState !== 1) return;
        const today = new Date();
        const pdInvoices = await Invoice.find({ 
          status: { $ne: 'PAID' }, 
@@ -33,18 +35,11 @@ async function startServer() {
        
        if (pdInvoices.length > 0) {
          console.log(`[Auto-Reminder] Found ${pdInvoices.length} due invoices. Sending SMS/Email to customers...`);
-         for(const inv of pdInvoices) {
-            const customer: any = inv.customerId;
-            if (customer) {
-               // Pseudo send-sms
-               console.log(` -> SMS Sent to ${customer.phone || customer.email} for Invoice ${inv.invoiceNumber} (Amount: ${inv.total})`);
-            }
-         }
        }
     } catch (e) {
       //
     }
-  }, 60 * 1000);
+  }, 5 * 60 * 1000);
 
   // Set up root endpoint for robots.txt
   app.get('/robots.txt', (req, res) => {
@@ -109,48 +104,68 @@ Sitemap: https://${req.get('host')}/sitemap.xml`);
     });
   });
 
-  const isProduction = process.env.NODE_ENV === 'production' || process.argv[1]?.endsWith('server.cjs');
+  const isProduction = process.env.NODE_ENV === 'production' || process.env.RENDER === 'true';
   
   // Vite middleware for development
   if (!isProduction) {
+    console.log('🚀 Starting in DEVELOPMENT mode with Vite Middleware');
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: 'spa',
     });
     app.use(vite.middlewares);
   } else {
+    console.log('📦 Starting in PRODUCTION mode serving dist/');
     const distPath = path.join(process.cwd(), 'dist');
     const fs = await import('fs');
-    app.use(express.static(distPath, { index: false }));
     
-    // For Express v4, use '*'
+    // Serve static files from dist
+    app.use(express.static(distPath, { 
+      index: false,
+      maxAge: '1d',
+      etag: true
+    }));
+    
     app.get('*', (req, res) => {
-      let indexHtml = fs.readFileSync(path.join(distPath, 'index.html'), 'utf-8');
-      
-      const title = 'Dealbuzz | Premium Multivendor Ecosystem';
-      const description = 'Discover the ultimate B2B/B2C storefront for exclusive products & services.';
-      const ogImage = `https://${req.get('host')}/default-og.jpg`;
-      const url = `https://${req.get('host')}${req.originalUrl}`;
-      
-      // Inject meta tags for SEO SSR
-      const metaTags = `
-        <title>${title}</title>
-        <meta name="description" content="${description}" />
-        <link rel="canonical" href="${url}" />
-        <meta property="og:title" content="${title}" />
-        <meta property="og:description" content="${description}" />
-        <meta property="og:type" content="website" />
-        <meta property="og:url" content="${url}" />
-        <meta property="og:image" content="${ogImage}" />
-        <meta property="og:site_name" content="Dealbuzz" />
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="${title}" />
-        <meta name="twitter:description" content="${description}" />
-        <meta name="twitter:image" content="${ogImage}" />
-      `;
-      
-      indexHtml = indexHtml.replace('</head>', `${metaTags}</head>`);
-      res.send(indexHtml);
+      try {
+        const indexPath = path.join(distPath, 'index.html');
+        if (!fs.existsSync(indexPath)) {
+          return res.status(404).send('Build files not found. Please run npm run build.');
+        }
+
+        let indexHtml = fs.readFileSync(indexPath, 'utf-8');
+        
+        const title = 'Dealbuzz | Premium Multivendor Ecosystem';
+        const description = 'Discover the ultimate B2B/B2C storefront for exclusive products & services.';
+        const ogImage = `https://${req.get('host')}/default-og.jpg`;
+        const url = `https://${req.get('host')}${req.originalUrl}`;
+        
+        // Remove existing title if any to avoid duplicates
+        indexHtml = indexHtml.replace(/<title>.*?<\/title>/, '');
+
+        // Inject meta tags for SEO SSR
+        const metaTags = `
+          <title>${title}</title>
+          <meta name="description" content="${description}" />
+          <link rel="canonical" href="${url}" />
+          <meta property="og:title" content="${title}" />
+          <meta property="og:description" content="${description}" />
+          <meta property="og:type" content="website" />
+          <meta property="og:url" content="${url}" />
+          <meta property="og:image" content="${ogImage}" />
+          <meta property="og:site_name" content="Dealbuzz" />
+          <meta name="twitter:card" content="summary_large_image" />
+          <meta name="twitter:title" content="${title}" />
+          <meta name="twitter:description" content="${description}" />
+          <meta name="twitter:image" content="${ogImage}" />
+        `;
+        
+        indexHtml = indexHtml.replace('</head>', `${metaTags}</head>`);
+        res.send(indexHtml);
+      } catch (err) {
+        console.error('Error serving index.html:', err);
+        res.status(500).send('Internal Server Error');
+      }
     });
   }
 
